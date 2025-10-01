@@ -3,6 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark as dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
+const inlineCodeStyle = {
+  fontWeight: 'bold',
+  color: '#1976d2',
+  backgroundColor: '#f5f5f5',
+  padding: '2px 6px',
+  borderRadius: '4px',
+};
+
 export function MarkdownBlock({ children }: { children: string }) {
   return (
     <Box sx={{ textAlign: 'left' }}>
@@ -16,7 +24,9 @@ export function MarkdownBlock({ children }: { children: string }) {
                 {(children as string).replace(/\n$/, '')}
               </SyntaxHighlighter>
             ) : (
-              <code className={className}>{children}</code>
+              <code className={className} style={inlineCodeStyle}>
+                {children}
+              </code>
             );
           },
         }}
