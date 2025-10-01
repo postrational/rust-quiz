@@ -21,7 +21,7 @@ const shuffleAnswers = (answers: string[], correctIndex: number): [string[], num
   return [shuffledAnswers, newCorrectIndex];
 };
 
-export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
+export function QuizQuestion({ questionData, onNextQuestion }: { questionData: QuestionData; onNextQuestion: () => void }) {
   const labels = ['A', 'B', 'C', 'D'];
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
 
@@ -32,6 +32,11 @@ export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
 
   const handleAnswerClick = (index: number) => {
     setSelectedAnswer(index);
+  };
+
+  const handleNextQuestion = () => {
+    setSelectedAnswer(null);
+    onNextQuestion();
   };
 
   return (
@@ -72,6 +77,12 @@ export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
           )}
 
           <MarkdownBlock>{questionData.explanation}</MarkdownBlock>
+
+          <Box sx={{ marginTop: 3, display: 'flex', justifyContent: 'center' }}>
+            <Button variant="contained" onClick={handleNextQuestion}>
+              Next Question
+            </Button>
+          </Box>
         </Box>
       )}
     </>
