@@ -1,7 +1,9 @@
 import { Box, Button, Typography } from '@mui/material';
+import _ from 'lodash';
+import { useMemo, useState } from 'react';
 import { MarkdownBlock } from './MarkdownBlock';
 
-interface QuestionData {
+export interface QuestionData {
   question: string;
   answers: [string, string, string, string];
   correct_answer: 0 | 1 | 2 | 3;
@@ -9,8 +11,28 @@ interface QuestionData {
   explanation: string;
 }
 
+const shuffleAnswers = (answers: string[], correctIndex: number): [string[], number] => {
+  const indexed = answers.map((answer, index) => ({ answer, index }));
+  const shuffled = _.shuffle(indexed);
+
+  const shuffledAnswers = shuffled.map((item: { answer: string; index: number }) => item.answer);
+  const newCorrectIndex = shuffled.findIndex((item: { answer: string; index: number }) => item.index === correctIndex);
+
+  return [shuffledAnswers, newCorrectIndex];
+};
+
 export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
   const labels = ['A', 'B', 'C', 'D'];
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+
+  const [shuffledAnswers, correctAnswerIndex] = useMemo(
+    () => shuffleAnswers(questionData.answers, questionData.correct_answer),
+    [questionData],
+  );
+
+  const handleAnswerClick = (index: number) => {
+    setSelectedAnswer(index);
+  };
 
   return (
     <>
@@ -19,7 +41,7 @@ export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
       <MarkdownBlock>{questionData.question}</MarkdownBlock>
 
       <Box sx={{ marginTop: 3 }}>
-        {questionData.answers.map((answer, index) => (
+        {shuffledAnswers.map((answer, index) => (
           <Box
             key={index}
             sx={{
@@ -29,7 +51,7 @@ export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
               marginBottom: 2,
             }}
           >
-            <Button variant="outlined" sx={{ minWidth: 50 }}>
+            <Button variant="outlined" sx={{ minWidth: 50 }} onClick={() => handleAnswerClick(index)}>
               {labels[index]}
             </Button>
             <MarkdownBlock>{answer}</MarkdownBlock>
@@ -37,7 +59,21 @@ export function QuizQuestion({ questionData }: { questionData: QuestionData }) {
         ))}
       </Box>
 
-      <MarkdownBlock>{questionData.explanation}</MarkdownBlock>
+      {selectedAnswer !== null && (
+        <Box sx={{ marginTop: 3 }}>
+          {selectedAnswer === correctAnswerIndex ? (
+            <Typography variant="h6" color="success.main">
+              🎉 Correct! Well done!
+            </Typography>
+          ) : (
+            <Typography variant="h6" color="error.main">
+              ❌ Incorrect. The correct answer is {labels[correctAnswerIndex]}.
+            </Typography>
+          )}
+
+          <MarkdownBlock>{questionData.explanation}</MarkdownBlock>
+        </Box>
+      )}
     </>
   );
 }
