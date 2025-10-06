@@ -32,16 +32,24 @@ export function QuizStats() {
       <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 1, marginBottom: 2 }} />
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          Accuracy
-        </Typography>
-        <Typography
-          variant="body2"
-          fontWeight="bold"
-          color={accuracy >= 80 ? 'success.main' : accuracy >= 50 ? 'warning.main' : 'error.main'}
-        >
-          {totalCorrect > 0 ? `${accuracy.toFixed(1)}%` : 'N/A'}
-        </Typography>
+        {totalCorrect > 0 ? (
+          <>
+            <Typography variant="body2" color="text.secondary">
+              Accuracy
+            </Typography>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              color={accuracy >= 80 ? 'success.main' : accuracy >= 50 ? 'warning.main' : 'error.main'}
+            >
+              {`${accuracy.toFixed(1)}%`}
+            </Typography>
+          </>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            &nbsp;{' '}
+          </Typography>
+        )}
       </Box>
     </Box>
   );
