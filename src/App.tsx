@@ -7,16 +7,29 @@ const questionModules = import.meta.glob<{ default: QuestionData }>('../../data/
   eager: true,
 });
 
-export const allQuestions = Object.values(questionModules).map((m) => m.default);
+// Extract basename without extension (e.g., "../../path/q001.json" -> "q001")
+function getQuestionId(path: string): string {
+  const filename = path.split('/').pop() || '';
+  return filename.replace('.json', '');
+}
+
+// Build dictionary of questions keyed by ID (filename without extension)
+export const allQuestions: Record<string, QuestionData> = {};
+for (const [path, module] of Object.entries(questionModules)) {
+  const questionId = getQuestionId(path);
+  allQuestions[questionId] = module.default;
+}
+
+export const questionIds = Object.keys(allQuestions);
 
 export function App() {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() =>
-    Math.floor(Math.random() * allQuestions.length)
+  const [currentQuestionId, setCurrentQuestionId] = useState(
+    () => questionIds[Math.floor(Math.random() * questionIds.length)],
   );
 
   const handleNextQuestion = () => {
-    const randomIndex = Math.floor(Math.random() * allQuestions.length);
-    setCurrentQuestionIndex(randomIndex);
+    const randomId = questionIds[Math.floor(Math.random() * questionIds.length)];
+    setCurrentQuestionId(randomId);
   };
 
   return (
@@ -38,7 +51,11 @@ export function App() {
           padding: 3,
         }}
       >
-        <QuizQuestion questionData={allQuestions[currentQuestionIndex]} onNextQuestion={handleNextQuestion} />
+        <QuizQuestion
+          questionData={allQuestions[currentQuestionId]}
+          questionId={currentQuestionId}
+          onNextQuestion={handleNextQuestion}
+        />
       </Paper>
     </Box>
   );

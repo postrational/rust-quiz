@@ -21,7 +21,13 @@ const shuffleAnswers = (answers: string[], correctIndex: number): [string[], num
   return [shuffledAnswers, newCorrectIndex];
 };
 
-export function QuizQuestion({ questionData, onNextQuestion }: { questionData: QuestionData; onNextQuestion: () => void }) {
+interface QuizQuestionProps {
+  questionData: QuestionData;
+  questionId: string;
+  onNextQuestion: () => void;
+}
+
+export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQuestionProps) {
   const labels = ['A', 'B', 'C', 'D'];
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
 
@@ -55,15 +61,20 @@ export function QuizQuestion({ questionData, onNextQuestion }: { questionData: Q
               gap: 2,
               marginBottom: 2,
               padding: '0 10px',
-              border: selectedAnswer === index
-                ? index === correctAnswerIndex
-                  ? '2px solid green'
-                  : '2px solid red'
-                : '2px solid transparent',
+              border:
+                selectedAnswer === index
+                  ? index === correctAnswerIndex
+                    ? '2px solid green'
+                    : '2px solid red'
+                  : '2px solid transparent',
             }}
           >
-            <Button variant="outlined" sx={{ minWidth: 50 }} onClick={() => handleAnswerClick(index)}
-              disabled={selectedAnswer !== null}>
+            <Button
+              variant="outlined"
+              sx={{ minWidth: 50 }}
+              onClick={() => handleAnswerClick(index)}
+              disabled={selectedAnswer !== null}
+            >
               {labels[index]}
             </Button>
             <MarkdownBlock>{answer}</MarkdownBlock>
@@ -84,6 +95,10 @@ export function QuizQuestion({ questionData, onNextQuestion }: { questionData: Q
           )}
 
           <MarkdownBlock>{questionData.explanation}</MarkdownBlock>
+
+          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'right' }}>
+            (Question ID: {questionId})
+          </Typography>
 
           <Box sx={{ marginTop: 3, display: 'flex', justifyContent: 'center' }}>
             <Button variant="contained" onClick={handleNextQuestion}>
