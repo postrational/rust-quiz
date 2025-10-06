@@ -36,7 +36,7 @@ export function App() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        padding: { xs: 1, sm: 2 },
+        padding: { xs: 0, sm: 2 },
       }}
     >
       <Box
@@ -54,7 +54,7 @@ export function App() {
           elevation={3}
           sx={{
             minHeight: '400px',
-            padding: { xs: 2, sm: 3 },
+            padding: { xs: 1, sm: 3 },
           }}
         >
           <Typography variant="h4" gutterBottom>Rust Quiz</Typography>
