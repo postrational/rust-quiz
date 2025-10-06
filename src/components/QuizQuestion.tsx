@@ -44,8 +44,6 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
 
   return (
     <>
-      <Typography variant="h4">Quiz Game</Typography>
-
       <MarkdownBlock>{questionData.question}</MarkdownBlock>
 
       <Box sx={{ marginTop: 3 }}>

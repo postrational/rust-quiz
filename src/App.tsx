@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Box, Paper } from '@mui/material';
+import { Box, Paper, Typography } from '@mui/material';
 import './App.css';
 import { QuizQuestion } from './components/QuizQuestion';
+import { QuizStats } from './components/QuizStats';
 import { allQuestions, questionIds } from './questions';
 
 export function App() {
@@ -24,21 +25,25 @@ export function App() {
         padding: 2,
       }}
     >
-      <Paper
-        elevation={3}
-        sx={{
-          width: { xs: '70%', sm: '70%' },
-          minWidth: '1000px',
-          minHeight: '400px',
-          padding: 3,
-        }}
-      >
-        <QuizQuestion
-          questionData={allQuestions[currentQuestionId]}
-          questionId={currentQuestionId}
-          onNextQuestion={handleNextQuestion}
-        />
-      </Paper>
+      <Box sx={{ width: { xs: '70%', sm: '70%' }, minWidth: '1000px' }}>
+        <Paper
+          elevation={3}
+          sx={{
+            minHeight: '400px',
+            padding: 3,
+          }}
+        >
+          <Typography variant="h4">Quiz Game</Typography>
+
+          <QuizStats />
+
+          <QuizQuestion
+            questionData={allQuestions[currentQuestionId]}
+            questionId={currentQuestionId}
+            onNextQuestion={handleNextQuestion}
+          />
+        </Paper>
+      </Box>
     </Box>
   );
 }

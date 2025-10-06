@@ -26,9 +26,7 @@ export const useQuizStore = create<QuizState>()(
           }
 
           const newAnswered = [...state.answeredQuestions, questionId];
-          const newCorrect = isCorrect
-            ? [...state.correctQuestions, questionId]
-            : state.correctQuestions;
+          const newCorrect = isCorrect ? [...state.correctQuestions, questionId] : state.correctQuestions;
 
           return {
             answeredQuestions: newAnswered,
@@ -46,9 +44,7 @@ export const useQuizStore = create<QuizState>()(
 
       getAccuracy: () => {
         const { answeredQuestions, correctQuestions } = get();
-        return answeredQuestions.length === 0
-          ? 0
-          : (correctQuestions.length / answeredQuestions.length) * 100;
+        return answeredQuestions.length === 0 ? 0 : (correctQuestions.length / answeredQuestions.length) * 100;
       },
     }),
     {
