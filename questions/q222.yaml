@@ -1,0 +1,50 @@
+question: |-
+  ```rust
+  // This code simulates a library crate with pub(crate) visibility
+  // In a real scenario, main.rs would be in a separate crate
+
+  mod mylib {
+      pub mod utils {
+          pub(crate) fn internal_helper() -> i32 { 42 }
+          pub fn public_helper() -> i32 { 24 }
+      }
+  }
+
+  fn main() {
+      use mylib::utils;
+      println!("{}", utils::public_helper());
+      println!("{}", utils::internal_helper());
+  }
+  ```
+
+  What happens when this code is compiled?
+answers:
+- Both function calls work, printing "24" then "42"
+- Only the first call works, second fails with "function is private"
+- Only the second call works, first fails with "function is private"
+- Both calls fail because the `utils` module is not accessible
+correct_answer: 0
+expected_output:
+- '24'
+- '42'
+explanation: |-
+  This question tests understanding of Rust's `pub(crate)` visibility modifier and
+  crate boundaries. The `pub(crate)` modifier makes an item public within the
+  defining crate but private across crate boundaries.
+
+  In this code, both `internal_helper()` (marked `pub(crate)`) and
+  `public_helper()` (marked `pub`) are defined in the `mylib` module. Since
+  `main()` is in the same crate as the `mylib` module, both functions are
+  accessible. The `pub(crate)` visibility allows access from anywhere within the
+  same crate, so both function calls succeed and print "24" then "42".
+
+  The key distinction is that if `main.rs` were in a separate crate that depends
+  on `mylib` as an external library, then only `public_helper()` would be
+  accessible. The `internal_helper()` function would be private across the crate
+  boundary, resulting in a compilation error.
+
+  The key takeaway is that `pub(crate)` creates crate-local public visibility -
+  it's useful for creating internal APIs within a crate that should be accessible
+  across modules in the same crate but not exposed to external users of the
+  library. This allows library authors to maintain clear boundaries between public
+  API and internal implementation details.

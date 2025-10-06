@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  fn parse_number(s: &str) -> Result<i32, std::num::ParseIntError> {
+      s.parse()
+  }
+
+  fn main() {
+      let nums = vec!["42", "not a number", "17"];
+      
+      let result: Result<Vec<i32>, _> = nums.iter()
+          .map(|s| parse_number(s))
+          .collect();
+      
+      match result {
+          Ok(v) => println!("Success: {:?}", v),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints `Success: [42, 17]` (skips the error)'
+- 'Prints `Error: invalid digit found in string`'
+- 'Compilation error: type mismatch'
+- Panic at runtime with "called `Result::unwrap()` on an `Err` value"
+correct_answer: 1
+expected_output:
+- 'Error: invalid digit found in string'
+explanation: |-
+  This question tests understanding of how `collect()` works with `Result` types
+  and the short-circuiting behavior of error handling in Rust.
+
+  When collecting an iterator of `Result<T, E>` into a `Result<Vec<T>, E>`, Rust
+  implements special behavior: it attempts to collect all the `Ok` values into a
+  `Vec`, but if any element is an `Err`, it stops immediately and returns that
+  first error.
+
+  In this code, the execution proceeds as follows:
+  1. `"42".parse()` returns `Ok(42)` - collection continues
+  2. `"not a number".parse()` returns `Err(ParseIntError)` - collection stops here
+  3. The error is immediately returned, and `"17"` is never processed
+
+  This short-circuiting behavior is useful for validation scenarios where you need
+  "all or nothing" semantics - either all values parse successfully, or you want
+  to know about the first failure. The key takeaway is that `collect()` on an
+  iterator of `Result` values will fail fast on the first error, rather than
+  collecting partial results or skipping errors.
+
+  If you wanted to skip errors and collect only successful values, you would use
+  `filter_map(|s| s.parse().ok())` to convert `Result` to `Option` and filter out
+  the `None` values.

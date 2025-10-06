@@ -1,0 +1,62 @@
+question: |-
+  ```rust
+  use std::ops::Deref;
+
+  struct MyBox<T>(T);
+
+  impl<T> MyBox<T> {
+      fn new(x: T) -> MyBox<T> {
+          MyBox(x)
+      }
+  }
+
+  impl<T> Deref for MyBox<T> {
+      type Target = T;
+      
+      fn deref(&self) -> &Self::Target {
+          &self.0
+      }
+  }
+
+  fn hello(name: &str) {
+      println!("Hello, {}!", name);
+  }
+
+  fn main() {
+      let m = MyBox::new(String::from("Rust"));
+      hello(&m);
+  }
+  ```
+
+  What happens with this code?
+answers:
+- Won't compile - cannot pass `&MyBox<String>` to function expecting `&str`
+- Compiles and prints `Hello, Rust!` - demonstrates deref coercion
+- Won't compile - `Deref` only works with `*` operator, not function arguments
+- Compiles but crashes at runtime when calling `hello`
+correct_answer: 1
+expected_output:
+- Hello, Rust!
+explanation: |-
+  This question tests understanding of deref coercion, one of Rust's convenience
+  features that automatically dereferences types in specific contexts.
+
+  When `hello(&m)` is called, the argument type is `&MyBox<String>`, but the
+  function expects `&str`. Rust automatically applies deref coercion at function
+  argument positions (called "coercion sites"). The coercion chain works as
+  follows:
+
+  1. `&MyBox<String>` - the initial type
+  2. Rust calls `MyBox`'s `deref()` method → produces `&String`
+  3. `&String` still doesn't match `&str`
+  4. Rust calls `String`'s built-in `deref()` method → produces `&str`
+  5. Now the type matches and the function can be called
+
+  Deref coercion applies automatically at specific coercion sites including
+  function arguments, method arguments, and some assignment contexts. It will
+  chain multiple `Deref` implementations as needed to reach the target type.
+
+  The key takeaway is that implementing the `Deref` trait enables automatic
+  dereferencing not just with the `*` operator, but also in function and method
+  calls. This makes smart pointers and wrapper types more ergonomic to use. Common
+  examples include `Box<T>` to `T`, `String` to `&str`, and `Vec<T>` to `&[T]`.

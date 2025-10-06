@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s = String::from("Hello");
+      let slice1 = &s[1..3];
+      let slice2 = &s[1..3];
+      
+      s.push_str(" World");
+      
+      println!("{} {}", slice1, slice2);
+  }
+  ```
+
+  What is the result of this code?
+answers:
+- 'Compiles and prints: `el el`'
+- 'Compilation error: cannot borrow `s` as mutable while immutable borrows exist'
+- 'Runtime panic: string slice out of bounds after mutation'
+- 'Compiles and prints: `el Wo` (slices follow the string growth)'
+correct_answer: 1
+expected_output:
+- 'error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrow checker rules and how they
+  prevent memory safety issues with string slices.
+
+  When `slice1` and `slice2` are created, they establish immutable borrows of the
+  string `s`. These borrows remain active as long as the slices are used later in
+  the code. When `s.push_str(" World")` is called, it attempts to create a mutable
+  borrow of `s` to modify it. However, Rust's borrow checker enforces that mutable
+  and immutable borrows cannot coexist for the same data.
+
+  The borrow checker prevents this code from compiling because allowing the
+  mutation would be unsafe. If `push_str()` were allowed to execute, it could
+  reallocate the string's internal buffer to accommodate the additional text. This
+  reallocation would invalidate the memory addresses that `slice1` and `slice2`
+  point to, creating dangling pointers that reference freed memory.
+
+  The key takeaway is that Rust's borrow checker statically prevents data races
+  and use-after-free bugs at compile time. The rule that mutable and immutable
+  borrows cannot overlap ensures that data cannot be modified while other parts of
+  the code are reading it, guaranteeing memory safety without runtime overhead.

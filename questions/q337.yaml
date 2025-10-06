@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4];
+      let result = data.iter().try_fold(0, |acc, &x| {
+          if x % 2 == 0 {
+              Some(acc + x)
+          } else {
+              None
+          }
+      });
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this program print?
+answers:
+- Some(6)
+- None
+- Some(10)
+- Some(2)
+correct_answer: 1
+expected_output:
+- None
+explanation: |-
+  This question tests understanding of the `try_fold` iterator method and its
+  short-circuiting behavior. The `try_fold` method is similar to `fold`, but it
+  allows for early termination when an error or `None` is encountered.
+
+  In this code, `try_fold` starts with an accumulator value of 0 and processes
+  each element in the vector. The closure checks if each element is even: if so,
+  it returns `Some(acc + x)` to continue; if odd, it returns `None` to signal
+  failure.
+
+  The execution proceeds as follows:
+  - Start with acc = 0
+  - First element: x = 1 (odd) → returns `None`
+  - `try_fold` immediately stops and returns `None`
+
+  The key concept is that `try_fold` short-circuits on the first `None` or error
+  value. It does not continue processing remaining elements after encountering a
+  failure. This is the fundamental difference between `fold` (which always
+  processes all elements) and `try_fold` (which stops on the first error).
+
+  In this example, since the first element (1) is odd, the closure returns `None`
+  immediately, and the even numbers (2 and 4) are never processed. The final
+  result is `None`, which is what gets printed.

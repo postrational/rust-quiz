@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel::<i32>();
+      
+      // Drop the sender immediately
+      drop(tx);
+      
+      match rx.recv() {
+          Ok(val) => println!("Received: {}", val),
+          Err(e) => println!("Error: {:?}", e),
+      }
+      
+      println!("Done");
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Received: 0, Done'
+- 'Error: RecvError, Done'
+- Deadlock - blocks forever on recv()
+- Compilation error - cannot drop tx
+correct_answer: 1
+expected_output:
+- 'Error: RecvError'
+- Done
+explanation: |-
+  This question tests understanding of channel disconnection behavior in Rust's
+  `std::sync::mpsc` module.
+
+  When `drop(tx)` is called, the sending side of the channel is immediately
+  closed. Since there are no more senders, the channel becomes disconnected. When
+  `rx.recv()` is called on a disconnected channel, it does not block indefinitely.
+  Instead, it immediately returns `Err(RecvError)` to signal that no more messages
+  will ever arrive because all senders have been dropped.
+
+  The `recv()` method has three possible outcomes:
+  1. `Ok(value)` - Successfully received a message from the channel
+  2. `Err(RecvError)` - All senders have been dropped, channel is disconnected
+  3. Blocks - Waiting for a message when senders still exist but no messages are
+  available yet
+
+  In this case, since the sender is dropped before any messages are sent, the
+  receiver immediately gets `Err(RecvError)`, which is printed as "Error:
+  RecvError", followed by "Done".
+
+  The key takeaway is that dropping all senders causes the channel to disconnect,
+  and `recv()` on a disconnected channel returns an error rather than blocking
+  forever. This is a common pattern for signaling graceful shutdown to receiver
+  threads - the coordinator drops the sender to indicate no more work will be
+  sent.

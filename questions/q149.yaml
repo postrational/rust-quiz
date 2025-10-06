@@ -1,0 +1,62 @@
+question: |-
+  ```rust
+  use tokio_stream::{self as stream, StreamExt};
+
+  #[tokio::main]
+  async fn main() {
+      let numbers = stream::iter(vec![1, 2, 3, 4, 5]);
+      
+      let processed = numbers
+          .map(|x| async move { 
+              println!("Processing {}", x);
+              x * 2 
+          })
+          .buffer_unordered(2);
+      
+      let results: Vec<i32> = processed.collect().await;
+      println!("Final: {:?}", results);
+  }
+  ```
+
+  What's the behavior of this async stream processing?
+answers:
+- Prints processing 1-5 in order, final results [2,4,6,8,10] in order
+- Prints processing 1,2 first, then others as they complete, final results in random order
+- Compilation error - `buffer_unordered` expects different closure type
+- Prints processing 1-5 in order, final results [2,4,6,8,10] in random order
+correct_answer: 2
+expected_output:
+- 'error[E0599]: no method named `buffer_unordered` found'
+explanation: |-
+  This question tests understanding of the type requirements for
+  `buffer_unordered` in tokio-stream. The code fails to compile because
+  `buffer_unordered` requires a stream of futures, but the `map` combinator
+  produces a stream of closures that return futures, not a stream of futures
+  themselves.
+
+  The issue is that `map` creates a `Map<Stream, Fn>` where each element is a
+  closure `|x| async move { ... }`. However, `buffer_unordered` expects a
+  `Stream<Item = impl Future>` - it needs the futures themselves, not closures
+  that produce futures.
+
+  To fix this code, you would need to use `then` instead of `map`. The `then`
+  combinator is specifically designed for async transformations and automatically
+  polls the futures it creates. The corrected version would be:
+
+  ```rust
+  let processed = numbers
+      .then(|x| async move { 
+          println!("Processing {}", x);
+          x * 2 
+      })
+      .buffer_unordered(2);
+  ```
+
+  Alternatively, you could keep `map` but manually call the closure to get the
+  future, though this is less idiomatic.
+
+  The key takeaway is understanding the difference between `map` and `then` in
+  async stream processing: `map` applies a synchronous function to each element,
+  while `then` applies an async function and handles the resulting futures. When
+  you need concurrent processing with `buffer_unordered`, you must ensure your
+  stream yields futures directly, which `then` provides but `map` does not."

@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      
+      let mut iter = data.iter().peekable();
+      
+      while let Some(&x) = iter.peek() {
+          if x % 2 == 0 {
+              iter.next();
+              println!("Even: {}", x);
+          } else {
+              break;
+          }
+      }
+      
+      let rest: Vec<_> = iter.collect();
+      println!("Rest: {:?}", rest);
+  }
+  ```
+
+  What does this code print?
+answers:
+- 'Even: 2, Even: 4, Rest: [1, 3, 5]'
+- 'Rest: [1, 2, 3, 4, 5]'
+- 'Infinite loop printing Even: 1 repeatedly'
+- 'Rest: [2, 3, 4, 5]'
+correct_answer: 1
+expected_output:
+- 'Rest: [1, 2, 3, 4, 5]'
+explanation: |-
+  This question tests understanding of Rust's `Peekable` iterator and the
+  distinction between `peek()` and `next()`.
+
+  The `peek()` method allows you to look at the next element in an iterator
+  without consuming it. Crucially, the iterator position does not advance until
+  `next()` is explicitly called.
+
+  In this code, the loop begins by peeking at the first element, which is `1`. The
+  condition `if x % 2 == 0` checks if the element is even. Since `1` is odd, this
+  condition is false, and the `break` statement executes immediately. Importantly,
+  `iter.next()` is never called, so the iterator never advances from its initial
+  position.
+
+  When `iter.collect()` is called after the loop, the iterator still points to the
+  beginning of the data, so all five elements `[1, 2, 3, 4, 5]` are collected and
+  printed.
+
+  The key takeaway is that `peek()` is non-consuming—it only observes the next
+  element without moving the iterator forward. To actually advance the iterator,
+  you must call `next()`. This pattern is useful when you need to make decisions
+  based on upcoming elements without committing to consuming them until certain
+  conditions are met.

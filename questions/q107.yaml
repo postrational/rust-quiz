@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  fn parse_and_double(s: &str) -> Result<i32, String> {
+      s.parse::<i32>()
+          .map(|n| n * 2)
+          .map_err(|e| format!("Parse failed: {}", e))
+  }
+
+  fn main() {
+      let inputs = vec!["5", "not a number", "10"];
+      
+      let result: Result<Vec<i32>, String> = inputs
+          .iter()
+          .map(|s| parse_and_double(s))
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok([10, 20])
+- 'Err("Parse failed: invalid digit found in string")'
+- Ok([10])
+- 'Compilation error: cannot collect iterator of `Result` into `Result<Vec<_>, _>`'
+correct_answer: 1
+expected_output:
+- 'Err("Parse failed: invalid digit found in string")'
+explanation: |-
+  This question tests understanding of error handling with `Result`, the `map_err`
+  combinator, and how collecting an iterator of `Result` values works.
+
+  The `parse_and_double` function attempts to parse a string into an `i32`,
+  doubles it if successful, and transforms any parse error into a custom error
+  message using `map_err`. The `map_err` combinator only executes when there's an
+  `Err` variant, transforming the error type from `ParseIntError` to `String`.
+
+  When the code processes the inputs:
+  1. `"5"` parses successfully to `5`, which is doubled to `10`, resulting in
+  `Ok(10)`
+  2. `"not a number"` fails to parse, producing an error that `map_err` transforms
+  into `Err("Parse failed: invalid digit found in string")`
+  3. `"10"` is never processed
+
+  The key behavior is how `collect()` works with `Result` types. When collecting
+  an iterator of `Result<T, E>` into `Result<Vec<T>, E>`, Rust implements
+  short-circuit semantics: the collection stops at the first error encountered and
+  returns that error immediately. This is an "all-or-nothing" pattern where either
+  all operations succeed (producing `Ok(vec)`) or any failure causes the entire
+  operation to fail with the first error.
+
+  The key takeaway is that collecting `Result` values provides fail-fast
+  semantics, which is useful for validation scenarios where partial success is not
+  acceptable. The `map_err` combinator is valuable for adding context to errors or
+  converting between error types while preserving the success values unchanged.

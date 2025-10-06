@@ -1,0 +1,71 @@
+question: |-
+  ```rust
+  #[derive(Debug)]
+  enum MathError {
+      DivisionByZero,
+      Overflow,
+  }
+
+  fn divide(a: i32, b: i32) -> Result<i32, MathError> {
+      if b == 0 {
+          Err(MathError::DivisionByZero)
+      } else {
+          a.checked_div(b).ok_or(MathError::Overflow)
+      }
+  }
+
+  fn main() {
+      let results = vec![
+          divide(10, 2),
+          divide(10, 0),
+          divide(i32::MIN, -1),
+      ];
+      
+      for r in results {
+          println!("{:?}", r);
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok(5), Err(DivisionByZero), Ok(-2147483648)
+- Ok(5), Err(DivisionByZero), Err(Overflow)
+- Ok(5), Err(DivisionByZero), panic
+- Three Ok values
+correct_answer: 1
+expected_output:
+- Ok(5)
+- Err(DivisionByZero)
+- Err(Overflow)
+explanation: |-
+  This question tests understanding of custom error types and checked arithmetic
+  operations in Rust. The code demonstrates how to use `Result` with a custom
+  error enum to handle different failure cases in a type-safe manner.
+
+  The `divide` function performs three operations: `divide(10, 2)`, `divide(10,
+  0)`, and `divide(i32::MIN, -1)`.
+
+  For `divide(10, 2)`, the divisor is not zero, so the function proceeds to
+  `checked_div`. The operation `10.checked_div(2)` returns `Some(5)`, and
+  `.ok_or(MathError::Overflow)` converts this to `Ok(5)`.
+
+  For `divide(10, 0)`, the divisor is zero, so the function immediately returns
+  `Err(MathError::DivisionByZero)`.
+
+  For `divide(i32::MIN, -1)`, this is the critical case. `i32::MIN` is
+  -2,147,483,648, and dividing by -1 should mathematically yield 2,147,483,648.
+  However, `i32::MAX` is only 2,147,483,647, so this operation would overflow in
+  two's complement arithmetic. The `checked_div` method detects this overflow
+  condition and returns `None`, which `.ok_or(MathError::Overflow)` converts to
+  `Err(MathError::Overflow)`.
+
+  The key methods used are `checked_div()`, which returns `Option<i32>` (returning
+  `None` on division by zero or overflow), and `.ok_or(err)`, which converts
+  `Option<T>` to `Result<T, E>` by mapping `Some(x)` to `Ok(x)` and `None` to
+  `Err(err)`.
+
+  Custom error types provide type safety, enable precise pattern matching for
+  different error conditions, create clearer APIs by explicitly documenting
+  possible failures, and avoid the need for string parsing or comparison when
+  handling errors.

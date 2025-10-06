@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut x = 5;
+      let r1 = &x;
+      let r2 = &x;
+      let r3 = &mut x;
+      println!("{}, {}, {}", r1, r2, r3);
+  }
+  ```
+
+  What does this code output?
+answers:
+- Prints "5, 5, 5"
+- 'Compilation error: cannot borrow `x` as mutable because it is also borrowed as immutable'
+- Runtime panic due to conflicting borrows
+- 'Compilation error: `x` does not live long enough'
+correct_answer: 1
+expected_output:
+- cannot borrow `x` as mutable because it is also borrowed as immutable
+explanation: |-
+  This question tests understanding of Rust's borrowing rules, specifically the
+  mutual exclusivity between mutable and immutable references. Rust enforces that
+  you cannot have a mutable reference to a value while immutable references to
+  that same value exist and are still in use.
+
+  In this code, `r1` and `r2` are created as immutable references to `x`. When the
+  code attempts to create `r3` as a mutable reference to `x`, the compiler detects
+  that the immutable references are still in scope and will be used later in the
+  `println!` statement. This violates Rust's borrowing rules, which prevent
+  simultaneous mutable and immutable access to prevent data races and ensure
+  memory safety.
+
+  The compiler produces a compilation error indicating that `x` cannot be borrowed
+  as mutable because it is also borrowed as immutable. This check happens at
+  compile time, not runtime, which is a key feature of Rust's safety guarantees.
+
+  The key takeaway is that Rust's borrow checker enforces these rules statically:
+  you can have either multiple immutable references OR one mutable reference to a
+  value at any given time, but not both simultaneously. This prevents data races
+  and ensures memory safety without runtime overhead.

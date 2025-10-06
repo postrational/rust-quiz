@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("test");
+      let r1 = &s;
+      let r2 = &s;
+      println!("{}", r1);
+      let r3 = &mut s;
+      println!("{}", r3);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "test" twice
+- 'Compilation error: cannot borrow `s` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: borrow conflict'
+- 'Compilation error: `s` is not declared as mutable'
+correct_answer: 1
+expected_output:
+- error
+- cannot borrow `s` as mutable
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and mutability
+  requirements. Rust enforces strict borrowing rules at compile time to prevent
+  data races: you can have either multiple immutable references OR one mutable
+  reference to a value, but not both simultaneously.
+
+  In this code, two immutable references (`r1` and `r2`) are created to `s`. Even
+  though `r1` is used in a `println!` before attempting to create the mutable
+  reference `r3`, the borrow checker determines that creating a mutable reference
+  while immutable references exist in scope violates Rust's borrowing rules. The
+  primary compilation error is "cannot borrow `s` as mutable because it is also
+  borrowed as immutable."
+
+  Additionally, there's a secondary issue: `s` is not declared with the `mut`
+  keyword, which would also prevent creating a mutable reference to it. To create
+  a mutable reference, the binding itself must be declared as mutable (e.g., `let
+  mut s = String::from("test")`).
+
+  The key takeaway is that Rust's borrow checker enforces exclusive access for
+  mutable references at compile time, preventing potential data races and ensuring
+  memory safety. This is a fundamental principle of Rust's ownership system.

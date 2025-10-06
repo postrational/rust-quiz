@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      let (evens, odds): (Vec<_>, Vec<_>) = data
+          .into_iter()
+          .partition(|&x| x % 2 == 0);
+          
+      println!("{} {}", evens.len(), odds.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- 2 3
+- 3 2
+- 5 0
+- Compilation error
+correct_answer: 0
+expected_output:
+- 2 3
+explanation: |-
+  This question tests understanding of the `partition()` method in Rust, which is
+  an iterator adapter that splits elements into two collections based on a
+  predicate function.
+
+  The `partition()` method takes a closure that returns a boolean and separates
+  the iterator's elements into two groups: elements where the predicate returns
+  `true` go into the first collection, and elements where it returns `false` go
+  into the second collection.
+
+  In this code, the predicate `|&x| x % 2 == 0` checks if a number is even. The
+  vector `[1, 2, 3, 4, 5]` is partitioned as follows:
+  - Even numbers (predicate returns `true`): [2, 4] - 2 elements
+  - Odd numbers (predicate returns `false`): [1, 3, 5] - 3 elements
+
+  Therefore, `evens.len()` is 2 and `odds.len()` is 3, printing "2 3".
+
+  The key takeaway is that `partition()` provides an efficient way to categorize
+  elements into two groups in a single pass through the data, which is more
+  performant than filtering the collection twice.

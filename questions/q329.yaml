@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = [1, 2, 3, 4, 5];
+      let iter = data.iter().cycle().skip(3);
+      
+      for (i, &x) in iter.enumerate() {
+          println!("{}", x);
+          if i == 6 { break; }
+      }
+  }
+  ```
+
+  How many lines does this print?
+answers:
+- '4'
+- '7'
+- '8'
+- Infinite (never terminates)
+correct_answer: 1
+expected_output:
+- '4'
+- '5'
+- '1'
+- '2'
+- '3'
+- '4'
+- '5'
+explanation: |-
+  This question tests understanding of iterator adapters in Rust, specifically
+  `cycle()`, `skip()`, and `enumerate()`.
+
+  The `cycle()` method creates an infinite iterator that repeats the elements of
+  the original collection indefinitely: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, ...
+
+  The `skip(3)` adapter skips the first 3 elements from this infinite sequence, so
+  the iterator now starts at: 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, ...
+
+  The `enumerate()` adapter adds indices to each element, creating pairs: (0, 4),
+  (1, 5), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), ...
+
+  The loop prints each value and breaks when `i == 6`. Since the condition checks
+  for equality with 6, the loop executes for indices 0, 1, 2, 3, 4, 5, and
+  6—that's 7 iterations total, printing 7 lines.
+
+  The key takeaway is understanding how iterator adapters compose and how loop
+  conditions work. The break occurs after printing the element at index 6, not
+  before, so the element at index 6 is included in the output.

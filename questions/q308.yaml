@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map: HashMap<&str, Vec<i32>> = HashMap::new();
+      map.insert("nums", vec![1, 2, 3]);
+      
+      map.get_mut("nums").unwrap().extend([4, 5]);
+      let sum: i32 = map["nums"].iter().sum();
+      
+      println!("{}", sum);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '6'
+- '15'
+- '9'
+- Compilation error
+correct_answer: 1
+expected_output:
+- '15'
+explanation: |-
+  This question tests understanding of HashMap mutation, mutable borrows, and
+  borrow scope in Rust.
+
+  The code creates a HashMap containing a vector [1, 2, 3] associated with the key
+  "nums". The `get_mut()` method returns an `Option<&mut Vec<i32>>`, which is
+  unwrapped to obtain a mutable reference to the vector. The `extend([4, 5])`
+  method then adds elements 4 and 5 to the vector, resulting in [1, 2, 3, 4, 5].
+
+  A key aspect of this code is borrow scope management. The mutable borrow from
+  `get_mut()` only lasts for the duration of that statement. Once the statement
+  completes, the mutable borrow ends, allowing the subsequent immutable borrow via
+  `map["nums"]` to succeed without any borrowing conflicts.
+
+  The final line calculates the sum of all elements in the vector: 1 + 2 + 3 + 4 +
+  5 = 15, which is then printed.
+
+  The key takeaway is understanding that borrows in Rust have limited scopes, and
+  a borrow that ends within a statement does not conflict with subsequent borrows
+  on different lines. This demonstrates Rust's non-lexical lifetimes (NLL)
+  feature, which allows the compiler to determine that borrows end when they're no
+  longer used, rather than at the end of a scope.

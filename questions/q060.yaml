@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  struct Node {
+      value: i32,
+      children: Vec<???>,  // What goes here?
+  }
+
+  // Scenario 1: Tree where each node has ONE parent
+  fn tree_scenario() {
+      let root = Node { 
+          value: 1, 
+          children: vec![
+              Node { value: 2, children: vec![] },
+              Node { value: 3, children: vec![] },
+          ]
+      };
+  }
+
+  // Scenario 2: Graph where nodes can have MULTIPLE parents
+  fn graph_scenario() {
+      let shared = ???;  // Node that will have 2 parents
+      let parent1 = Node { value: 1, children: vec![???] };
+      let parent2 = Node { value: 2, children: vec![???] };
+  }
+  ```
+
+  What types should replace the `???` markers?
+answers:
+- 'Tree: `Vec<Box<Node>>`, Graph: `Vec<Rc<Node>>`, shared: `Rc::new(Node {...})`'
+- 'Tree: `Vec<Rc<Node>>`, Graph: `Vec<Arc<Node>>`, shared: `Arc::new(Node {...})`'
+- 'Tree: `Vec<Node>`, Graph: `Vec<Rc<Node>>`, shared: `Rc::new(Node {...})`'
+- 'Tree: `Vec<Box<Node>>`, Graph: `Vec<Box<Node>>`, shared: `Box::new(Node {...})`'
+correct_answer: 0
+expected_output: []
+explanation: |-
+  This question tests understanding of when to use `Box<T>` versus `Rc<T>` for
+  heap allocation and ownership patterns in Rust.
+
+  **Scenario 1: Tree with Single Parent → `Box<Node>`**
+
+  For a tree structure where each node has exactly one parent, `Box<T>` is the
+  appropriate choice. `Box` provides unique ownership with minimal overhead—no
+  reference counting is needed since each child is owned by exactly one parent.
+  The ownership hierarchy is clear: the parent owns its children, and when the
+  parent is dropped, the children are automatically dropped in a predictable
+  order.
+
+  **Scenario 2: Graph with Multiple Parents → `Rc<Node>`**
+
+  For a graph where nodes can have multiple parents (shared ownership), `Rc<T>`
+  (Reference Counted) is required. `Rc` allows multiple owners to point to the
+  same data through reference counting. The shared node remains alive as long as
+  at least one `Rc` pointer to it exists. When creating the shared node, you use
+  `Rc::new(Node {...})`, and then clone the `Rc` pointer (not the data) with
+  `Rc::clone(&shared)` for each parent that needs to reference it.
+
+  **Why Other Options Don't Work:**
+
+  - `Vec<Node>` would attempt to store nodes by value directly in the vector,
+  which creates a recursive type with infinite size (a node contains a vector of
+  nodes, which contain vectors of nodes, etc.).
+  - `Arc<T>` is for thread-safe shared ownership with atomic reference counting.
+  For single-threaded scenarios, `Rc<T>` is more efficient as it avoids atomic
+  operation overhead.
+  - `Box<T>` cannot be cloned, so it cannot support multiple parents pointing to
+  the same node.
+
+  The key takeaway is to use `Box<T>` for unique ownership with heap allocation
+  (trees, linked lists) and `Rc<T>` for shared ownership in single-threaded
+  contexts (graphs, shared data structures).

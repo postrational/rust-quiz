@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+
+  fn main() {
+      let data = Rc::new(vec![1, 2, 3]);
+      let clone1 = Rc::clone(&data);
+      let clone2 = data.clone();
+      println!("{:?} {:?} {:?}", data, clone1, clone2);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- '[1, 2, 3] [1, 2, 3] [1, 2, 3]'
+- 'Compilation error: cannot clone `Rc<Vec<i32>>`'
+- 'Runtime panic: multiple ownership detected'
+- 'Compilation error: ambiguous method call `clone`'
+correct_answer: 0
+expected_output:
+- '[1, 2, 3] [1, 2, 3] [1, 2, 3]'
+explanation: |-
+  This question tests understanding of `Rc<T>` (Reference Counted smart pointer)
+  and its cloning behavior in Rust. `Rc<T>` is designed to enable multiple
+  ownership of the same data by maintaining a reference count.
+
+  The code successfully compiles and runs, printing `[1, 2, 3]` three times. Both
+  `Rc::clone(&data)` and `data.clone()` are valid ways to create new `Rc` pointers
+  to the same underlying data. Each clone operation increments the reference count
+  without duplicating the actual vector data.
+
+  The key distinction is that `Rc::clone()` performs a shallow clone—it creates a
+  new `Rc` pointer but doesn't clone the inner data. This is different from
+  cloning the inner `Vec<i32>` itself, which would create a deep copy. Both the
+  explicit `Rc::clone(&data)` syntax and the method call `data.clone()` achieve
+  the same result for `Rc` types.
+
+  The important takeaway is that `Rc<T>` enables shared ownership through
+  reference counting, and cloning an `Rc` is a cheap operation that only
+  increments a counter. All three variables (`data`, `clone1`, `clone2`) are valid
+  `Rc<Vec<i32>>` instances pointing to the same underlying vector, and when
+  printed, they all display the same contents.

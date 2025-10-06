@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut vec = vec![1, 2, 3];
+      let first = &vec[0];
+      vec.push(4);
+      println!("{}", first);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "1" successfully
+- 'Compilation error: cannot borrow `vec` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: index out of bounds'
+- 'Compilation error: lifetime of `first` is too short'
+correct_answer: 1
+expected_output:
+- cannot borrow `vec` as mutable because it is also borrowed as immutable
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and how they prevent
+  data races and use-after-free errors at compile time.
+
+  The code creates a mutable vector and then takes an immutable reference to its
+  first element with `let first = &vec[0]`. This immutable borrow remains active
+  until `first` is last used (in the `println!` statement). When `vec.push(4)` is
+  called, it attempts to mutably borrow the vector, but Rust's borrow checker
+  prevents this because an immutable reference (`first`) is still active.
+
+  Rust enforces that you cannot have a mutable reference while any immutable
+  references exist to the same data. This rule prevents a critical safety issue:
+  the `push` operation could cause the vector to reallocate its internal buffer if
+  capacity is exceeded, which would invalidate the memory address that `first`
+  points to, creating a dangling pointer.
+
+  The key takeaway is that Rust's borrow checker statically prevents potential
+  memory safety issues by ensuring that mutable and immutable borrows cannot
+  coexist. This compile-time check eliminates entire classes of bugs that would be
+  runtime errors or undefined behavior in other languages.

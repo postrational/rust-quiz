@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
+      
+      let r1 = &s;
+      let r2 = &s;
+      
+      s.push_str(" world");
+      
+      println!("{} {}", r1, r2);
+  }
+  ```
+
+  What happens?
+answers:
+- Prints "hello world hello world"
+- 'Compiler error: cannot borrow `s` as mutable because it is also borrowed as immutable'
+- Prints "hello hello"
+- Runtime panic due to invalid references
+correct_answer: 1
+expected_output:
+- 'error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's fundamental borrowing rules and the
+  borrow checker. Rust enforces that you can have either multiple immutable
+  borrows or one mutable borrow, but not both simultaneously.
+
+  In this code, `r1` and `r2` are immutable borrows of `s`. When `s.push_str("
+  world")` is called, it requires a mutable borrow of `s` (since `push_str` has
+  the signature `fn push_str(&mut self, string: &str)`). However, the immutable
+  borrows `r1` and `r2` are still active because they are used later in the
+  `println!` statement.
+
+  The borrow checker prevents this code from compiling because allowing a mutable
+  borrow while immutable borrows exist could lead to data races and undefined
+  behavior. The immutable references expect the data they point to to remain
+  unchanged, but the mutable operation would violate that guarantee.
+
+  With Non-Lexical Lifetimes (NLL), the compiler is smart enough to determine when
+  borrows are actually used. If `r1` and `r2` were not used after the mutation,
+  the code would compile because their lifetimes would end before the mutable
+  borrow. However, since they are used in the `println!` after the mutation
+  attempt, the compilation fails.
+
+  The key takeaway is that Rust's borrow checker enforces memory safety at compile
+  time by preventing simultaneous mutable and immutable access to the same data,
+  eliminating entire classes of bugs that plague other systems programming
+  languages.

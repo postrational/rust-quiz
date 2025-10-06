@@ -1,0 +1,68 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::cell::RefCell;
+
+  struct Node {
+      value: i32,
+      parent: Option<Rc<RefCell<Node>>>,
+      children: Vec<Rc<RefCell<Node>>>,
+  }
+
+  fn main() {
+      let parent = Rc::new(RefCell::new(Node {
+          value: 1,
+          parent: None,
+          children: Vec::new(),
+      }));
+      
+      let child = Rc::new(RefCell::new(Node {
+          value: 2,
+          parent: Some(Rc::clone(&parent)),
+          children: Vec::new(),
+      }));
+      
+      parent.borrow_mut().children.push(Rc::clone(&child));
+      
+      drop(parent);
+      drop(child);
+      
+      println!("Dropped successfully");
+  }
+  ```
+
+  What will this code output?
+answers:
+- Dropped successfully - no memory leak
+- Dropped successfully - but there's a memory leak
+- Runtime panic during drop
+- Compilation error
+correct_answer: 1
+expected_output:
+- Dropped successfully
+explanation: |-
+  This question tests understanding of reference cycles with `Rc` and how they
+  cause memory leaks in Rust.
+
+  The code creates a reference cycle between parent and child nodes. The parent
+  node holds a strong `Rc` reference to the child through its `children` vector,
+  and the child holds a strong `Rc` reference back to the parent through its
+  `parent` field. This creates a circular reference pattern.
+
+  When `drop(parent)` and `drop(child)` are called, only the local variables are
+  dropped, decrementing the reference counts. However, the reference counts don't
+  reach zero:
+  - The parent node still has 1 reference from `child.parent`
+  - The child node still has 1 reference from `parent.children`
+
+  Since `Rc` uses reference counting for memory management and both nodes still
+  have non-zero reference counts, neither can be deallocated. The program
+  successfully prints "Dropped successfully" because dropping the local variables
+  succeeds without panicking, but the actual `Node` structs remain in memory,
+  creating a memory leak.
+
+  The key takeaway is that `Rc` cannot automatically handle reference cycles. When
+  designing data structures with potential cycles (like trees with parent
+  pointers), use `Weak` references for back-pointers to break the cycle. The
+  parent field should be `Option<Weak<RefCell<Node>>>` instead of
+  `Option<Rc<RefCell<Node>>>` to allow proper cleanup.

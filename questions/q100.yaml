@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn main() {
+      let nums = vec![1, 2, 3, 4, 5];
+      
+      let result: Vec<_> = nums.iter()
+          .scan(0, |state, &x| {
+              *state += x;
+              Some(*state)
+          })
+          .filter(|&sum| sum % 2 == 0)
+          .map(|x| x * 2)
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[4, 12, 20]'
+- '[2, 6, 10]'
+- '[6, 20]'
+- '[12, 20]'
+correct_answer: 3
+expected_output:
+- '[12, 20]'
+explanation: |-
+  This question tests understanding of iterator method chains in Rust,
+  specifically the `scan`, `filter`, and `map` adapters.
+
+  The `scan` method is similar to `fold`, but it yields intermediate values.
+  Starting with state `0`, it accumulates a running sum: 1, 3, 6, 10, 15.
+
+  The `filter` method then keeps only the even values from this sequence: 6 and
+  10.
+
+  Finally, `map` doubles each remaining value: 6 * 2 = 12 and 10 * 2 = 20.
+
+  The key takeaway is understanding how iterator adapters compose: each adapter
+  transforms the stream of values independently and in sequence. The `scan`
+  adapter is particularly useful for maintaining state across iterations while
+  producing intermediate results, unlike `fold` which only produces a final
+  result.

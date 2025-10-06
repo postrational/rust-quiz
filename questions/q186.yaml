@@ -1,0 +1,57 @@
+question: |-
+  ```rust
+  use std::collections::BinaryHeap;
+  use std::cmp::Reverse;
+
+  fn main() {
+      let mut heap = BinaryHeap::new();
+      heap.push(Reverse(5));
+      heap.push(Reverse(1));
+      heap.push(Reverse(3));
+      heap.push(Reverse(7));
+      
+      println!("Peek: {:?}", heap.peek());
+      
+      let mut results = Vec::new();
+      while let Some(Reverse(value)) = heap.pop() {
+          results.push(value);
+      }
+      
+      println!("Popped in order: {:?}", results);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Compilation error: BinaryHeap cannot store Reverse wrapper types'
+- 'Prints `Peek: Some(Reverse(7))` then `Popped in order: [7, 5, 3, 1]`'
+- 'Prints `Peek: Some(Reverse(1))` then `Popped in order: [1, 3, 5, 7]`'
+- 'Runtime panic: Reverse type cannot be compared in BinaryHeap'
+correct_answer: 2
+expected_output:
+- 'Peek: Some(Reverse(1))'
+- 'Popped in order: [1, 3, 5, 7]'
+explanation: |-
+  This question tests understanding of BinaryHeap behavior and how the Reverse
+  wrapper type affects ordering in Rust's standard library collections.
+
+  By default, BinaryHeap is a max-heap, meaning it keeps the largest element at
+  the top. When you call peek() or pop(), you get the maximum value. Without any
+  wrapper, pushing values 5, 1, 3, and 7 would result in 7 being at the top, and
+  popping would yield elements in descending order: [7, 5, 3, 1].
+
+  The Reverse<T> wrapper inverts the comparison order of the wrapped type. When
+  BinaryHeap compares Reverse(1) and Reverse(5), the comparison is inverted:
+  Reverse(1) is considered "greater than" Reverse(5) because 1 < 5 in normal
+  ordering. This effectively converts the max-heap into a min-heap.
+
+  As elements are pushed wrapped in Reverse, the heap maintains the smallest value
+  at the top. After pushing Reverse(5), Reverse(1), Reverse(3), and Reverse(7),
+  the peek() method returns Some(Reverse(1)) because 1 is the minimum value. When
+  popping all elements, they come out in ascending order: [1, 3, 5, 7].
+
+  The key takeaway is that Reverse<T> is a standard library utility that inverts
+  ordering without requiring custom comparison implementations. This pattern is
+  commonly used to convert BinaryHeap into a min-heap for algorithms like
+  Dijkstra's shortest path, task scheduling by priority, or any scenario requiring
+  efficient access to the minimum element.

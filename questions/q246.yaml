@@ -1,0 +1,76 @@
+question: |-
+  ```rust
+  use std::fmt::Debug;
+
+  // Approach 1: Generic with trait bounds
+  fn process_items_generic<T: Clone + Debug>(items: &[T]) {
+      for item in items {
+          let cloned = item.clone();
+          println!("{:?}", cloned);
+      }
+  }
+
+  // Approach 2: Trait objects
+  fn process_items_dynamic(items: &[&dyn Debug]) {
+      for item in items {
+          println!("{:?}", item);
+      }
+  }
+
+  fn main() {
+      let numbers = vec![1, 2, 3, 4, 5];
+      let strings = vec!["a".to_string(), "b".to_string()];
+      
+      process_items_generic(&numbers);
+      process_items_generic(&strings);
+      
+      let num = 42;
+      let text = "hello".to_string();
+      let mixed: Vec<&dyn Debug> = vec![&num, &text];
+      process_items_dynamic(&mixed);
+  }
+  ```
+
+  What's the main performance difference between these approaches?
+answers:
+- Generic version is slower due to code bloat from monomorphization
+- Trait object version is slower due to dynamic dispatch overhead
+- Both approaches have identical performance characteristics
+- Trait objects are faster because they avoid template instantiation
+correct_answer: 1
+expected_output:
+- '1'
+- '2'
+- '3'
+- '4'
+- '5'
+- '"a"'
+- '"b"'
+- '42'
+- '"hello"'
+explanation: |-
+  This question tests understanding of the performance trade-offs between static
+  dispatch (generics with trait bounds) and dynamic dispatch (trait objects) in
+  Rust.
+
+  The generic approach uses static dispatch, where the compiler performs
+  monomorphization by generating separate copies of the function for each concrete
+  type used (i32, String, etc.). Method calls like `clone()` and the Debug
+  formatting are resolved at compile time, resulting in direct function calls with
+  no runtime overhead. While this increases binary size due to multiple function
+  copies, it provides optimal runtime performance.
+
+  The trait object approach uses dynamic dispatch, where method calls are resolved
+  at runtime through a vtable (virtual method table). Each method invocation
+  requires an indirect lookup through the vtable to find the correct
+  implementation, adding runtime overhead to every call. This approach results in
+  smaller binary size since only one function exists, but at the cost of slower
+  execution.
+
+  The key takeaway is that generics provide faster runtime performance through
+  compile-time resolution, while trait objects offer flexibility to work with
+  heterogeneous collections at the cost of dynamic dispatch overhead. The choice
+  between them depends on whether you need runtime polymorphism (working with
+  different types in the same collection) or can determine types at compile time.
+  In practice, the performance difference may be negligible for many applications,
+  but it becomes significant in performance-critical code with many method calls.

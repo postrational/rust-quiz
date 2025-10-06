@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  use std::mem;
+
+  struct Test {
+      data: String,
+  }
+
+  impl Drop for Test {
+      fn drop(&mut self) {
+          println!("Dropping: {}", self.data);
+      }
+  }
+
+  fn main() {
+      let t1 = Test { data: "first".to_string() };
+      let t2 = Test { data: "second".to_string() };
+      
+      mem::forget(t1);
+      
+      println!("End of main");
+  }
+  ```
+
+  What will this code print?
+answers:
+- 'Dropping: first, Dropping: second, End of main'
+- 'End of main, Dropping: second'
+- 'End of main, Dropping: first, Dropping: second'
+- 'End of main, Dropping: second, Dropping: first'
+correct_answer: 1
+expected_output:
+- End of main
+- 'Dropping: second'
+explanation: |-
+  This question tests understanding of `mem::forget` and Rust's drop semantics.
+  The `mem::forget` function prevents a value's destructor from running,
+  effectively leaking the memory without executing cleanup code.
+
+  In this code, two `Test` instances are created with custom `Drop`
+  implementations. When `mem::forget(t1)` is called, it tells Rust to skip running
+  the destructor for `t1`, meaning "Dropping: first" will never be printed. The
+  `t1` instance is leaked but no cleanup occurs.
+
+  After "End of main" prints, the program reaches the end of the `main` function
+  scope. At this point, `t2` goes out of scope normally and its destructor runs,
+  printing "Dropping: second". However, `t1`'s destructor never runs because it
+  was forgotten.
+
+  The key takeaway is that `mem::forget` is used in advanced scenarios (often in
+  unsafe code) when you need to prevent destructors from running, typically when
+  transferring ownership to another system. However, it should be used carefully
+  as it can lead to memory leaks if not properly managed.

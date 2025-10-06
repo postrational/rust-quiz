@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  mod grandparent {
+      pub mod parent {
+          pub(in crate::grandparent) fn family_secret() -> i32 { 42 }
+          pub(super) fn parent_only() -> i32 { 24 }
+          
+          pub mod child {
+              pub fn test() {
+                  println!("{}", super::family_secret());
+                  println!("{}", super::parent_only());
+              }
+          }
+      }
+      
+      pub fn access_test() {
+          parent::family_secret();
+          parent::parent_only(); // This line
+      }
+  }
+
+  fn main() {
+      grandparent::access_test();
+      grandparent::parent::child::test();
+  }
+  ```
+
+  What happens at the marked line when this code compiles?
+answers:
+- Compiles successfully - `pub(super)` allows access from grandparent
+- Fails because `parent_only` is not visible to grandparent
+- Fails because `pub(super)` syntax is invalid
+- Fails because you cannot combine `pub(super)` and `pub(in path)`
+correct_answer: 0
+expected_output:
+- '42'
+- '24'
+- '42'
+- '24'
+explanation: |-
+  This question tests understanding of Rust's restricted visibility modifiers,
+  specifically `pub(super)` and `pub(in path)`.
+
+  The key to understanding this code is knowing what each visibility modifier
+  means:
+
+  - `pub(in crate::grandparent)` on `family_secret()` makes it visible anywhere
+  within the `grandparent` module and all its descendants. This means both
+  `grandparent::access_test()` and `grandparent::parent::child::test()` can access
+  it.
+
+  - `pub(super)` on `parent_only()` makes it visible to the parent module of where
+  it's declared. Since `parent_only()` is declared in the `parent` module, `super`
+  refers to `parent`'s parent module, which is `grandparent`. Therefore,
+  `grandparent::access_test()` can access it.
+
+  Both functions are successfully called from `grandparent::access_test()`
+  because:
+  1. `family_secret()` is explicitly scoped to be visible within
+  `crate::grandparent`
+  2. `parent_only()` is visible to `grandparent` because `grandparent` is the
+  super (parent) module of `parent`
+
+  The code compiles and runs successfully. The `child::test()` function can also
+  access both functions because it's within the `parent` module scope where both
+  are visible.
+
+  The key takeaway is that `pub(super)` makes an item visible to the direct parent
+  module of the module where it's declared, and you can use multiple different
+  restricted visibility modifiers within the same module without conflict.

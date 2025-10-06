@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![vec![1, 2], vec![], vec![3], vec![4, 5]];
+      
+      let result: Vec<_> = data.iter()
+          .filter(|v| !v.is_empty())
+          .flatten()
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[1, 2, 3, 4, 5]'
+- '[[1, 2], [3], [4, 5]]'
+- Compilation error - can't flatten after filter
+- '[1, 2, 4, 5]'
+correct_answer: 0
+expected_output:
+- '[1, 2, 3, 4, 5]'
+explanation: |-
+  This question tests understanding of iterator combinators, specifically `filter`
+  and `flatten` working together.
+
+  The code starts with a vector of vectors containing integers. The `iter()`
+  method creates an iterator over references to the inner vectors. The `filter(|v|
+  !v.is_empty())` removes any empty vectors from the iteration, leaving only
+  `vec![1, 2]`, `vec![3]`, and `vec![4, 5]`.
+
+  The `flatten()` method then flattens the iterator by one level. Since we're
+  iterating over references to vectors (`&Vec<i32>`), `flatten()` produces an
+  iterator over references to the integers contained within those vectors. This
+  results in the sequence `&1, &2, &3, &4, &5`.
+
+  Finally, `collect()` gathers these references into a `Vec<&i32>`, which when
+  printed with `{:?}` displays as `[1, 2, 3, 4, 5]` (the debug formatter
+  dereferences the values for display).
+
+  The key takeaway is that `filter` and `flatten` can be chained together on
+  iterators. The `filter` operates on the outer level (filtering vectors), while
+  `flatten` operates to unwrap one level of nesting, producing an iterator over
+  the inner elements.

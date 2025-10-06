@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![10, 20, 30];
+      let slice = &data[1..];
+      drop(data);
+      println!("{:?}", slice);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '[20, 30]'
+- 'Compilation error: `data` does not live long enough'
+- 'Runtime panic: use after free'
+- 'Compilation error: cannot move out of `data` because it is borrowed'
+correct_answer: 3
+expected_output:
+- 'error[E0505]: cannot move out of `data` because it is borrowed'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the interaction
+  between references and explicit drops. When a value is borrowed, Rust enforces
+  that the value cannot be moved or dropped while the borrow is still active.
+
+  In this code, `slice` is created as a reference to part of `data` (specifically
+  `&data[1..]`). This creates a borrow of `data` that must remain valid for as
+  long as `slice` exists. When `drop(data)` is called, it attempts to move `data`
+  and consume it, which would invalidate the reference held by `slice`.
+
+  The Rust compiler detects this violation at compile time and produces an error
+  indicating that `data` cannot be moved because it is borrowed. The borrow
+  checker tracks that `slice` holds a reference to `data`, and that reference is
+  still in scope when `drop(data)` is called (since `slice` is used later in the
+  `println!` statement).
+
+  The key takeaway is that Rust's ownership system prevents use-after-free errors
+  at compile time by ensuring that borrowed data cannot be moved or dropped while
+  references to it are still active. This is a fundamental safety guarantee that
+  distinguishes Rust from languages with manual memory management.

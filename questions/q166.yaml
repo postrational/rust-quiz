@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = "🦀 Rust 🚀";
+      
+      println!("Length: {}", s.len());
+      println!("Char count: {}", s.chars().count());
+      
+      let truncated = &s[0..4];
+      println!("First 4 bytes: '{}'", truncated);
+  }
+  ```
+
+  What does this code output?
+answers:
+- "Length: 11, Char count: 9, First 4 bytes: '🦀 R'"
+- "Length: 14, Char count: 8, First 4 bytes: '🦀'"
+- 'Length: 14, Char count: 8, Runtime panic on slice operation'
+- 'Compilation error: cannot slice string with byte indices'
+correct_answer: 1
+expected_output:
+- 'Length: 14'
+- 'Char count: 8'
+- "First 4 bytes: '🦀'"
+explanation: |-
+  This question tests understanding of UTF-8 encoding and string slicing in Rust.
+
+  The string "🦀 Rust 🚀" is encoded in UTF-8 where different characters take
+  different numbers of bytes. The crab emoji (🦀) takes 4 bytes, the rocket emoji
+  (🚀) takes 4 bytes, ASCII letters and spaces each take 1 byte. The breakdown is:
+  🦀 (4 bytes) + space (1 byte) + R (1 byte) + u (1 byte) + s (1 byte) + t (1 byte)
+  + space (1 byte) + 🚀 (4 bytes) = 14 bytes total, but only 8 Unicode characters.
+
+  The `len()` method returns the byte length (14), while `chars().count()` returns
+  the number of Unicode scalar values (8 characters).
+
+  The slice operation `&s[0..4]` takes the first 4 bytes of the string. Since the
+  crab emoji is exactly 4 bytes and occupies bytes 0-3, slicing at `[0..4]`
+  captures exactly the crab emoji. This is a valid slice because byte index 4 is
+  at a character boundary (the start of the space character after the emoji).
+
+  The key takeaway is that string slicing in Rust uses byte indices, not character
+  indices, and must occur at valid UTF-8 character boundaries. When working with
+  multi-byte Unicode characters, you need to be careful that slice indices align
+  with character boundaries to avoid runtime panics.

@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let map1 = HashMap::from([("a", 1), ("b", 2)]);
+      let map2 = HashMap::from([("b", 2), ("a", 1)]);
+      
+      println!("{}", map1 == map2);
+  }
+  ```
+
+  What does this program print?
+answers:
+- 'true'
+- 'false'
+- "Compilation error: HashMap doesn't implement PartialEq"
+- The result depends on insertion order
+correct_answer: 0
+expected_output:
+- 'true'
+explanation: |-
+  This question tests understanding of equality comparison for HashMap in Rust.
+  HashMap implements the PartialEq trait, which allows two HashMaps to be compared
+  using the == operator.
+
+  When comparing HashMaps, Rust checks for logical equality based on the key-value
+  pairs they contain, not on their internal storage order or the order in which
+  elements were inserted. Two HashMaps are considered equal if and only if they
+  contain the same set of key-value pairs.
+
+  In this code, both map1 and map2 contain the exact same entries: the key "a"
+  maps to value 1, and the key "b" maps to value 2. Even though the pairs are
+  specified in different orders during construction (map1 has ("a", 1) first while
+  map2 has ("b", 2) first), this doesn't affect equality. The comparison evaluates
+  to true because the logical content is identical.
+
+  The key takeaway is that HashMap equality is content-based, not order-based.
+  This is consistent with the mathematical definition of a map or dictionary as an
+  unordered collection of key-value associations. Insertion order has no bearing
+  on whether two HashMaps are considered equal.

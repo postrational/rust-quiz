@@ -1,0 +1,67 @@
+question: |-
+  ```rust
+  // This represents what a procedural macro might generate
+  // Note: proc_macro is only available in proc-macro crates,
+  // so we're showing a conceptual example here
+
+  // Simulating a derive macro expansion
+  // #[some_derive_macro]
+  struct User {
+      name: String,
+      age: u32,
+  }
+
+  // What the macro might expand to:
+  impl User {
+      fn validate(&self) -> bool {
+          !self.name.is_empty() && self.age > 0
+      }
+  }
+
+  fn main() {
+      let user = User {
+          name: "Alice".to_string(),
+          age: 30,
+      };
+      println!("{}", user.validate());
+  }
+  ```
+
+  What is the key difference between declarative macros (`macro_rules!`) and
+  procedural macros?
+answers:
+- Procedural macros are faster at compile time than declarative macros
+- Declarative macros can only create functions, procedural macros can create any code
+- Procedural macros operate on token streams and can run arbitrary Rust code at compile time
+- Declarative macros are more powerful and can generate more complex code
+correct_answer: 2
+expected_output:
+- 'true'
+explanation: |-
+  This question tests understanding of the fundamental differences between Rust's
+  two macro systems: declarative macros (`macro_rules!`) and procedural macros.
+
+  Declarative macros use a pattern-based matching system with specific syntax
+  rules. They work through template substitution, matching input patterns and
+  expanding them according to predefined rules. While powerful for many use cases,
+  they are limited to pattern matching and cannot execute arbitrary logic during
+  expansion.
+
+  Procedural macros, on the other hand, operate on `TokenStream` - the actual
+  tokens of the input code. They are essentially Rust programs that run at compile
+  time, taking token streams as input and producing token streams as output. This
+  allows them to run arbitrary Rust code during compilation to analyze, transform,
+  and generate code dynamically. Procedural macros come in three types: derive
+  macros (like `#[derive(Debug)]`), attribute macros (like `#[some_attribute]`),
+  and function-like macros.
+
+  The key distinction is that procedural macros can execute arbitrary Rust code at
+  compile time and have full programmatic control over how they process and
+  generate code, while declarative macros are constrained to pattern matching and
+  substitution rules.
+
+  Both macro types can generate any valid Rust code (functions, structs, traits,
+  implementations, etc.), so the difference is not in what they can produce, but
+  in how they process input and generate output. Procedural macros generally
+  require more compile-time work and are not necessarily faster than declarative
+  macros.

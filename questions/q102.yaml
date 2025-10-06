@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  fn divide(a: i32, b: i32) -> Result<i32, String> {
+      if b == 0 {
+          Err("division by zero".to_string())
+      } else {
+          Ok(a / b)
+      }
+  }
+
+  fn calculate() -> Result<i32, String> {
+      let x = divide(10, 2)?;
+      let y = divide(20, x)?;
+      let z = divide(30, 0)?;
+      Ok(x + y + z)
+  }
+
+  fn main() {
+      match calculate() {
+          Ok(n) => println!("Result: {}", n),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Result: 9'
+- 'Error: division by zero'
+- "Compilation error: `?` can't be used in this context"
+- 'Result: 5 (partial calculation before error)'
+correct_answer: 1
+expected_output:
+- 'Error: division by zero'
+explanation: |-
+  This question tests understanding of the `?` operator and error propagation in
+  Rust. The `?` operator provides early return on error, automatically propagating
+  errors up the call stack.
+
+  When the code executes, `divide(10, 2)` returns `Ok(5)`, which the `?` operator
+  unwraps to assign `x = 5`. Then `divide(20, 5)` returns `Ok(4)`, unwrapped to `y
+  = 4`. However, when `divide(30, 0)` is called, it returns `Err("division by
+  zero")`. The `?` operator immediately returns this error from the `calculate()`
+  function, and the line `Ok(x + y + z)` is never reached.
+
+  The `?` operator is syntactic sugar that is equivalent to a match expression: if
+  the result is `Ok(val)`, it unwraps to `val`; if it's `Err(e)`, it immediately
+  returns `Err(e)` from the enclosing function. This operator can only be used in
+  functions that return `Result` or `Option` types.
+
+  The key takeaway is that the `?` operator enables clean error handling by
+  stopping execution at the first error encountered, eliminating the need for
+  nested match statements while maintaining explicit error propagation.

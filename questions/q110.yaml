@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  fn expensive_default() -> i32 {
+      println!("Computing default...");
+      100
+  }
+
+  fn main() {
+      let x: Result<i32, &str> = Ok(42);
+      let y: Result<i32, &str> = Err("failed");
+      
+      let a = x.unwrap_or(expensive_default());
+      let b = y.unwrap_or(expensive_default());
+      
+      let c = x.unwrap_or_else(|_| expensive_default());
+      let d = y.unwrap_or_else(|_| expensive_default());
+      
+      println!("a={}, b={}, c={}, d={}", a, b, c, d);
+  }
+  ```
+
+  How many times does "Computing default..." get printed, and what are the final
+  values?
+answers:
+- 'Printed 2 times: a=42, b=100, c=42, d=100'
+- 'Printed 3 times: a=42, b=100, c=42, d=100'
+- 'Printed 4 times: a=42, b=100, c=42, d=100'
+- 'Printed 1 time: a=42, b=100, c=42, d=100'
+correct_answer: 1
+expected_output:
+- Computing default...
+- Computing default...
+- Computing default...
+- a=42, b=100, c=42, d=100
+explanation: |-
+  This question tests understanding of the difference between eager and lazy
+  evaluation in Rust's `unwrap_or` and `unwrap_or_else` methods.
+
+  The key distinction is that `unwrap_or` takes a value as an argument, which
+  means the argument is evaluated immediately (eagerly) before the method is
+  called, regardless of whether it will be used. In contrast, `unwrap_or_else`
+  takes a closure that is only evaluated (lazily) if the Result is an Err or the
+  Option is None.
+
+  In the execution flow:
+  1. `x.unwrap_or(expensive_default())` - Since `unwrap_or` requires a value,
+  `expensive_default()` is called immediately, printing "Computing default..."
+  even though `x` is `Ok(42)` and the default won't be used. Result: `a=42`.
+  2. `y.unwrap_or(expensive_default())` - Again, `expensive_default()` is called
+  immediately, printing "Computing default..." a second time. Since `y` is `Err`,
+  this default value is actually used. Result: `b=100`.
+  3. `x.unwrap_or_else(|_| expensive_default())` - The closure is only called if
+  needed. Since `x` is `Ok(42)`, the closure never executes, so nothing is
+  printed. Result: `c=42`.
+  4. `y.unwrap_or_else(|_| expensive_default())` - Since `y` is `Err`, the closure
+  is called, printing "Computing default..." a third time. Result: `d=100`.
+
+  The total output shows "Computing default..." printed 3 times, followed by the
+  final values.
+
+  The key takeaway is to use `unwrap_or_else` when the default value is expensive
+  to compute, as it provides lazy evaluation and only computes the default when
+  actually needed. Use `unwrap_or` only for cheap defaults like constants or
+  simple values.

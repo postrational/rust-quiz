@@ -1,0 +1,62 @@
+question: |-
+  ```rust
+  use std::sync::{Arc, Mutex};
+  use std::thread;
+
+  fn main() {
+      let data = Arc::new(Mutex::new(0));
+      let data1 = Arc::clone(&data);
+      let data2 = Arc::clone(&data);
+      
+      let handle1 = thread::spawn(move || {
+          *data1.lock().unwrap() += 10;
+      });
+      
+      let handle2 = thread::spawn(move || {
+          *data2.lock().unwrap() += 20;
+      });
+      
+      handle1.join().unwrap();
+      handle2.join().unwrap();
+      
+      println!("{}", *data.lock().unwrap());
+  }
+  ```
+
+  What does this code print?
+answers:
+- 0, 10, or 20 (non-deterministic)
+- Always 30
+- Compilation error
+- Runtime panic possible
+correct_answer: 1
+expected_output:
+- '30'
+explanation: |-
+  This question tests understanding of the `Arc<Mutex<T>>` pattern, which is the
+  standard approach for sharing mutable data across threads in Rust.
+
+  `Arc` (Atomic Reference Counting) provides thread-safe shared ownership,
+  allowing multiple threads to hold references to the same data. When `Arc::clone`
+  is called, it creates new handles that point to the same underlying data,
+  incrementing the reference count atomically.
+
+  `Mutex` (mutual exclusion) provides interior mutability with thread-safe access
+  control. When a thread calls `lock()`, it acquires exclusive access to the inner
+  value. Other threads attempting to lock will block until the lock is released
+  (which happens automatically when the `MutexGuard` goes out of scope).
+
+  In this code, two threads are spawned, each with their own `Arc` handle to the
+  same `Mutex<i32>`. Thread 1 locks the mutex, adds 10, and releases the lock.
+  Thread 2 locks the mutex, adds 20, and releases the lock. The mutex ensures
+  these operations are serialized—they cannot happen simultaneously. While the
+  order of execution may vary (10 then 20, or 20 then 10), addition is
+  commutative, so the result is the same.
+
+  The `join()` calls ensure both threads complete before the main thread reads the
+  final value. This guarantees that both additions have occurred, resulting in a
+  deterministic output of 30.
+
+  The key takeaway is that `Arc<Mutex<T>>` combines thread-safe shared ownership
+  with synchronized mutable access, making it the idiomatic pattern for shared
+  mutable state in concurrent Rust programs.

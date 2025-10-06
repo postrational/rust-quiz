@@ -1,0 +1,65 @@
+question: |-
+  ```rust
+  use std::path::{Path, PathBuf};
+
+  fn main() {
+      let mut path = PathBuf::from("/home/user");
+      path.push(".."); 
+      path.push("documents");
+      path.push("file.txt");
+      
+      println!("Original: {}", path.display());
+      
+      let canonical_style = path.components()
+          .fold(PathBuf::new(), |mut acc, component| {
+              match component {
+                  std::path::Component::ParentDir => { acc.pop(); }
+                  _ => { acc.push(component); }
+              }
+              acc
+          });
+      
+      println!("Resolved: {}", canonical_style.display());
+  }
+  ```
+
+  What does this code output?
+answers:
+- 'Original: `/home/user/../documents/file.txt`, Resolved: `/home/documents/file.txt`'
+- 'Original: `/home/user/../documents/file.txt`, Resolved: `/home/user/documents/file.txt`'
+- 'Compilation error: cannot match on `Component::ParentDir`'
+- 'Runtime panic: cannot pop from empty path'
+correct_answer: 0
+expected_output:
+- 'Original: /home/user/../documents/file.txt'
+- 'Resolved: /home/documents/file.txt'
+explanation: |-
+  This question tests understanding of path manipulation in Rust and the
+  difference between path construction and path resolution.
+
+  When building a path with `PathBuf::push()`, the method simply appends
+  components without resolving special path elements like `..` (parent directory).
+  This is why the original path displays as `/home/user/../documents/file.txt` -
+  the `..` is preserved as-is in the path structure.
+
+  The manual resolution logic uses `path.components()` to iterate through each
+  path component and implements custom normalization. The fold operation processes
+  each component:
+  1. `RootDir` (`/`) is pushed to the accumulator
+  2. `Normal("home")` is pushed
+  3. `Normal("user")` is pushed
+  4. `ParentDir` (`..`) triggers `acc.pop()`, which removes the last component
+  ("user")
+  5. `Normal("documents")` is pushed
+  6. `Normal("file.txt")` is pushed
+
+  The result is `/home/documents/file.txt`, where the `..` has been resolved by
+  removing the preceding directory component.
+
+  An important detail is that `PathBuf::pop()` is safe to call on an empty path -
+  it simply returns `false` and does nothing, preventing any runtime panic. This
+  makes the manual resolution logic robust.
+
+  The key takeaway is that `PathBuf::push()` performs literal path construction
+  without normalization, while path resolution requires explicit processing of
+  components like `ParentDir` to compute the canonical form.

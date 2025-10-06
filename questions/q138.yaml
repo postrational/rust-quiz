@@ -1,0 +1,76 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel();
+      
+      let tx1 = tx.clone();
+      let tx2 = tx.clone();
+      drop(tx); // Drop original
+      
+      thread::spawn(move || {
+          tx1.send("A").unwrap();
+          drop(tx1);
+      });
+      
+      thread::spawn(move || {
+          tx2.send("B").unwrap();
+          // tx2 NOT explicitly dropped
+      });
+      
+      let mut messages = Vec::new();
+      while let Ok(msg) = rx.recv() {
+          messages.push(msg);
+          if messages.len() >= 2 {
+              break;
+          }
+      }
+      
+      println!("{:?}", messages);
+      println!("Attempting one more recv...");
+      
+      match rx.recv() {
+          Ok(msg) => println!("Got: {}", msg),
+          Err(_) => println!("Channel closed"),
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- '["A", "B"] (or ["B", "A"]), Attempting one more recv..., Channel closed'
+- '["A", "B"] (or ["B", "A"]), Attempting one more recv..., Program hangs forever'
+- '["A"], Attempting one more recv..., Got: B'
+- Compilation error - tx2 not dropped in all code paths
+correct_answer: 0
+expected_output:
+- '["A", "B"]'
+- Attempting one more recv...
+- Channel closed
+explanation: |-
+  This question tests understanding of automatic resource cleanup in Rust threads
+  and how channel sender reference counting works.
+
+  When a thread terminates, all values owned by that thread are automatically
+  dropped. In this code, both spawned threads use `move` closures, which transfer
+  ownership of `tx1` and `tx2` to their respective threads.
+
+  The sequence of events is:
+  1. Three senders initially exist: `tx`, `tx1`, and `tx2`
+  2. `drop(tx)` explicitly drops the original sender, leaving two senders
+  3. Thread 1 sends "A" and explicitly drops `tx1`, leaving one sender
+  4. Thread 2 sends "B" and terminates without explicitly dropping `tx2`
+  5. When thread 2 terminates, `tx2` is automatically dropped as part of thread
+  cleanup
+  6. With all senders dropped, the channel becomes disconnected
+  7. The final `recv()` call returns `Err`, printing "Channel closed"
+
+  The key takeaway is that Rust's ownership system ensures automatic cleanup when
+  threads terminate. Values moved into thread closures are owned by those threads
+  and are automatically dropped when the thread ends, even without explicit
+  `drop()` calls. This automatic cleanup extends to channel senders, where the
+  channel becomes disconnected once all sender clones are dropped, either
+  explicitly or through automatic cleanup. This pattern is commonly used for
+  coordinated shutdown in multi-threaded programs.

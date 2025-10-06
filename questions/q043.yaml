@@ -1,0 +1,69 @@
+question: |-
+  ```rust
+  struct Wrapper<'a>(&'a str);
+
+  fn main() {
+      let long_string = String::from("I live for a long time");
+      let wrapper;
+      
+      {
+          let short_string = String::from("short");
+          let w1 = Wrapper(&long_string);
+          let w2 = Wrapper(&short_string);
+          
+          wrapper = choose_wrapper(w1, w2, true);
+      }
+      
+      println!("{}", wrapper.0);
+  }
+
+  fn choose_wrapper<'a>(w1: Wrapper<'a>, w2: Wrapper<'a>, pick_first: bool) -> Wrapper<'a> {
+      if pick_first { w1 } else { w2 }
+  }
+  ```
+
+  What does this code output?
+answers:
+- I live for a long time
+- short
+- Compilation error - `short_string` doesn't live long enough
+- Compilation error - cannot move out of borrowed content
+correct_answer: 2
+expected_output:
+- error
+- does not live long enough
+explanation: |-
+  This question tests understanding of lifetime constraints and how Rust's borrow
+  checker handles lifetime parameters in function signatures.
+
+  The key issue is that the `choose_wrapper` function signature requires both `w1`
+  and `w2` to have the same lifetime `'a`. When the function is called with
+  `choose_wrapper(w1, w2, true)`, the compiler must unify the lifetimes of both
+  wrappers:
+
+  - `w1` contains a reference to `long_string`, which lives for the entire `main`
+  function
+  - `w2` contains a reference to `short_string`, which only lives until the end of
+  the inner block
+
+  Since both parameters must share the same lifetime `'a`, the compiler constrains
+  `'a` to be the intersection (shorter) of the two lifetimes—the lifetime of
+  `short_string`. This means the return value `Wrapper<'a>` is also constrained to
+  this shorter lifetime.
+
+  The problem arises when trying to assign the result to `wrapper`, which needs to
+  live beyond the inner block to be used in the `println!` statement. Since the
+  returned `Wrapper<'a>` has a lifetime tied to `short_string`, which ends at the
+  closing brace of the inner block, the compiler rejects this code with an error
+  indicating that `short_string` does not live long enough.
+
+  Even though the code picks the first wrapper at runtime (which contains the
+  long-lived reference), the compiler must verify safety at compile time based on
+  the function signature alone. The function signature states that the return type
+  has the same lifetime as both inputs, so the borrow checker conservatively uses
+  the shorter lifetime.
+
+  The key takeaway is that lifetime parameters in function signatures create
+  constraints that apply to all uses of that lifetime, and the compiler will
+  choose the most restrictive (shortest) lifetime that satisfies all constraints.
+  This is a fundamental aspect of how Rust ensures memory safety at compile time.

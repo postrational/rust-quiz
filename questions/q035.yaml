@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  // External crate traits and types (imagine these are from std library)
+  trait Display { fn fmt(&self) -> String; }
+  struct String;
+
+  // Your crate defines:
+  struct MyType;
+  trait MyTrait { fn method(&self); }
+
+  // Which implementations are allowed by the orphan rule?
+  // A: impl Display for MyType {}
+  // B: impl Display for String {}
+  // C: impl MyTrait for String {}
+  // D: impl MyTrait for MyType {}
+  ```
+
+  Which implementations are allowed?
+answers:
+- Only A and D
+- A, C, and D
+- All of them
+- Only D
+correct_answer: 1
+expected_output: []
+explanation: |-
+  This question tests understanding of Rust's orphan rule, which governs where
+  trait implementations can be defined. The orphan rule states that you can
+  implement a trait for a type only if either the trait or the type is defined in
+  your current crate (you "own" at least one of them).
+
+  Let's analyze each implementation:
+
+  **A) `impl Display for MyType`** - Allowed. Although `Display` is from an
+  external crate, you own `MyType`, so this implementation is permitted.
+
+  **B) `impl Display for String`** - Not allowed. Both `Display` and `String` are
+  from external crates. You own neither the trait nor the type, so this violates
+  the orphan rule. This restriction prevents conflicts when multiple crates might
+  try to implement the same external trait for the same external type.
+
+  **C) `impl MyTrait for String`** - Allowed. You own `MyTrait`, so you can
+  implement it for any type, including external types like `String`.
+
+  **D) `impl MyTrait for MyType`** - Allowed. You own both the trait and the type,
+  so this is clearly permitted.
+
+  The key takeaway is that the orphan rule prevents implementation B to avoid
+  potential conflicts across crates. If multiple crates could implement external
+  traits for external types, there would be no way to resolve which implementation
+  should be used. By requiring ownership of at least one component (trait or
+  type), Rust ensures coherence in the trait system.

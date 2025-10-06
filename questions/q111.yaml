@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  fn main() {
+      let opt: Option<i32> = Some(42);
+      let res: Result<i32, &str> = opt.ok_or("missing value");
+      
+      let opt2: Option<i32> = res.ok();
+      
+      println!("{:?}, {:?}", res, opt2);
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok(42), Some(42)
+- Err("missing value"), None
+- 'Compilation error: cannot convert between `Option` and `Result`'
+- Some(42), Ok(42)
+correct_answer: 0
+expected_output:
+- Ok(42), Some(42)
+explanation: |-
+  This question tests understanding of conversion methods between `Option` and
+  `Result` types in Rust.
+
+  The code demonstrates two key conversion methods:
+
+  1. **`ok_or` method**: Converts `Option<T>` to `Result<T, E>`. When called on
+  `Some(42)`, it produces `Ok(42)`. If it had been called on `None`, it would have
+  produced `Err("missing value")` using the provided error value.
+
+  2. **`ok` method**: Converts `Result<T, E>` to `Option<T>`. When called on
+  `Ok(42)`, it produces `Some(42)`. If it had been called on an `Err` variant, it
+  would have produced `None`, discarding the error information.
+
+  The execution flow is:
+  - `opt` starts as `Some(42)`
+  - `opt.ok_or("missing value")` converts it to `Ok(42)` and stores it in `res`
+  - `res.ok()` converts `Ok(42)` back to `Some(42)` and stores it in `opt2`
+  - The print statement outputs both values: `Ok(42), Some(42)`
+
+  The key takeaway is that Rust provides convenient methods to convert between
+  `Option` and `Result` types. The `ok_or` and `ok_or_else` methods convert
+  `Option` to `Result` by providing an error value for the `None` case, while the
+  `ok` method converts `Result` to `Option` by discarding any error information.

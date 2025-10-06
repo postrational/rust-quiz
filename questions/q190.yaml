@@ -1,0 +1,78 @@
+question: |-
+  ```rust
+  use std::collections::BTreeSet;
+
+  #[derive(Debug, PartialEq, Eq)]
+  struct Person {
+      name: String,
+      age: u32,
+  }
+
+  impl PartialOrd for Person {
+      fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+          Some(self.cmp(other))
+      }
+  }
+
+  impl Ord for Person {
+      fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+          self.age.cmp(&other.age)
+              .then_with(|| self.name.cmp(&other.name))
+      }
+  }
+
+  fn main() {
+      let mut people = BTreeSet::new();
+      people.insert(Person { name: "Alice".to_string(), age: 30 });
+      people.insert(Person { name: "Bob".to_string(), age: 25 });
+      people.insert(Person { name: "Charlie".to_string(), age: 25 });
+      people.insert(Person { name: "Alice".to_string(), age: 30 });
+      
+      println!("People count: {}", people.len());
+      for person in &people {
+          println!("{:?}", person);
+      }
+  }
+  ```
+
+  What happens when this code compiles and runs?
+answers:
+- 'Compilation error: Person must implement Hash for BTreeSet'
+- Prints count 4, then all four people in insertion order
+- 'Prints count 3, then people sorted by age, then name: Bob(25), Charlie(25), Alice(30)'
+- 'Runtime panic: duplicate keys not allowed in BTreeSet'
+correct_answer: 2
+expected_output:
+- 'People count: 3'
+- 'Person { name: "Bob", age: 25 }'
+- 'Person { name: "Charlie", age: 25 }'
+- 'Person { name: "Alice", age: 30 }'
+explanation: |-
+  This question tests understanding of BTreeSet ordering and deduplication
+  behavior with custom Ord implementations.
+
+  BTreeSet is an ordered collection that requires types to implement the Ord trait
+  (not Hash like HashSet). It uses comparison-based ordering and automatically
+  maintains elements in sorted order according to the Ord implementation.
+
+  The custom Ord implementation for Person first compares by age, then by name as
+  a tiebreaker using `then_with`. This creates a composite ordering where people
+  are sorted primarily by age (ascending) and secondarily by name
+  (lexicographically).
+
+  When inserting elements, BTreeSet uses the Ord implementation to determine
+  equality. Two elements are considered equal if their comparison returns
+  Ordering::Equal. In this case, the second insertion of Alice(30) is considered a
+  duplicate because it compares equal to the first Alice(30) insertion, so it is
+  not added to the set.
+
+  The final set contains three elements: Bob(25), Charlie(25), and Alice(30). When
+  iterating, BTreeSet yields elements in sorted order according to the Ord
+  implementation. Bob comes first (age 25, name "Bob"), then Charlie (age 25, name
+  "Charlie" which comes after "Bob" lexicographically), and finally Alice (age
+  30).
+
+  The key takeaway is that BTreeSet maintains sorted order based on Ord,
+  automatically deduplicates based on comparison equality, and does not require
+  Hash. This makes it ideal for maintaining sorted collections with custom
+  ordering logic.

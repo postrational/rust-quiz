@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  struct UserId(u32);
+  struct ProductId(u32);
+
+  fn get_user(id: UserId) -> String {
+      format!("User {}", id.0)
+  }
+
+  fn get_product(id: ProductId) -> String {
+      format!("Product {}", id.0)
+  }
+
+  fn main() {
+      let user_id = UserId(123);
+      let product_id = ProductId(456);
+      
+      println!("{}", get_user(product_id));
+      println!("{}", get_product(user_id));
+  }
+  ```
+
+  What compilation error occurs?
+answers:
+- Cannot access field `0` of tuple structs directly
+- '`UserId` and `ProductId` cannot be created without `new()` methods'
+- Type mismatch - cannot pass `ProductId` to function expecting `UserId` and vice versa
+- Tuple structs require explicit field names, not numeric indices
+correct_answer: 2
+expected_output:
+- mismatched types
+explanation: |-
+  This question tests understanding of the newtype pattern and Rust's type safety
+  guarantees. The newtype pattern involves wrapping a primitive or existing type
+  in a tuple struct to create a distinct type that prevents accidental misuse.
+
+  In this code, `UserId` and `ProductId` are both tuple structs wrapping `u32`,
+  but they are completely distinct types in Rust's type system. When the code
+  attempts to pass `product_id` (of type `ProductId`) to `get_user()` which
+  expects `UserId`, and `user_id` (of type `UserId`) to `get_product()` which
+  expects `ProductId`, the compiler rejects these calls with type mismatch errors.
+
+  Even though both types wrap the same underlying `u32` value, Rust treats them as
+  incompatible types. This is the core benefit of the newtype pattern: it provides
+  compile-time type safety to prevent logical errors, such as accidentally using a
+  product ID where a user ID is expected.
+
+  The key takeaway is that the newtype pattern leverages Rust's strong type system
+  to create semantic distinctions between values that might otherwise be
+  represented by the same primitive type. This prevents entire classes of bugs at
+  compile time, making it impossible to accidentally mix up conceptually different
+  identifiers or values.

@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  fn main() {
+      let v = vec!["a", "bb", "ccc", "dddd"];
+      
+      let result: Vec<_> = v.iter()
+          .enumerate()
+          .flat_map(|(i, s)| {
+              std::iter::repeat(i).take(s.len())
+          })
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[0, 1, 1, 2, 2, 2, 3, 3, 3, 3]'
+- '[0, 1, 2, 3]'
+- '["a", "bb", "bb", "ccc", "ccc", "ccc"]'
+- '[1, 2, 3, 4]'
+correct_answer: 0
+expected_output:
+- '[0, 1, 1, 2, 2, 2, 3, 3, 3, 3]'
+explanation: |-
+  This question tests understanding of iterator combinators, specifically
+  `enumerate`, `flat_map`, and `std::iter::repeat`.
+
+  The code processes a vector of strings with varying lengths and creates a new
+  vector where each index is repeated a number of times equal to the length of the
+  string at that index.
+
+  Here's how it works step by step:
+
+  1. `enumerate()` pairs each element with its index: `(0, "a")`, `(1, "bb")`,
+  `(2, "ccc")`, `(3, "dddd")`
+
+  2. For each `(i, s)` pair, `flat_map` creates an iterator that repeats the index
+  `i` exactly `s.len()` times:
+     - `(0, "a")` → `repeat(0).take(1)` → yields `0` once
+     - `(1, "bb")` → `repeat(1).take(2)` → yields `1` twice
+     - `(2, "ccc")` → `repeat(2).take(3)` → yields `2` three times
+     - `(3, "dddd")` → `repeat(3).take(4)` → yields `3` four times
+
+  3. `flat_map` flattens all these iterators into a single sequence: `[0, 1, 1, 2,
+  2, 2, 3, 3, 3, 3]`
+
+  The key concept is that `std::iter::repeat(value)` creates an infinite iterator
+  that yields the same value repeatedly. It must be limited using methods like
+  `take(n)` to produce a finite sequence. The `flat_map` combinator then flattens
+  all these individual iterators into one continuous stream.
+
+  This pattern is useful for frequency-based repetition, expanding run-length
+  encoded data, creating weighted samples, or building histograms where elements
+  need to be repeated based on some property.

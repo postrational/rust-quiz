@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  struct Meters(f64);
+  struct Seconds(f64);
+
+  struct EmptyStruct;
+  struct UnitStruct;
+
+  fn main() {
+      let distance = Meters(100.0);
+      let time = Seconds(10.0);
+      
+      let empty1 = EmptyStruct;
+      let empty2 = EmptyStruct;
+      
+      println!("Size of Meters: {}", std::mem::size_of::<Meters>());
+      println!("Size of EmptyStruct: {}", std::mem::size_of::<EmptyStruct>());
+      println!("Empties equal: {}", std::ptr::eq(&empty1, &empty2));
+  }
+  ```
+
+  What does this program output?
+answers:
+- 'Size of Meters: 8, Size of EmptyStruct: 0, Empties equal: true'
+- 'Size of Meters: 8, Size of EmptyStruct: 0, Empties equal: false'
+- 'Size of Meters: 16, Size of EmptyStruct: 1, Empties equal: false'
+- Compilation fails because empty structs cannot be instantiated
+correct_answer: 0
+expected_output:
+- 'Size of Meters: 8'
+- 'Size of EmptyStruct: 0'
+- 'Empties equal: true'
+explanation: |-
+  This question tests understanding of Zero-Sized Types (ZSTs) in Rust and how
+  they are handled in memory.
+
+  The `Meters` struct is a tuple struct containing a single `f64` field. Since
+  `f64` is 8 bytes on standard platforms, `Meters` also has a size of 8 bytes.
+
+  `EmptyStruct` is a Zero-Sized Type because it contains no fields. ZSTs have a
+  size of 0 bytes since they carry no data. Rust optimizes ZSTs by not allocating
+  any actual memory for them, as they exist purely for type-level information.
+
+  The pointer equality check using `std::ptr::eq(&empty1, &empty2)` compares the
+  memory addresses of the two references. For Zero-Sized Types, Rust's compiler
+  optimizes by having all references to ZST instances point to the same memory
+  address. Since ZSTs occupy no space and carry no data, there's no need to give
+  them distinct addresses. This optimization means that `&empty1` and `&empty2`
+  will have the same address, making the pointer equality check return `true`.
+
+  The key takeaway is that ZSTs are a powerful Rust feature for zero-cost
+  abstractions—they provide type safety and semantic meaning without any runtime
+  memory overhead. References to ZST instances typically share the same address
+  because the compiler can optimize away the need for distinct storage locations
+  when no data needs to be stored.

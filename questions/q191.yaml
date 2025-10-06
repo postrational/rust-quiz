@@ -1,0 +1,75 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+  use std::collections::hash_map::Entry;
+
+  fn main() {
+      let mut cache = HashMap::new();
+      cache.insert("key1", 10);
+      cache.insert("key2", 20);
+      
+      match cache.entry("key1") {
+          Entry::Occupied(mut entry) => {
+              let old_value = entry.insert(100);
+              println!("Replaced {} with {}", old_value, entry.get());
+          }
+          Entry::Vacant(entry) => {
+              entry.insert(50);
+              println!("Inserted new value");
+          }
+      }
+      
+      match cache.entry("key3") {
+          Entry::Occupied(entry) => {
+              println!("Found existing: {}", entry.get());
+          }
+          Entry::Vacant(entry) => {
+              let value = entry.insert(75);
+              println!("Created new entry: {}", value);
+          }
+      }
+      
+      println!("Final cache size: {}", cache.len());
+  }
+  ```
+
+  What will this code output?
+answers:
+- 'Prints "Replaced 10 with 100", "Created new entry: 75", then cache size: 3'
+- 'Compilation error: cannot match on Entry enum variants directly'
+- 'Prints "Inserted new value", "Found existing: 0", then cache size: 3'
+- 'Runtime panic: cannot insert into occupied entry'
+correct_answer: 0
+expected_output:
+- Replaced 10 with 100
+- 'Created new entry: 75'
+- 'Final cache size: 3'
+explanation: |-
+  This question tests understanding of Rust's HashMap Entry API, which provides an
+  efficient way to conditionally insert or update values with a single hash
+  lookup.
+
+  The Entry API returns an enum with two variants: `Entry::Occupied` for existing
+  keys and `Entry::Vacant` for missing keys. This allows type-safe handling of
+  both cases without requiring separate lookups.
+
+  In the first match on "key1", the key exists in the cache with value 10. The
+  `Entry::Occupied` branch executes, and `entry.insert(100)` replaces the existing
+  value. Importantly, `OccupiedEntry::insert()` returns the old value (10) while
+  updating the entry to the new value (100). The call to `entry.get()` then
+  retrieves the newly inserted value (100), printing "Replaced 10 with 100".
+
+  In the second match on "key3", the key does not exist. The `Entry::Vacant`
+  branch executes, and `entry.insert(75)` creates a new entry with value 75.
+  Unlike `OccupiedEntry::insert()`, `VacantEntry::insert()` returns a mutable
+  reference to the newly inserted value, which is then printed as "Created new
+  entry: 75".
+
+  Finally, the cache size is printed showing 3 entries total (key1, key2, and
+  key3).
+
+  The key takeaway is that the Entry API provides efficient, type-safe access to
+  HashMap entries with different behavior for occupied versus vacant entries:
+  `OccupiedEntry::insert()` returns the old value, while `VacantEntry::insert()`
+  returns a reference to the new value. This pattern avoids the need for multiple
+  hash lookups when checking and updating values.

@@ -1,0 +1,75 @@
+question: |-
+  ```rust
+  trait Drawable {
+      fn draw(&self);
+      fn area(&self) -> f64;
+      fn name() -> &'static str;
+      fn clone_box(&self) -> Box<dyn Drawable>;
+  }
+
+  struct Circle {
+      radius: f64,
+  }
+
+  impl Drawable for Circle {
+      fn draw(&self) { println!("Drawing circle"); }
+      fn area(&self) -> f64 { 3.14 * self.radius * self.radius }
+      fn name() -> &'static str { "Circle" }
+      fn clone_box(&self) -> Box<dyn Drawable> { 
+          Box::new(Circle { radius: self.radius }) 
+      }
+  }
+
+  fn main() {
+      let shapes: Vec<Box<dyn Drawable>> = vec![
+          Box::new(Circle { radius: 5.0 })
+      ];
+      
+      for shape in shapes {
+          shape.draw();
+          println!("Area: {}", shape.area());
+          println!("Name: {}", shape.name());
+      }
+  }
+  ```
+
+  What compilation error occurs?
+answers:
+- clone_box method cannot return Box<dyn Drawable>
+- Cannot call name() on trait object because it's not object-safe
+- area() method signature is invalid for trait objects
+- All methods are object-safe, code compiles successfully
+correct_answer: 1
+expected_output:
+- the trait `Drawable` is not dyn compatible
+- because associated function `name` has no `self` parameter
+explanation: |-
+  This question tests understanding of Rust's trait object safety rules, also
+  known as dyn compatibility. For a trait to be dyn compatible and usable as a
+  trait object (like `dyn Drawable`), all its methods must satisfy specific
+  requirements.
+
+  The key dyn compatibility rules are:
+  1. Methods must have a receiver parameter (`&self`, `&mut self`, `Box<Self>`,
+  etc.)
+  2. Methods cannot have generic type parameters
+  3. Methods cannot return `Self` (except in specific cases like `Box<Self>`)
+  4. Methods cannot use `Self` as a parameter type in certain ways
+
+  In this code, the `name()` function violates the first rule—it is an associated
+  function with no receiver parameter. Associated functions cannot be called on
+  trait objects because trait objects use dynamic dispatch based on a `self`
+  reference, and there's no `self` to dispatch on for associated functions.
+
+  When Rust tries to create `Box<dyn Drawable>`, it checks if the `Drawable` trait
+  is dyn compatible. Since `name()` makes the trait not dyn compatible, the
+  compilation fails with an error indicating that the trait is not dyn compatible
+  because the associated function `name` has no `self` parameter.
+
+  The other methods are dyn compatible: `draw(&self)` and `area(&self)` both have
+  `&self` receivers and return concrete types, while `clone_box(&self)` returns
+  `Box<dyn Drawable>` which is allowed. The key takeaway is that traits used as
+  trait objects must only contain methods with `self` receivers, not standalone
+  associated functions. To fix this, you could either add a `&self` parameter to
+  `name()`, or add a `where Self: Sized` bound to exclude it from the trait
+  object's vtable.

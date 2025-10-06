@@ -1,0 +1,61 @@
+question: |-
+  ```rust
+  use std::cell::RefCell;
+  use std::rc::Rc;
+
+  struct Node {
+      value: i32,
+      next: Option<Rc<RefCell<Node>>>,
+  }
+
+  fn main() {
+      let node1 = Rc::new(RefCell::new(Node {
+          value: 1,
+          next: None,
+      }));
+      
+      let node2 = Rc::new(RefCell::new(Node {
+          value: 2,
+          next: Some(Rc::clone(&node1)),
+      }));
+      
+      node1.borrow_mut().next = Some(Rc::clone(&node2));
+      
+      println!("Strong count for node1: {}", Rc::strong_count(&node1));
+      println!("Strong count for node2: {}", Rc::strong_count(&node2));
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Strong count for node1: 1 and Strong count for node2: 1'
+- 'Strong count for node1: 2 and Strong count for node2: 2'
+- 'Compiler error: cannot borrow as mutable'
+- 'Runtime panic: already borrowed'
+correct_answer: 1
+expected_output:
+- 'Strong count for node1: 2'
+- 'Strong count for node2: 2'
+explanation: |-
+  This question tests understanding of reference counting with `Rc` and how
+  reference cycles are created using interior mutability with `RefCell`.
+
+  Initially, `node1` is created with a strong count of 1 (held by the `node1`
+  variable). Then `node2` is created with `next` pointing to `node1`, which clones
+  the `Rc`, increasing `node1`'s strong count to 2. At this point, `node2` has a
+  strong count of 1.
+
+  The key operation is `node1.borrow_mut().next = Some(Rc::clone(&node2))`, which
+  uses `RefCell`'s interior mutability to modify `node1`'s `next` field to point
+  back to `node2`. This clones the `Rc` for `node2`, increasing its strong count
+  to 2.
+
+  The result is a reference cycle: `node1` → `node2` → `node1`. Each node has a
+  strong count of 2 because each is referenced by both its variable binding and by
+  the other node's `next` field.
+
+  The key takeaway is that `Rc` combined with `RefCell` allows creating reference
+  cycles, which can lead to memory leaks since the reference counts will never
+  reach zero. In production code, `Weak` references should be used to break such
+  cycles. This pattern demonstrates why Rust provides `Weak` pointers as part of
+  the `Rc` API for scenarios where cyclic data structures are needed.

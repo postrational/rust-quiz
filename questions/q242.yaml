@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  use std::fmt::Debug;
+
+  fn function1<T: Clone + Debug>(x: T) -> T 
+  where 
+      T: PartialEq,
+  {
+      println!("{:?}", x);
+      x.clone()
+  }
+
+  fn function2<T>(x: T) -> T 
+  where 
+      T: Clone + Debug + PartialEq,
+  {
+      println!("{:?}", x);
+      x.clone()
+  }
+
+  fn main() {
+      let value = String::from("test");
+      function1(value.clone());
+      function2(value);
+  }
+  ```
+
+  What's true about these two functions?
+answers:
+- function1 has more restrictive bounds than function2
+- function2 has more restrictive bounds than function1
+- Both functions have identical trait bounds and behavior
+- function1 will compile but function2 will fail
+correct_answer: 2
+expected_output:
+- '"test"'
+- '"test"'
+explanation: |-
+  This question tests understanding of trait bounds in Rust and how they can be
+  specified using different syntactic forms.
+
+  In Rust, trait bounds can be specified in two places: directly on the generic
+  parameter (e.g., `<T: Clone + Debug>`) or in a `where` clause (e.g., `where T:
+  PartialEq`). When both are used, the bounds are additive—all constraints apply
+  to the type parameter.
+
+  For `function1`, the bounds are split: `T: Clone + Debug` in the generic
+  parameter declaration and `T: PartialEq` in the where clause. Combined, this
+  means `T` must implement `Clone + Debug + PartialEq`.
+
+  For `function2`, all bounds are specified in the where clause: `T: Clone + Debug
+  + PartialEq`.
+
+  Both functions require exactly the same trait bounds on `T`. The difference is
+  purely syntactic. Both functions print the value using `Debug`, clone it using
+  `Clone`, and have `PartialEq` available (though not used in the function
+  bodies).
+
+  The key takeaway is that trait bounds specified in the generic parameter list
+  and in the where clause are combined, making these two functions functionally
+  identical. The where clause syntax is often preferred for complex bounds as it
+  improves readability, especially when dealing with multiple type parameters or
+  complex constraints.

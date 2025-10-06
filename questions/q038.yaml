@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  fn main() {
+      let string1 = String::from("long string");
+      let result;
+      {
+          let string2 = String::from("xyz");
+          result = longest(string1.as_str(), string2.as_str());
+      }
+      println!("{}", result);
+  }
+
+  fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+      if x.len() > y.len() {
+          x
+      } else {
+          y
+      }
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Prints `long string`
+- Prints `xyz`
+- Compilation error - `string2` does not live long enough
+- Runtime panic
+correct_answer: 2
+expected_output:
+- error
+- does not live long enough
+explanation: |-
+  This question tests understanding of lifetime annotations and borrow checker
+  analysis. The lifetime parameter `'a` in the `longest` function signature
+  indicates that the returned reference will be valid for the lifetime that is the
+  shorter of the two input references.
+
+  When `longest` is called with references to both `string1` and `string2`, the
+  borrow checker must ensure that `result` (which holds the returned reference)
+  doesn't outlive either of the input strings. Since `string2` is dropped at the
+  end of the inner scope but `result` is used after that scope, the compiler
+  detects a potential use-after-free scenario.
+
+  Even though at runtime the function would return a reference to `string1` (which
+  does live long enough), the compiler cannot know this at compile time. The
+  borrow checker must be conservative and assume the worst case - that the
+  returned reference could be to `string2`. Therefore, it requires that both input
+  references live at least as long as the returned reference will be used.
+
+  The key takeaway is that lifetime annotations describe relationships between
+  references, and the borrow checker enforces these relationships conservatively
+  at compile time. The lifetime `'a` means the return value cannot outlive the
+  shorter of the two input lifetimes, preventing this code from compiling when
+  `result` is used after `string2` goes out of scope.

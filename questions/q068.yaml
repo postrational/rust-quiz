@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  trait Cloneable {
+      fn clone_box(&self) -> Box<dyn Cloneable>;
+  }
+
+  impl<T: Clone + 'static> Cloneable for T {
+      fn clone_box(&self) -> Box<dyn Cloneable> {
+          Box::new(self.clone())
+      }
+  }
+
+  struct Data(i32);
+
+  fn main() {
+      let original: Box<dyn Cloneable> = Box::new(Data(42));
+      let cloned = original.clone_box();
+  }
+  ```
+
+  What's the problem?
+answers:
+- Data doesn't implement Clone
+- Can't implement trait for all types T (violates orphan rule)
+- Trait objects can't have methods that return Self-like types
+- This works fine
+correct_answer: 0
+expected_output:
+- 'error[E0277]: the trait bound `Data: Cloneable` is not satisfied'
+explanation: |-
+  This question tests understanding of blanket trait implementations and their
+  trait bounds. The code defines a `Cloneable` trait with a blanket implementation
+  for all types `T` that satisfy `Clone + 'static`.
+
+  The blanket implementation `impl<T: Clone + 'static> Cloneable for T` means that
+  any type automatically gets the `Cloneable` implementation, but only if that
+  type already implements `Clone`. Since `Data` is defined as `struct Data(i32)`
+  without deriving or implementing `Clone`, it doesn't satisfy the trait bound
+  required by the blanket implementation.
+
+  When attempting to create `Box::new(Data(42))` and assign it to a `Box<dyn
+  Cloneable>`, the compiler checks whether `Data` implements `Cloneable`. Since
+  `Data` doesn't implement `Clone`, it doesn't get the blanket `Cloneable`
+  implementation, causing a compilation error with the message that `Data:
+  Cloneable` is not satisfied (because the underlying requirement `Clone` is not
+  met).
+
+  The fix is to add `#[derive(Clone)]` to the `Data` struct, which would satisfy
+  the trait bound and allow the code to compile successfully.
+
+  This pattern of using `clone_box` that returns `Box<dyn Trait>` instead of
+  `Self` is a common workaround for making trait objects cloneable, since the
+  standard `Clone` trait's `fn clone(&self) -> Self` signature is not object-safe
+  (it requires knowing the size of `Self` at compile time). The key takeaway is
+  that blanket implementations only apply to types that meet all the specified
+  trait bounds.

@@ -1,0 +1,38 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3];
+      let slice1 = &data[..2];
+      let slice2 = &data[1..];
+      println!("{:?} {:?}", slice1, slice2);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '[1, 2] [2, 3]'
+- 'Compilation error: cannot borrow `data` immutably more than once'
+- 'Runtime panic: overlapping slices'
+- 'Compilation error: slice bounds out of range'
+correct_answer: 0
+expected_output:
+- '[1, 2] [2, 3]'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and slice semantics.
+  The key concept is that Rust allows multiple immutable references to the same
+  data simultaneously, even when those references overlap.
+
+  In this code, `slice1` is created with `&data[..2]`, which borrows elements at
+  indices 0 and 1, resulting in `[1, 2]`. Then `slice2` is created with
+  `&data[1..]`, which borrows elements from index 1 to the end, resulting in `[2,
+  3]`. Both slices are immutable references to the underlying vector `data`.
+
+  Rust's borrowing rules permit any number of immutable references to coexist
+  because they cannot modify the data, making them safe to use concurrently. The
+  fact that both slices reference the element at index 1 (the value `2`) is not a
+  problem—overlapping immutable references are allowed.
+
+  The key takeaway is that Rust's borrow checker distinguishes between immutable
+  and mutable borrows. Multiple immutable borrows are safe and allowed, while
+  mutable borrows require exclusive access. This enables safe sharing of data
+  through slices without runtime overhead or the risk of data races.

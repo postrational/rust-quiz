@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert("key", vec![1, 2, 3]);
+      
+      let entry = map.entry("key").or_insert(vec![4, 5, 6]);
+      entry.push(7);
+      
+      println!("{:?}", map.get("key"));
+  }
+  ```
+
+  What is the output of this code?
+answers:
+- Some([1, 2, 3])
+- Some([4, 5, 6, 7])
+- Some([1, 2, 3, 7])
+- Some([1, 2, 3, 4, 5, 6, 7])
+correct_answer: 2
+expected_output:
+- Some([1, 2, 3, 7])
+explanation: |-
+  This question tests understanding of HashMap's entry API and the `or_insert`
+  method. The `entry` API provides an efficient way to work with HashMap entries,
+  allowing you to insert or modify values based on whether a key exists.
+
+  When `map.entry("key").or_insert(vec![4, 5, 6])` is called, the key "key"
+  already exists in the HashMap with the value `vec![1, 2, 3]`. The `or_insert`
+  method only inserts the provided value if the key does not exist. Since the key
+  is already present, `or_insert` returns a mutable reference to the existing
+  value `[1, 2, 3]`, and the `vec![4, 5, 6]` is never inserted.
+
+  The `entry.push(7)` call then modifies the existing vector through this mutable
+  reference, appending 7 to it. This changes the vector from `[1, 2, 3]` to `[1,
+  2, 3, 7]`.
+
+  The key takeaway is that `or_insert` provides conditional insertion: it only
+  inserts when the key is absent, otherwise it returns a mutable reference to the
+  existing value. This pattern is useful for efficiently updating or initializing
+  values in a HashMap without redundant lookups.

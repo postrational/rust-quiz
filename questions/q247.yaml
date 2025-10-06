@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut num = 42;
+      let r1 = &num as *const i32;
+      let r2 = &mut num as *mut i32;
+      
+      unsafe {
+          println!("r1: {}", *r1);
+          *r2 = 13;
+          println!("r1: {}", *r1);
+      }
+      
+      println!("num: {}", num);
+  }
+  ```
+
+  What does this program output?
+answers:
+- 'r1: 42, r1: 13, num: 13'
+- 'r1: 42, r1: 42, num: 13'
+- Compilation fails because you cannot have both const and mut pointers to the same data
+- Runtime panic due to undefined behavior
+correct_answer: 0
+expected_output:
+- 'r1: 42'
+- 'r1: 13'
+- 'num: 13'
+explanation: |-
+  This question tests understanding of raw pointers and unsafe Rust. Raw pointers
+  (`*const T` and `*mut T`) are created using the `as` keyword to cast references
+  into pointers. Unlike references, raw pointers do not enforce Rust's borrowing
+  rules at compile time.
+
+  In this code, two raw pointers are created pointing to the same memory location:
+  `r1` as an immutable raw pointer (`*const i32`) and `r2` as a mutable raw
+  pointer (`*mut i32`). While Rust's safe code would not allow both an immutable
+  and mutable reference to coexist, raw pointers can be created without these
+  restrictions.
+
+  Inside the unsafe block, the code dereferences `r1` to read the initial value
+  (42), then writes 13 through `r2`, and reads again through `r1`. Since both
+  pointers point to the same memory location, the second read through `r1`
+  reflects the updated value (13). Finally, printing `num` shows 13 because the
+  memory was modified through `r2`.
+
+  While this code compiles and runs with predictable output in practice, it's
+  important to note that having aliasing raw pointers (especially mixing const and
+  mut) and performing reads and writes through them can lead to undefined behavior
+  in more complex scenarios. The key takeaway is that raw pointers bypass Rust's
+  safety guarantees, and it's the programmer's responsibility to ensure correct
+  usage within unsafe blocks.

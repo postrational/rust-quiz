@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  use std::collections::LinkedList;
+
+  fn main() {
+      let mut list = LinkedList::new();
+      list.push_back(1);
+      list.push_back(2);
+      list.push_front(0);
+      
+      let mut cursor = list.cursor_front_mut();
+      cursor.move_next();
+      cursor.insert_before(5);
+      
+      println!("After insert_before: {:?}", list);
+      
+      cursor.move_next();
+      let removed = cursor.remove_current();
+      println!("Removed: {:?}", removed);
+      println!("Final list: {:?}", list);
+  }
+  ```
+
+  What will this code output?
+answers:
+- 'Compilation error: LinkedList cursor API is unstable and not available'
+- 'Prints `After insert_before: [0, 5, 1, 2]`, `Removed: Some(1)`, `Final list: [0, 5, 2]`'
+- 'Prints `After insert_before: [5, 0, 1, 2]`, `Removed: Some(2)`, `Final list: [5, 0, 1]`'
+- 'Runtime panic: cursor operations on LinkedList are unsafe'
+correct_answer: 0
+expected_output:
+- 'error[E0658]: use of unstable library feature `linked_list_cursors`'
+explanation: |-
+  This question tests understanding of Rust's feature stability system and the
+  LinkedList cursor API. The LinkedList cursor API (including methods like
+  `cursor_front_mut()`, `move_next()`, `insert_before()`, and `remove_current()`)
+  is currently an unstable feature in Rust, tracked by issue #58533.
+
+  Unstable features are only available in nightly Rust builds and require explicit
+  opt-in using feature gates like `#![feature(linked_list_cursors)]`. When
+  attempting to use unstable features in stable Rust without the appropriate
+  feature gate, the compiler produces an E0658 error indicating that the feature
+  is unstable and not yet available for general use.
+
+  Additionally, even if the cursor API were stable, this code has a borrowing
+  issue: the mutable cursor borrows `list` mutably, but the code attempts to print
+  `list` while the cursor is still in scope and being used afterward, which would
+  violate Rust's borrowing rules.
+
+  The key takeaway is that Rust's stability guarantees mean that unstable APIs
+  require nightly Rust and explicit feature gates. This protects users from
+  relying on APIs that may change or be removed before stabilization.

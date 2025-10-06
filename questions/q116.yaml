@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  fn parse_pair(s: &str) -> Result<(i32, i32), Box<dyn std::error::Error>> {
+      let parts: Vec<&str> = s.split(',').collect();
+      
+      let a = parts.get(0)
+          .ok_or("missing first number")?
+          .trim()
+          .parse::<i32>()?;
+      
+      let b = parts.get(1)
+          .ok_or("missing second number")?
+          .trim()
+          .parse::<i32>()?;
+      
+      Ok((a, b))
+  }
+
+  fn main() {
+      println!("{:?}", parse_pair("10,20"));
+      println!("{:?}", parse_pair("30"));
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok((10, 20)) and Ok((30, 0))
+- Ok((10, 20)) and Err("missing second number")
+- Ok((10, 20)) and panic
+- Two Ok values with parsed integers
+correct_answer: 1
+expected_output:
+- Ok((10, 20))
+- Err("missing second number")
+explanation: |-
+  This question tests understanding of nested error handling with the `?` operator
+  and how it propagates errors through multiple validation steps.
+
+  In the first call `parse_pair("10,20")`, the string splits into `["10", "20"]`.
+  Both `parts.get(0)` and `parts.get(1)` return `Some` values, which are
+  successfully unwrapped by `.ok_or()?`. The trimmed strings are then parsed into
+  integers successfully, resulting in `Ok((10, 20))`.
+
+  In the second call `parse_pair("30")`, the string splits into `["30"]` with only
+  one element. The first number parses successfully: `parts.get(0)` returns
+  `Some("30")`, which is unwrapped and parsed to `30`. However, when parsing the
+  second number, `parts.get(1)` returns `None` because there is no second element
+  in the vector. The `.ok_or("missing second number")?` converts this `None` into
+  `Err("missing second number")`, and the `?` operator immediately returns this
+  error from the function. The subsequent `.trim()` and `.parse()` operations are
+  never reached.
+
+  The key takeaway is that the `?` operator provides early return behavior: as
+  soon as an error is encountered at any step in the chain, the function returns
+  that error immediately. The function also demonstrates automatic error type
+  conversion, where both `&str` errors from `.ok_or()` and `ParseIntError` from
+  `.parse()` are automatically converted into `Box<dyn std::error::Error>` because
+  both implement the `Error` trait. This pattern of chaining validation steps with
+  `?` is common in Rust for handling multi-step parsing and validation logic.

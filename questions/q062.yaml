@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  use std::rc::{Rc, Weak};
+
+  fn main() {
+      let strong = Rc::new(42);
+      let weak = Rc::downgrade(&strong);
+      
+      drop(strong);
+      
+      match weak.upgrade() {
+          Some(value) => println!("Value: {}", value),
+          None => println!("Value was dropped"),
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Value: 42'
+- Value was dropped
+- "Compile error: can't use `weak` after `strong` is dropped"
+- 'Undefined behavior: accessing freed memory'
+correct_answer: 1
+expected_output:
+- Value was dropped
+explanation: |-
+  This question tests understanding of `Weak<T>` pointers and their relationship
+  with `Rc<T>` in Rust's reference counting system.
+
+  When `Rc::new(42)` is called, it creates a reference-counted pointer with a
+  strong count of 1 and weak count of 0. The `Rc::downgrade(&strong)` call creates
+  a `Weak<T>` pointer, which increments the weak count to 1 but does not increment
+  the strong count. This is the crucial distinction: weak references do not keep
+  the value alive.
+
+  When `drop(strong)` is called, the strong count drops to 0. Since there are no
+  more strong references, the value (42) is immediately deallocated, even though a
+  weak reference still exists. The weak reference system is designed to allow
+  references that don't prevent deallocation.
+
+  The `weak.upgrade()` method attempts to convert the weak reference back to a
+  strong reference (`Rc<T>`). It returns `Option<Rc<T>>`: `Some(rc)` if the value
+  still exists (strong count > 0), or `None` if the value has been deallocated.
+  Since the value was dropped, `upgrade()` returns `None`, and the code prints
+  "Value was dropped".
+
+  The key takeaway is that `Weak<T>` pointers are non-owning references that don't
+  prevent deallocation. They're commonly used to break reference cycles (such as
+  parent-child relationships where the parent owns children with `Rc<T>` and
+  children reference the parent with `Weak<T>`). The `upgrade()` method provides
+  safe access by returning `None` rather than allowing access to freed memory,
+  preventing undefined behavior.

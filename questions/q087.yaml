@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  use std::ops::Deref;
+
+  struct LazyInit<T> {
+      value: Option<T>,
+      init_count: usize,
+  }
+
+  impl<T: Default> LazyInit<T> {
+      fn new() -> Self {
+          LazyInit { value: None, init_count: 0 }
+      }
+  }
+
+  impl<T: Default> Deref for LazyInit<T> {
+      type Target = T;
+      
+      fn deref(&self) -> &T {
+          // This won't compile as-is, but what's the fundamental issue?
+          if self.value.is_none() {
+              self.value = Some(T::default());
+              self.init_count += 1;
+          }
+          self.value.as_ref().unwrap()
+      }
+  }
+
+  fn main() {
+      let lazy: LazyInit<String> = LazyInit::new();
+      println!("{}", lazy.len());
+  }
+  ```
+
+  What's the fundamental problem with this code?
+answers:
+- deref() takes &self but we're trying to mutate fields
+- Deref cannot be implemented for generic types
+- T::default() might panic
+- Infinite recursion when calling lazy.len()
+correct_answer: 0
+expected_output:
+- error
+- cannot assign
+explanation: |-
+  This question tests understanding of the `Deref` trait's signature constraints
+  and Rust's mutability rules. The fundamental issue is that the `Deref` trait
+  requires an immutable reference (`&self`) as its receiver, but the
+  implementation attempts to mutate the struct's fields.
+
+  The `Deref` trait is defined as:
+  ```rust
+  fn deref(&self) -> &Self::Target;
+  ```
+
+  The immutable `&self` parameter means you cannot modify any fields of the
+  struct. In the code, the `deref` method attempts to:
+  1. Assign to `self.value` with `self.value = Some(T::default())`
+  2. Increment `self.init_count` with `self.init_count += 1`
+
+  Both operations require mutable access, which violates the immutable borrow.
+  This design is intentional: deref coercion happens transparently in Rust, and
+  allowing side effects from what appears to be a simple read operation would be
+  surprising and error-prone.
+
+  For lazy initialization patterns with `Deref`, you need interior mutability
+  (using `Cell`, `RefCell`, or `OnceCell`) or you should use explicit mutable
+  methods instead of implementing `Deref`. The `OnceCell` type from the standard
+  library is specifically designed for this use case, providing thread-safe lazy
+  initialization while working with immutable references.

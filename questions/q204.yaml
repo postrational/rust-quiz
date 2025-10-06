@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  fn process<T>(value: T) -> T {
+      value
+  }
+
+  fn main() {
+      let x = process(42);
+      let y = process(3.14);
+      let z = process("hello");
+      
+      println!("{}", x);
+      println!("{}", y);
+      println!("{}", z);
+  }
+  ```
+
+  What will this code print?
+answers:
+- 42, 3.14, hello
+- 'Compilation error: type mismatch'
+- 'Compilation error: cannot infer type for T'
+- 42, 3.140000, hello
+correct_answer: 0
+expected_output:
+- '42'
+- '3.14'
+- hello
+explanation: |-
+  This question tests understanding of generic functions and type inference in
+  Rust. The `process` function is a generic function that takes a value of any
+  type `T` and returns it unchanged.
+
+  In Rust, generic functions can be called with different concrete types, and the
+  compiler performs monomorphization - generating a separate version of the
+  function for each concrete type used. The type parameter `T` is inferred from
+  the argument passed to the function.
+
+  In this code:
+  - `process(42)` infers `T` as `i32` (the default integer type)
+  - `process(3.14)` infers `T` as `f64` (the default floating-point type)
+  - `process("hello")` infers `T` as `&str` (string slice type)
+
+  Each call creates a specialized version of the function for that specific type.
+  The values are simply returned and printed using the `Display` trait
+  implementation for each type. The output shows each value printed on its own
+  line: 42, 3.14, and hello.
+
+  The key takeaway is that Rust's generics are resolved at compile time through
+  type inference and monomorphization, allowing the same generic function to work
+  with multiple types while maintaining type safety and zero-cost abstractions.

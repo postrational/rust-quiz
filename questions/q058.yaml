@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  use std::cell::RefCell;
+
+  fn main() {
+      let data = RefCell::new(vec![1, 2, 3]);
+      
+      let borrow1 = data.borrow();
+      let borrow2 = data.borrow();
+      
+      println!("First two borrows: {} {}", borrow1.len(), borrow2.len());
+      
+      drop(borrow1);
+      
+      let mut borrow3 = data.borrow_mut();
+      borrow3.push(4);
+      
+      println!("After mutation: {}", borrow2.len());
+  }
+  ```
+
+  What does this code output?
+answers:
+- 3 3, then 4
+- 3 3, then 3
+- 3 3, then panic
+- Compilation error
+correct_answer: 2
+expected_output:
+- 'First two borrows: 3 3'
+- already borrowed
+explanation: |-
+  This question tests understanding of RefCell's runtime borrow checking
+  mechanism. Unlike Rust's compile-time borrow checker, RefCell enforces borrowing
+  rules at runtime, which means violations result in panics rather than
+  compilation errors.
+
+  The code successfully compiles because RefCell defers borrow checking to
+  runtime. During execution:
+
+  1. `data.borrow()` creates the first immutable borrow (borrow1)
+  2. `data.borrow()` creates a second immutable borrow (borrow2) - this is allowed
+  since multiple immutable borrows can coexist
+  3. The first println executes successfully, printing "First two borrows: 3 3"
+  4. `drop(borrow1)` explicitly drops the first immutable borrow, but borrow2
+  remains active
+  5. `data.borrow_mut()` attempts to create a mutable borrow while borrow2 is
+  still in scope
+
+  The panic occurs at step 5 because RefCell's runtime checks detect a violation
+  of Rust's borrowing rules: you cannot have a mutable borrow while any immutable
+  borrows are still active. The program panics with a message indicating the
+  RefCell is already borrowed before reaching the second println statement.
+
+  The key takeaway is that RefCell provides interior mutability by moving borrow
+  checking from compile-time to runtime. This flexibility comes with the trade-off
+  that borrowing violations cause runtime panics instead of compile-time errors,
+  making RefCell more error-prone and requiring careful management of borrow
+  lifetimes.

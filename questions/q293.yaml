@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::collections::VecDeque;
+
+  fn process_data() -> VecDeque<i32> {
+      let mut deque = VecDeque::new();
+      deque.push_back(10);
+      deque.push_front(5);
+      deque.pop_back();
+      deque
+  }
+
+  fn main() {
+      let result = process_data();
+      println!("{}", result.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '1'
+- '2'
+- '3'
+correct_answer: 1
+expected_output:
+- '1'
+explanation: |-
+  This question tests understanding of VecDeque operations and how push and pop
+  methods work on a double-ended queue.
+
+  A VecDeque (double-ended queue) allows efficient insertion and removal from both
+  ends. Starting with an empty deque, the operations proceed as follows:
+
+  1. `deque.push_back(10)` adds 10 to the back: [10]
+  2. `deque.push_front(5)` adds 5 to the front: [5, 10]
+  3. `deque.pop_back()` removes the element from the back (10): [5]
+
+  After these operations, the deque contains one element (5), so `result.len()`
+  returns 1.
+
+  The key takeaway is understanding how VecDeque maintains elements and how
+  push_front/push_back and pop_front/pop_back operations modify the collection
+  from either end. VecDeque is particularly useful when you need efficient
+  operations at both ends of a collection, unlike Vec which is optimized for
+  operations at only one end.

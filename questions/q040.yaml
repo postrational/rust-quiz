@@ -1,0 +1,69 @@
+question: |-
+  Which function signatures are equivalent after lifetime elision?
+
+  ```rust
+  // Original functions
+  fn func1(x: &str) -> &str { x }
+  fn func2(x: &str, y: &str) -> &str { x }
+  fn func3(x: &str, y: &mut str) -> &str { x }
+  fn func4(&self, x: &str) -> &str { x }
+
+  // Explicit versions
+  fn explicit_a<'a>(x: &'a str) -> &'a str { x }
+  fn explicit_b<'a, 'b>(x: &'a str, y: &'b str) -> &'a str { x }
+  fn explicit_c<'a, 'b>(x: &'a str, y: &'b mut str) -> &'a str { x }
+  fn explicit_d<'a, 'b>(&'a self, x: &'b str) -> &'a str { x }
+
+  fn main() {
+      // Test func1
+      let result1 = func1("test");
+      println!("{}", result1);
+  }
+  ```
+answers:
+- func1 = explicit_a, others don't compile
+- func1 = explicit_a, func4 = explicit_d, others don't compile
+- All functions compile and match their explicit versions
+- Only func1 compiles
+correct_answer: 0
+expected_output:
+- missing lifetime specifier
+- '`self` parameter is only allowed in associated functions'
+explanation: |-
+  This question tests understanding of Rust's lifetime elision rules, which allow
+  the compiler to infer lifetimes in certain situations. The three lifetime
+  elision rules are:
+
+  1. Each input reference parameter gets its own lifetime parameter
+  2. If there is exactly one input lifetime parameter, that lifetime is assigned
+  to all output lifetime parameters
+  3. If there are multiple input lifetime parameters, but one of them is `&self`
+  or `&mut self` (in a method), the lifetime of `self` is assigned to all output
+  lifetime parameters
+
+  **func1** compiles successfully because rule 2 applies: there is exactly one
+  input reference (`&str`), so its lifetime is automatically assigned to the
+  output reference. This is equivalent to `explicit_a`.
+
+  **func2** fails to compile because it has two input references with potentially
+  different lifetimes, and none of the elision rules can determine which lifetime
+  should be used for the output. The compiler cannot infer whether the output
+  should have the lifetime of `x` or `y`. The error message states "missing
+  lifetime specifier" and indicates the return type contains a borrowed value but
+  the signature doesn't specify which input it's borrowed from.
+
+  **func3** also fails to compile for the same reason as func2. Even though one
+  parameter is `&mut str`, there are still two distinct input lifetimes, and the
+  compiler cannot determine which one applies to the output.
+
+  **func4** fails to compile because `&self` is not valid outside of an `impl`
+  block context. The error indicates that "`self` parameter is only allowed in
+  associated functions" (those in `impl` or `trait` definitions). Even if it were
+  in a proper method context, rule 3 would assign `self`'s lifetime to the output,
+  but the function body attempts to return `x`, which would create a lifetime
+  mismatch.
+
+  The key takeaway is that lifetime elision only works when the rules
+  unambiguously determine the output lifetime. When there are multiple input
+  lifetimes and no `&self` parameter in a method context, explicit lifetime
+  annotations are required.

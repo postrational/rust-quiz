@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  use std::num::ParseIntError;
+
+  fn read_number() -> Result<i32, ParseIntError> {
+      "42".parse()
+  }
+
+  fn process() -> Result<i32, String> {
+      let n = read_number()?;
+      Ok(n * 2)
+  }
+
+  fn main() {
+      println!("{:?}", process());
+  }
+  ```
+
+  What happens?
+answers:
+- Prints `Ok(84)`
+- Prints `Err("invalid digit found in string")`
+- 'Compilation error: mismatched error types'
+- 'Compilation error: `?` operator cannot convert between error types'
+correct_answer: 2
+expected_output:
+- "error[E0277]: `?` couldn't convert the error to `String`"
+explanation: |-
+  This question tests understanding of error type conversion with the `?` operator
+  in Rust. The `?` operator provides convenient error propagation, but it requires
+  compatible error types between the called function and the calling function's
+  return type.
+
+  In this code, `read_number()` returns `Result<i32, ParseIntError>`, while
+  `process()` is declared to return `Result<i32, String>`. When the `?` operator
+  is used on the result of `read_number()`, it attempts to propagate a potential
+  `ParseIntError` up to the caller. However, `process()` expects to return errors
+  of type `String`, not `ParseIntError`.
+
+  The `?` operator can automatically convert between error types, but only when
+  there's a `From` implementation that allows converting from the source error
+  type to the target error type. In this case, there is no `From<ParseIntError>`
+  implementation for `String`, so the compiler rejects the code with a type
+  mismatch error.
+
+  To fix this issue, you have several options: manually convert the error using
+  `map_err(|e| e.to_string())`, change `process()` to return the same error type
+  as `read_number()`, or use a trait object like `Box<dyn std::error::Error>` that
+  can accommodate multiple error types. The key takeaway is that the `?` operator
+  requires either matching error types or an available `From` implementation for
+  automatic conversion.

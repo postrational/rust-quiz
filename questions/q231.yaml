@@ -1,0 +1,73 @@
+question: |-
+  ```rust
+  mod outer {
+      pub(crate) mod middle {
+          pub(in crate::outer) struct Config {
+              pub data: String,
+              pub(super) internal: i32,
+          }
+          
+          impl Config {
+              pub fn new() -> Self {
+                  Config {
+                      data: "public".to_string(),
+                      internal: 42,
+                  }
+              }
+          }
+      }
+      
+      use middle::Config;
+      
+      pub fn test() -> i32 {
+          let config = Config::new();
+          config.internal
+      }
+  }
+
+  fn main() {
+      println!("{}", outer::test());
+  }
+  ```
+
+  What happens when this code compiles?
+answers:
+- Compiles successfully because all visibility rules are satisfied
+- Fails because `Config` struct is not accessible from `outer`
+- Fails because `internal` field is not accessible from `outer`
+- Fails because `pub(super)` cannot be used on struct fields
+correct_answer: 0
+expected_output:
+- '42'
+explanation: |-
+  This question tests understanding of Rust's advanced visibility modifiers,
+  specifically `pub(in path)` and `pub(super)`, and how they interact within
+  nested module hierarchies.
+
+  The code demonstrates several visibility rules working together:
+
+  1. **Module `middle`**: Declared as `pub(crate)`, making it accessible anywhere
+  within the crate, including from its parent module `outer`.
+
+  2. **Struct `Config`**: Uses `pub(in crate::outer)`, which restricts visibility
+  to anywhere within the `outer` module and its submodules. Since the `test()`
+  function is directly in `outer`, it can access `Config`.
+
+  3. **Field `data`**: Marked as `pub`, making it fully public and accessible from
+  anywhere the struct itself is accessible.
+
+  4. **Field `internal`**: Uses `pub(super)`, which makes it accessible to the
+  parent module of `middle`. Since `outer` is the parent of `middle`, the `test()`
+  function in `outer` can access this field.
+
+  5. **Method `new()`**: Marked as `pub`, making it fully public.
+
+  When `outer::test()` executes, all visibility requirements are satisfied: the
+  struct is accessible due to `pub(in crate::outer)`, the constructor is public,
+  and the `internal` field is accessible because `pub(super)` grants access to the
+  parent module `outer`. The code compiles successfully and returns the value 42.
+
+  The key takeaway is understanding how `pub(super)` grants visibility to the
+  parent module, and how `pub(in path)` restricts visibility to a specific module
+  subtree. These restricted visibility modifiers provide fine-grained control over
+  API boundaries within a crate.

@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  fn main() {
+      let x = 5;
+      let y = &x;
+      let z = &y;
+      
+      println!("{}", x == **z);
+      println!("{}", &x == *z);
+      println!("{}", &&x == z);
+  }
+  ```
+
+  What is the result of this code?
+answers:
+- true, true, true
+- true, false, false
+- false, true, true
+- Compilation error
+correct_answer: 0
+expected_output:
+- 'true'
+- 'true'
+- 'true'
+explanation: |-
+  This question tests understanding of Rust's reference chains and comparison
+  semantics. The code creates a chain of references where `x` is an `i32` with
+  value `5`, `y` is `&x` (type `&i32`), and `z` is `&y` (type `&&i32`).
+
+  The three comparisons demonstrate different levels of dereferencing:
+
+  1. `x == **z`: This compares the value `5` with `**z`. Dereferencing `z` twice
+  (`**z`) gives us `*(&x)`, which equals `5`. So `5 == 5` is `true`.
+
+  2. `&x == *z`: This compares references. Dereferencing `z` once (`*z`) gives us
+  `y`, which is `&x`. So we're comparing `&x == &x`, which is `true` because they
+  point to the same location.
+
+  3. `&&x == z`: This compares double references. Since `z` is `&y` and `y` is
+  `&x`, we have `z` as `&&x`. The expression `&&x` creates a temporary double
+  reference to `x`, which points to the same location as `z`. Therefore `&&x == z`
+  is `true`.
+
+  The key takeaway is that Rust's `==` operator can compare references at any
+  level of indirection, and references are equal when they point to the same
+  memory location. The compiler handles the appropriate dereferencing and
+  comparison logic automatically.

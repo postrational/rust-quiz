@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  trait MyTrait {
+      fn method(&self) -> Self;
+  }
+
+  struct MyStruct;
+
+  impl MyTrait for MyStruct {
+      fn method(&self) -> Self {
+          MyStruct
+      }
+  }
+
+  fn main() {
+      let s = MyStruct;
+      let _trait_obj: &dyn MyTrait = &s;
+  }
+  ```
+
+  What happens when you try to compile this code?
+answers:
+- The code compiles and runs successfully
+- 'Compilation error: the trait `MyTrait` is not dyn compatible because method `method` references the `Self` type in its return type'
+- 'Compilation error: `MyStruct` does not implement `MyTrait`'
+- Runtime panic occurs when creating the trait object
+correct_answer: 1
+expected_output:
+- the trait `MyTrait` is not dyn compatible
+- because method `method` references the `Self` type in its return type
+explanation: |-
+  This question tests understanding of dyn compatibility (formerly called object
+  safety) in Rust, which determines whether a trait can be used as a trait object
+  (e.g., `&dyn Trait` or `Box<dyn Trait>`).
+
+  For a trait to be dyn compatible, it must satisfy several requirements. One
+  critical requirement is that methods cannot return `Self` by value. The reason
+  is that when using a trait object, the concrete type is erased at runtime—the
+  compiler only knows it's "some type that implements this trait." If a method
+  returns `Self`, the compiler wouldn't know the size of the return value at
+  compile time, making it impossible to generate correct code.
+
+  In this code, the trait `MyTrait` has a method that returns `Self`, which
+  violates dyn compatibility rules. While `MyStruct` correctly implements the
+  trait, the attempt to create a trait object `&dyn MyTrait` fails because the
+  trait itself is not dyn compatible.
+
+  The key takeaway is that dyn compatibility is a property of the trait, not the
+  implementation. Traits with methods that return `Self`, have generic type
+  parameters, or use `Self: Sized` bounds (among other restrictions) cannot be
+  used as trait objects. This is a compile-time check that ensures type safety and
+  prevents runtime errors related to unknown sizes.

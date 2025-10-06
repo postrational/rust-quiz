@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  use std::rc::{Rc, Weak};
+  use std::cell::RefCell;
+
+  fn main() {
+      let strong = Rc::new(RefCell::new(42));
+      let weak: Weak<RefCell<i32>> = Rc::downgrade(&strong);
+      
+      println!("{}", Rc::strong_count(&strong));
+      println!("{}", Rc::weak_count(&strong));
+      
+      drop(strong);
+      
+      match weak.upgrade() {
+          Some(rc) => println!("Still alive: {}", rc.borrow()),
+          None => println!("Gone"),
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- '1, 1, Still alive: 42'
+- 1, 1, Gone
+- 2, 1, Gone
+- 1, 0, Gone
+correct_answer: 1
+expected_output:
+- '1'
+- '1'
+- Gone
+explanation: |-
+  This question tests understanding of weak references in Rust and how they
+  interact with reference counting. Weak references (`Weak<T>`) are non-owning
+  references that don't prevent the data from being deallocated.
+
+  When `Rc::new(RefCell::new(42))` is created, it has a strong count of 1. Calling
+  `Rc::downgrade(&strong)` creates a weak reference without increasing the strong
+  count, but it does increase the weak count to 1. The first two `println!`
+  statements output the strong count (1) and weak count (1).
+
+  When `drop(strong)` is called, the last strong reference is removed, causing the
+  strong count to reach 0. This triggers deallocation of the inner data, even
+  though weak references still exist. Weak references don't keep the data
+  alive—they only track whether the data is still available.
+
+  After the data is dropped, `weak.upgrade()` attempts to promote the weak
+  reference back to a strong reference. Since the data has been deallocated,
+  `upgrade()` returns `None`, and the code prints "Gone".
+
+  The key takeaway is that weak references are useful for breaking reference
+  cycles and for scenarios where you want to access data if it's still alive, but
+  you don't want to prevent its cleanup. Only strong references keep the data
+  alive.

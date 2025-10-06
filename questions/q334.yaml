@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4];
+      let chunks: Vec<Vec<i32>> = data
+          .chunks(2)
+          .map(|chunk| chunk.to_vec())
+          .collect();
+          
+      println!("{}", chunks.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '1'
+- '2'
+- '3'
+- '4'
+correct_answer: 1
+expected_output:
+- '2'
+explanation: |-
+  This question tests understanding of the `chunks` method on slices in Rust. The
+  `chunks(n)` method divides a slice into non-overlapping chunks of size `n`, with
+  the last chunk potentially being smaller if the slice length is not evenly
+  divisible by `n`.
+
+  In this code, `data` is a vector containing `[1, 2, 3, 4]`. Calling `chunks(2)`
+  on this vector divides it into chunks of size 2:
+  - First chunk: `[1, 2]`
+  - Second chunk: `[3, 4]`
+
+  Since the vector has 4 elements and we're chunking by 2, we get exactly 2
+  complete chunks. Each chunk is then converted to a `Vec<i32>` using `to_vec()`
+  and collected into a `Vec<Vec<i32>>`. The `len()` method returns the number of
+  chunks, which is 2.
+
+  The key takeaway is understanding how `chunks` partitions data: it creates
+  non-overlapping segments of the specified size, and the number of chunks equals
+  the ceiling of the total length divided by the chunk size. In this case: `ceil(4
+  / 2) = 2`.

@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("hello");
+      let borrowed = &s;
+      let moved = s;
+      println!("{}", borrowed);
+  }
+  ```
+
+  What does this code output?
+answers:
+- Prints "hello"
+- 'Compilation error: borrow of moved value `s`'
+- 'Runtime panic: use after move'
+- 'Compilation error: cannot move `s` while borrowed'
+correct_answer: 3
+expected_output:
+- error
+- cannot move out of `s` because it is borrowed
+explanation: |-
+  This question tests understanding of Rust's ownership and borrowing rules,
+  specifically the interaction between borrows and moves.
+
+  In this code, a `String` is created and assigned to `s`. Then, an immutable
+  reference to `s` is created with `let borrowed = &s;`. This establishes a borrow
+  that extends through the lifetime of `borrowed`. When the code attempts to move
+  `s` with `let moved = s;`, Rust's borrow checker prevents this operation.
+
+  The key principle is that Rust does not allow moving a value while it is
+  borrowed. If the move were allowed, the reference `borrowed` would become
+  invalid, pointing to memory that has been transferred to `moved`. This would
+  violate Rust's memory safety guarantees. The borrow must end before the value
+  can be moved.
+
+  The compiler produces an error message indicating "cannot move out of `s`
+  because it is borrowed". This is different from "borrow of moved value", which
+  would occur if the move happened first and then a borrow was attempted
+  afterward.
+
+  The key takeaway is that active borrows prevent moves. Rust's borrow checker
+  ensures that references remain valid for their entire lifetime by preventing
+  operations that would invalidate them, such as moving the borrowed value.

@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  macro_rules! calculate {
+      (add $a:expr, $b:expr) => { $a + $b };
+      (mul $a:expr, $b:expr) => { $a * $b };
+      (sub $a:expr, $b:expr) => { $a - $b };
+  }
+
+  fn main() {
+      let x = calculate!(add 5, 3);
+      let y = calculate!(mul 2, x);
+      let z = calculate!(div 10, 2);
+      
+      println!("{} {} {}", x, y, z);
+  }
+  ```
+
+  What happens when this code compiles?
+answers:
+- Prints "8 16 5"
+- Compilation fails because `div` pattern is not defined in the macro
+- Prints "8 16 0" with integer division
+- All variables are uninitialized, causing undefined behavior
+correct_answer: 1
+expected_output:
+- 'error: no rules expected `div`'
+explanation: |-
+  This question tests understanding of Rust's declarative macro pattern matching.
+  Declarative macros defined with `macro_rules!` work by matching input tokens
+  against specified patterns and expanding to the corresponding code.
+
+  The `calculate!` macro defines three patterns: `add`, `mul`, and `sub`. Each
+  pattern expects a specific keyword followed by two expressions. When the macro
+  is invoked, Rust attempts to match the input against these patterns.
+
+  The first two invocations work correctly:
+  - `calculate!(add 5, 3)` matches the `add` pattern and expands to `5 + 3`,
+  resulting in `x = 8`
+  - `calculate!(mul 2, x)` matches the `mul` pattern and expands to `2 * x`,
+  resulting in `y = 16`
+
+  However, the third invocation `calculate!(div 10, 2)` attempts to use a `div`
+  pattern that doesn't exist in the macro definition. The macro system tries to
+  match `div` against the available patterns (`add`, `mul`, `sub`) but finds no
+  match. This causes a compilation error before the program can run.
+
+  The key takeaway is that macros must have a matching pattern for every
+  invocation. Unlike functions with default parameters or overloading in some
+  languages, Rust macros require explicit pattern definitions for each variant you
+  want to support. If you need division functionality, you would need to add a
+  `(div $a:expr, $b:expr) => { $a / $b };` pattern to the macro definition.

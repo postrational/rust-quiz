@@ -1,0 +1,86 @@
+question: |-
+  ```rust
+  use std::any::Any;
+
+  trait Plugin: Any {
+      fn name(&self) -> &str;
+      fn execute(&self);
+  }
+
+  struct AudioPlugin;
+  struct VideoPlugin;
+
+  impl Plugin for AudioPlugin {
+      fn name(&self) -> &str { "Audio" }
+      fn execute(&self) { println!("Playing audio"); }
+  }
+
+  impl Plugin for VideoPlugin {
+      fn name(&self) -> &str { "Video" }
+      fn execute(&self) { println!("Playing video"); }
+  }
+
+  fn main() {
+      let plugins: Vec<Box<dyn Plugin>> = vec![
+          Box::new(AudioPlugin),
+          Box::new(VideoPlugin),
+      ];
+      
+      for plugin in &plugins {
+          plugin.execute();
+          
+          if let Some(audio) = plugin.downcast_ref::<AudioPlugin>() {
+              println!("Found audio plugin!");
+          }
+      }
+  }
+  ```
+
+  What happens with this code?
+answers:
+- Compiles and prints execution + "Found audio plugin!" for the first plugin
+- Won't compile - `downcast_ref` is not a method on `Box<dyn Plugin>`
+- Won't compile - `Plugin` is not object-safe because it extends `Any`
+- Compiles but `downcast_ref` always returns `None`
+correct_answer: 1
+expected_output:
+- 'error[E0599]: no method named `downcast_ref` found'
+explanation: |-
+  This question tests understanding of trait objects, the `Any` trait, and
+  downcasting in Rust.
+
+  The code fails to compile because `downcast_ref` is not a method available on
+  `Box<dyn Plugin>`. While `Plugin` has `Any` as a supertrait (via `Plugin: Any`),
+  this doesn't automatically make `downcast_ref` available on the `dyn Plugin`
+  trait object.
+
+  The issue is that `dyn Plugin` and `dyn Any` are different trait objects. Even
+  though `Plugin` requires `Any`, you cannot directly call `Any`'s methods on a
+  `dyn Plugin` reference. The `downcast_ref` method is specifically defined on
+  `dyn Any`, not on arbitrary trait objects.
+
+  To fix this code, you need to provide a bridge method that converts the `dyn
+  Plugin` reference to a `dyn Any` reference:
+
+  ```rust
+  trait Plugin: Any {
+      fn name(&self) -> &str;
+      fn execute(&self);
+      
+      fn as_any(&self) -> &dyn Any {
+          self
+      }
+  }
+  ```
+
+  Then in the loop, you would call:
+  ```rust
+  if let Some(audio) = plugin.as_any().downcast_ref::<AudioPlugin>() {
+      println!("Found audio plugin!");
+  }
+  ```
+
+  The key takeaway is that trait bounds (like `Plugin: Any`) establish
+  requirements but don't automatically expose the supertrait's methods through the
+  derived trait object. You need explicit methods to bridge between different
+  trait object types when you want to perform operations like downcasting.

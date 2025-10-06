@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::cell::RefCell;
+
+  fn main() {
+      let data = Rc::new(RefCell::new(0));
+      let data1 = Rc::clone(&data);
+      let data2 = Rc::clone(&data);
+      
+      *data1.borrow_mut() = 10;
+      *data2.borrow_mut() = 20;
+      
+      println!("{}", data.borrow());
+      println!("{}", Rc::strong_count(&data));
+  }
+  ```
+
+  What will this code print?
+answers:
+- 10, 3
+- 20, 3
+- 30, 3
+- Runtime panic
+correct_answer: 1
+expected_output:
+- '20'
+- '3'
+explanation: |-
+  This question tests understanding of `Rc<RefCell<T>>` and the lifetime of
+  borrows obtained through `borrow_mut()`.
+
+  The code creates three `Rc` pointers (`data`, `data1`, and `data2`) that all
+  share ownership of the same `RefCell<i32>` containing the value 0.
+
+  When `*data1.borrow_mut() = 10` executes, `borrow_mut()` returns a `RefMut`
+  guard that provides mutable access to the inner value. The assignment sets the
+  value to 10, and crucially, the `RefMut` guard is dropped immediately at the end
+  of the statement. This releases the mutable borrow.
+
+  Similarly, when `*data2.borrow_mut() = 20` executes, a new mutable borrow is
+  created (the previous one no longer exists), the value is updated to 20, and
+  this borrow is also immediately dropped at the end of the statement.
+
+  Since the mutable borrows don't overlap in time, there's no violation of Rust's
+  borrowing rules, and no runtime panic occurs. The final value in the `RefCell`
+  is 20 (the last value written).
+
+  When `data.borrow()` is called, it creates an immutable borrow and reads the
+  current value: 20. The `Rc::strong_count(&data)` returns 3 because there are
+  three `Rc` handles pointing to the same allocation.
+
+  The key takeaway is that `RefCell` borrows are checked at runtime, and borrow
+  guards are dropped at the end of their statement or scope. This allows
+  sequential mutable borrows without panic, as long as they don't overlap.

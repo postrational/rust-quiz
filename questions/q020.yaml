@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  use std::cell::RefCell;
+
+  fn main() {
+      let data = RefCell::new(vec![1, 2, 3]);
+      
+      {
+          let mut borrowed = data.borrow_mut();
+          borrowed.push(4);
+      }
+      
+      let borrowed1 = data.borrow();
+      let borrowed2 = data.borrow();
+      
+      println!("{:?}", *borrowed1);
+      println!("{:?}", *borrowed2);
+      println!("{}", borrowed1.len() + borrowed2.len());
+  }
+  ```
+
+  What will this code output?
+answers:
+- '[1, 2, 3, 4], [1, 2, 3, 4], 8'
+- '[1, 2, 3], [1, 2, 3], 6'
+- Runtime panic
+- Compilation error
+correct_answer: 0
+expected_output:
+- '[1, 2, 3, 4]'
+- '[1, 2, 3, 4]'
+- '8'
+explanation: |-
+  This question tests understanding of `RefCell`'s runtime borrow checking and
+  borrow scope management. `RefCell` provides interior mutability by enforcing
+  Rust's borrowing rules at runtime instead of compile time.
+
+  In this code, a mutable borrow is created with `data.borrow_mut()` within its
+  own scope. The `borrowed.push(4)` call modifies the vector to `[1, 2, 3, 4]`.
+  Crucially, when the scope ends with the closing brace `}`, the mutable borrow is
+  automatically dropped and released.
+
+  After the mutable borrow is released, two immutable borrows are created with
+  `data.borrow()`. This is valid because `RefCell` allows multiple simultaneous
+  immutable borrows as long as there are no active mutable borrows. Both
+  `borrowed1` and `borrowed2` reference the same modified vector `[1, 2, 3, 4]`,
+  which has a length of 4. Therefore, the sum of their lengths is `4 + 4 = 8`.
+
+  The key takeaway is that `RefCell` enforces borrowing rules at runtime: you can
+  have either one mutable borrow OR multiple immutable borrows, but not both
+  simultaneously. Borrows are released when they go out of scope, allowing
+  subsequent borrows to succeed. This pattern is commonly used when you need
+  interior mutability in situations where the compiler cannot verify borrowing
+  rules at compile time.

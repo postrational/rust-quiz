@@ -1,0 +1,57 @@
+question: |-
+  ```rust
+  use std::cell::Cell;
+
+  fn main() {
+      let counter = Cell::new(0);
+      
+      let v = vec![1, 2, 3];
+      let result: Vec<_> = v.iter()
+          .map(|x| {
+              counter.set(counter.get() + 1);
+              x * 2
+          })
+          .skip(1)
+          .collect();
+      
+      println!("Counter: {}", counter.get());
+      println!("Result: {:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Counter: 3, Result: [4, 6]'
+- 'Counter: 2, Result: [4, 6]'
+- 'Counter: 0, Result: [4, 6]'
+- Compilation error - cannot mutate `counter` in closure
+correct_answer: 0
+expected_output:
+- 'Counter: 3'
+- 'Result: [4, 6]'
+explanation: |-
+  This question tests understanding of iterator laziness and evaluation order in
+  Rust. The key concept is that iterator adapters like `map()` are lazy, but once
+  consumed by a terminal operation like `collect()`, they process elements in a
+  specific order.
+
+  When `collect()` is called, it drives the entire iterator chain. The chain
+  consists of `iter()` → `map()` → `skip(1)` → `collect()`. The `skip(1)` adapter
+  tells the iterator to discard the first element *from the map output*, but it
+  doesn't prevent `map()` from being called on that element.
+
+  Here's what happens: `collect()` requests elements from `skip(1)`, which
+  requests elements from `map()`, which requests elements from the underlying
+  iterator. For each element that `map()` processes, it increments the counter and
+  doubles the value. The `skip(1)` then discards the first mapped result (4) but
+  keeps the rest ([4, 6]).
+
+  Crucially, `map()` is called for all 3 elements in the vector, so the counter
+  reaches 3. The `skip(1)` only affects which results are collected, not how many
+  times `map()` executes. The final result contains [4, 6] because the first
+  mapped value (4 from 1*2) is skipped.
+
+  The `Cell` type is used here to allow interior mutability within the closure
+  without requiring a mutable reference, which demonstrates that side effects in
+  iterator chains execute even when their results are discarded by subsequent
+  adapters.

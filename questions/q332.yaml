@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  fn main() {
+      let words = vec!["hello", "world", "rust"];
+      let result: String = words
+          .iter()
+          .flat_map(|s| s.chars())
+          .filter(|&c| c != 'l')
+          .collect();
+          
+      println!("{}", result);
+  }
+  ```
+
+  What does this program print?
+answers:
+- heowordrust
+- heowordrust
+- heowrdrust
+- helloworldrust
+correct_answer: 0
+expected_output:
+- heowordrust
+explanation: |-
+  This question tests understanding of iterator combinators in Rust, specifically
+  `flat_map`, `filter`, and `collect`.
+
+  The code processes a vector of string slices through a chain of iterator
+  operations. First, `flat_map(|s| s.chars())` transforms each string into its
+  individual characters and flattens them into a single iterator. This converts
+  ["hello", "world", "rust"] into a stream of characters: h, e, l, l, o, w, o, r,
+  l, d, r, u, s, t.
+
+  Next, `filter(|&c| c != 'l')` removes all 'l' characters from this stream.
+  Breaking down each word:
+  - "hello" loses both 'l' characters, leaving "heo"
+  - "world" loses its 'l', leaving "word"
+  - "rust" has no 'l' characters, so it remains "rust"
+
+  Finally, `collect()` gathers all remaining characters into a String, producing
+  "heowordrust".
+
+  The key takeaway is that `flat_map` is useful for breaking down structured data
+  into individual elements for processing across an entire collection, and
+  iterator chains allow for elegant data transformations without intermediate
+  allocations.

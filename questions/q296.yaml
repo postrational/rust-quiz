@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut scores = HashMap::new();
+      scores.insert("Alice", 100);
+      scores.insert("Bob", 85);
+      
+      match scores.entry("Charlie") {
+          std::collections::hash_map::Entry::Occupied(entry) => {
+              println!("Found: {}", entry.get());
+          },
+          std::collections::hash_map::Entry::Vacant(entry) => {
+              entry.insert(90);
+              println!("Inserted");
+          }
+      }
+      
+      println!("{}", scores.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- 'Found: 90, 3'
+- Inserted, 2
+- Inserted, 3
+- 'Found: 0, 3'
+correct_answer: 2
+expected_output:
+- Inserted
+- '3'
+explanation: |-
+  This question tests understanding of Rust's Entry API for HashMap, which
+  provides an efficient way to conditionally insert or access values based on
+  whether a key exists.
+
+  When `scores.entry("Charlie")` is called, it returns an `Entry` enum that
+  represents either an occupied or vacant entry in the map. Since "Charlie" does
+  not exist as a key in the HashMap (which only contains "Alice" and "Bob"), the
+  entry is `Vacant`.
+
+  The `Vacant` arm of the match statement executes, which calls `entry.insert(90)`
+  to add the key-value pair ("Charlie", 90) to the HashMap, then prints
+  "Inserted". After this operation, the HashMap contains three entries: "Alice",
+  "Bob", and "Charlie".
+
+  Finally, `scores.len()` returns 3, which is printed.
+
+  The key takeaway is that the Entry API allows you to perform conditional
+  insertion without doing separate lookups. It's more efficient than checking if a
+  key exists and then inserting, because it only performs one lookup operation.
+  The `Vacant` entry consumes itself when `insert()` is called, ensuring the value
+  is added to the map.

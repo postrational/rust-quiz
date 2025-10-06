@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("test");
+      let len = calculate(&s);
+      println!("{} has {} chars", s, len);
+  }
+
+  fn calculate(text: &str) -> usize {
+      text.chars().count()
+  }
+  ```
+
+  What does this code output?
+answers:
+- test has 4 chars
+- 'Compilation error: mismatched types, expected `&str`, found `&String`'
+- 'Runtime panic: invalid string slice'
+- 'Compilation error: `s` moved in previous line'
+correct_answer: 0
+expected_output:
+- test has 4 chars
+explanation: |-
+  This question tests understanding of deref coercion and string borrowing in
+  Rust. When a `&String` is passed to a function expecting a `&str` parameter,
+  Rust automatically performs deref coercion, converting the `&String` reference
+  to a `&str` string slice. This is a convenience feature that allows `String`
+  references to be used wherever string slices are expected.
+
+  In this code, `&s` creates a reference to the `String`, which is then coerced to
+  `&str` when passed to the `calculate` function. The `chars().count()` method
+  counts Unicode scalar values in the string, so "test" correctly returns 4
+  characters.
+
+  Since only a reference is passed to `calculate`, ownership of `s` remains in
+  `main`, allowing it to be used in the `println!` statement afterward. This
+  demonstrates Rust's borrowing rules: borrowing a value doesn't move it, so the
+  original owner retains access after the borrow ends.
+
+  The key takeaway is that Rust's deref coercion makes working with `String` and
+  `&str` seamless in most contexts, automatically converting between these types
+  when appropriate, while the borrowing system ensures memory safety without
+  requiring explicit ownership transfers.

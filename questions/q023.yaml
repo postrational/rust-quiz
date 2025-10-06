@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  use std::cell::{Cell, RefCell};
+
+  fn main() {
+      let cell_data = Cell::new(42);
+      let refcell_data = RefCell::new(vec![1, 2, 3]);
+      
+      // Cell operations
+      let old_value = cell_data.replace(100);
+      println!("{}", old_value);
+      
+      // RefCell operations  
+      refcell_data.borrow_mut().push(4);
+      println!("{:?}", refcell_data.borrow());
+  }
+  ```
+
+  What will this code output?
+answers:
+- 42, [1, 2, 3, 4]
+- 100, [1, 2, 3, 4]
+- 42, [1, 2, 3]
+- Compilation error
+correct_answer: 0
+expected_output:
+- '42'
+- '[1, 2, 3, 4]'
+explanation: |-
+  This question tests understanding of the differences between `Cell` and
+  `RefCell`, two types that provide interior mutability in Rust.
+
+  `Cell<T>` is designed for `Copy` types and provides interior mutability by
+  replacing the entire value. The `replace` method takes a new value, returns the
+  old value, and updates the cell's contents. In this code,
+  `cell_data.replace(100)` returns the original value `42` and updates the cell to
+  contain `100`.
+
+  `RefCell<T>` is designed for non-`Copy` types and provides interior mutability
+  through runtime-checked borrowing. The `borrow_mut()` method returns a `RefMut`
+  guard that allows mutable access to the inner value. When `.push(4)` is called,
+  it modifies the vector, and then the `RefMut` guard is automatically dropped at
+  the semicolon.
+
+  A key point about `RefCell` borrowing: the mutable borrow from `borrow_mut()`
+  doesn't overlap with the immutable borrow from `borrow()`. The `RefMut` guard is
+  a temporary value that lives only for the duration of the statement
+  `refcell_data.borrow_mut().push(4);`. Once this statement completes, the guard
+  is dropped, ending the mutable borrow. This allows the subsequent immutable
+  borrow in the `println!` to succeed without panicking.
+
+  The key takeaway is that `Cell` is for simple `Copy` types with value
+  replacement, while `RefCell` is for more complex types requiring borrowed access
+  with runtime borrow checking. Understanding the lifetime of borrow guards is
+  crucial for using `RefCell` safely.

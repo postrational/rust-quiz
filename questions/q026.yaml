@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+
+  fn test_box() {
+      let data = Box::new(vec![1, 2, 3]);
+      let _moved = data;
+      // println!("{:?}", data); // What happens if we uncomment this?
+  }
+
+  fn test_rc() {
+      let data = Rc::new(vec![1, 2, 3]);
+      let _cloned = Rc::clone(&data);
+      println!("{:?}", data); // What happens here?
+  }
+
+  fn main() {
+      test_box();
+      test_rc();
+  }
+  ```
+
+  What's the difference in output?
+answers:
+- Both functions work identically
+- '`test_box` would fail if uncommented, `test_rc` works fine'
+- Both would fail if the `println!` was uncommented
+- "`test_rc` fails because you can't clone `Rc`"
+correct_answer: 1
+expected_output:
+- '[1, 2, 3]'
+explanation: |-
+  This question tests understanding of the fundamental difference between `Box<T>`
+  and `Rc<T>` in Rust's ownership system.
+
+  `Box<T>` provides unique ownership with move semantics. When `let _moved =
+  data;` executes in `test_box`, ownership of the boxed value transfers from
+  `data` to `_moved`. After this move, `data` is no longer valid. If the commented
+  `println!("{:?}", data);` were uncommented, the code would fail to compile with
+  an error about borrowing a moved value.
+
+  `Rc<T>` (Reference Counted) provides shared ownership. When `Rc::clone(&data)`
+  is called in `test_rc`, it doesn't clone the underlying data; instead, it
+  creates a new `Rc` handle pointing to the same heap-allocated data and
+  increments the reference count. Both `data` and `_cloned` remain valid and can
+  access the same underlying `Vec`. The `println!("{:?}", data);` works without
+  issue because `data` is still a valid handle.
+
+  The key takeaway is that `Box<T>` enforces single ownership with move semantics,
+  while `Rc<T>` enables multiple owners to share read-only access to the same data
+  through reference counting. This makes `Rc<T>` useful when you need multiple
+  parts of your program to read the same data without transferring ownership.

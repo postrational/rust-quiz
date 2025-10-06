@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn create_map() -> HashMap<String, i32> {
+      let mut map = HashMap::new();
+      map.insert("a".to_string(), 1);
+      map.insert("b".to_string(), 2);
+      map
+  }
+
+  fn main() {
+      let map = create_map();
+      let values: Vec<&i32> = map.values().collect();
+      println!("{}", values.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '1'
+- '2'
+- 'Compilation error: borrowed value does not live long enough'
+correct_answer: 2
+expected_output:
+- '2'
+explanation: |-
+  This question tests understanding of borrowing, lifetimes, and how references
+  interact with owned data in Rust.
+
+  The `create_map()` function creates a HashMap with two entries and returns
+  ownership of it to the caller. In `main()`, the HashMap is owned by the `map`
+  variable, which lives for the entire scope of the function.
+
+  When `map.values()` is called, it returns an iterator over references to the
+  values in the HashMap. These references have a lifetime tied to the HashMap
+  itself. The `collect()` method then gathers these references into a `Vec<&i32>`.
+
+  The key point is that the borrow checker verifies that the references stored in
+  `values` do not outlive the HashMap they point into. Since `map` remains alive
+  throughout the scope where `values` is used, the references are valid. The
+  HashMap contains two entries ("a": 1 and "b": 2), so `values.len()` returns 2.
+
+  This demonstrates that Rust's borrow checker allows borrowing data from owned
+  collections as long as the lifetime relationships are valid. The references in
+  the vector are tied to the lifetime of `map`, and since `map` outlives `values`,
+  the code compiles and runs successfully.

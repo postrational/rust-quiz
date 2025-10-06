@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![Box::new(1), Box::new(2), Box::new(3)];
+      let first = data[0];
+      println!("{}", first);
+  }
+  ```
+
+  What does this code output?
+answers:
+- Prints "1"
+- 'Compilation error: cannot move out of index of `Vec<Box<i32>>`'
+- 'Runtime panic: moved value used'
+- 'Compilation error: cannot dereference moved value'
+correct_answer: 1
+expected_output:
+- cannot move out of index
+explanation: |-
+  This question tests understanding of Rust's move semantics and vector indexing
+  restrictions. When attempting to access `data[0]` with `let first = data[0];`,
+  the code tries to move the `Box<i32>` value out of the vector. However, Rust
+  does not allow moving individual elements out of a collection through indexing
+  because it would leave the collection in a partially moved or invalid state.
+
+  The `Box<i32>` type does not implement the `Copy` trait, so accessing it by
+  value would require a move operation. Rust's indexing operation returns a
+  reference by default, but the assignment `let first = data[0];` attempts to move
+  the value, which is not permitted.
+
+  To work with elements in a vector of non-Copy types, you have several options:
+  borrow the element with `&data[0]`, clone it if the inner type implements
+  `Clone`, or use methods like `.remove()` or `.swap_remove()` that explicitly
+  handle the move and adjust the vector accordingly.
+
+  The key takeaway is that Rust prevents partial moves from collections to
+  maintain memory safety and ensure collections remain in a valid state. This is a
+  fundamental aspect of Rust's ownership system that prevents common bugs found in
+  other languages.

@@ -1,0 +1,57 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut data = String::from("hello");
+      let r1;
+      
+      {
+          let s = String::from("world");
+          r1 = choose_str(&data, &s, true);
+      }
+      
+      println!("{}", r1);
+  }
+
+  fn choose_str<'a>(x: &'a str, y: &'a str, pick_first: bool) -> &'a str {
+      if pick_first { x } else { y }
+  }
+  ```
+
+  What does this code output?
+answers:
+- hello
+- world
+- Compilation error - `s` doesn't live long enough
+- Compilation error - cannot infer lifetime
+correct_answer: 2
+expected_output:
+- error
+- does not live long enough
+explanation: |-
+  This question tests understanding of lifetime subtyping and how Rust's borrow
+  checker handles lifetime constraints with multiple references.
+
+  The code fails to compile because of a lifetime constraint violation. When
+  `choose_str` is called with `&data` and `&s`, both references must satisfy the
+  same lifetime parameter `'a`. The lifetime `'a` must be valid for both input
+  references, which means it gets constrained to the shorter of the two
+  lifetimes—in this case, the lifetime of `s`, which only extends to the end of
+  the inner block.
+
+  The return value of `choose_str` has lifetime `'a`, and this value is assigned
+  to `r1`, which needs to remain valid until the `println!` statement in the outer
+  scope. However, since `'a` is constrained by the shorter lifetime of `s`, and
+  `s` is dropped at the end of the inner block, the borrow checker determines that
+  `r1` cannot safely hold a reference with lifetime `'a` beyond that point.
+
+  Critically, even though the code actually returns `x` (which references `data`
+  and would live long enough), the compiler cannot know this at compile time. The
+  function signature states that the return value has lifetime `'a`, which
+  represents the intersection of both input lifetimes. The borrow checker must be
+  conservative and assume the worst case—that the returned reference could be to
+  either input.
+
+  The key takeaway is that when multiple references share the same lifetime
+  parameter, that lifetime is constrained by the shortest-lived reference among
+  them. This is a fundamental aspect of Rust's lifetime system that ensures memory
+  safety at compile time.

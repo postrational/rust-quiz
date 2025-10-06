@@ -1,0 +1,67 @@
+question: |-
+  ```rust
+  use std::collections::BinaryHeap;
+  use std::cmp::Reverse;
+
+  fn main() {
+      let mut heap = BinaryHeap::new();
+      heap.extend([5, 1, 9, 3, 7].iter().cloned());
+      
+      println!("Heap: {:?}", heap);
+      
+      let mut sorted_desc = Vec::new();
+      while let Some(value) = heap.pop() {
+          sorted_desc.push(value);
+          if sorted_desc.len() == 3 {
+              break;
+          }
+      }
+      
+      println!("Top 3: {:?}", sorted_desc);
+      println!("Remaining heap: {:?}", heap);
+      
+      heap.push(10);
+      heap.push(2);
+      
+      let peek_value = heap.peek().copied();
+      println!("New peek: {:?}", peek_value);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Shows heap structure, top 3 [9,7,5], remaining [3,1], new peek Some(3)
+- 'Compilation error: BinaryHeap iterator cannot be cloned from array references'
+- Shows heap structure, top 3 [9,7,5], remaining [3,1], new peek Some(10)
+- 'Runtime panic: cannot peek at empty BinaryHeap after popping elements'
+correct_answer: 2
+expected_output:
+- 'Heap: [9, 7, 5, 3, 1]'
+- 'Top 3: [9, 7, 5]'
+- 'Remaining heap: [3, 1]'
+- 'New peek: Some(10)'
+explanation: |-
+  This question tests understanding of BinaryHeap operations in Rust, including
+  insertion, extraction, and the max-heap property.
+
+  BinaryHeap in Rust is a max-heap by default, meaning the largest element is
+  always at the top. When elements [5, 1, 9, 3, 7] are inserted, the heap
+  maintains its internal structure to satisfy the heap property, resulting in an
+  internal representation like [9, 7, 5, 3, 1].
+
+  The code then extracts the top 3 elements using `pop()`, which removes and
+  returns the maximum element each time. This produces [9, 7, 5] in descending
+  order. After these three pops, the remaining elements in the heap are [3, 1].
+
+  Next, two new elements are pushed: 10 and 2. The heap automatically rebalances
+  to maintain the max-heap property. Since 10 is larger than all remaining
+  elements (3, 1, and the newly added 2), it becomes the new maximum.
+
+  Finally, `peek()` returns a reference to the maximum element without removing
+  it. Since 10 is now the largest element in the heap, `peek().copied()` returns
+  `Some(10)`.
+
+  The key takeaway is that BinaryHeap is a self-balancing max-heap data structure
+  that provides O(1) access to the maximum element via `peek()` and O(log n)
+  insertion and removal operations while automatically maintaining the heap
+  property.

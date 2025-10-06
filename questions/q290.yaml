@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut vec = vec![10, 20, 30];
+      let ptr = vec.as_mut_ptr();
+      vec.push(40);
+      unsafe {
+          println!("{}", *ptr);
+      }
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "10"
+- 'Compilation error: cannot use `vec` after getting mutable pointer'
+- 'Runtime panic: invalid pointer access'
+- 'Compilation error: cannot borrow `vec` as mutable because raw pointer exists'
+correct_answer: 0
+expected_output:
+- '10'
+explanation: |-
+  This question tests understanding of raw pointers and their interaction with
+  Rust's borrowing system. Raw pointers (`*mut T` and `*const T`) do not
+  participate in Rust's borrow checker rules, which is a critical distinction from
+  references.
+
+  When `vec.as_mut_ptr()` is called, it returns a raw pointer to the vector's
+  internal buffer. Unlike mutable references, this raw pointer does not create a
+  borrow that would prevent further use of `vec`. Therefore, the subsequent
+  `vec.push(40)` call compiles without error—the borrow checker does not track raw
+  pointers.
+
+  The code prints "10" because the raw pointer `ptr` points to the first element
+  of the vector. When dereferenced in the unsafe block, it accesses this value.
+
+  However, this code demonstrates undefined behavior and is dangerous in practice.
+  The `push` operation may cause the vector to reallocate its internal buffer if
+  capacity is exceeded. If reallocation occurs, the raw pointer `ptr` becomes
+  invalid (dangling), and dereferencing it would be undefined behavior. In this
+  specific case, the vector likely has sufficient capacity to avoid reallocation,
+  so the code happens to work.
+
+  The key takeaway is that raw pointers bypass Rust's safety guarantees. While
+  they allow operations that the borrow checker would reject, they place the
+  burden of correctness entirely on the programmer. Using raw pointers requires
+  careful reasoning about memory validity and lifetimes, which is why they must be
+  used within `unsafe` blocks.

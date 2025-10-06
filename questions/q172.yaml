@@ -1,0 +1,57 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map: HashMap<String, Vec<i32>> = HashMap::new();
+      
+      map.entry("key1".to_string()).or_insert_with(Vec::new).push(1);
+      map.entry("key1".to_string()).or_insert_with(Vec::new).push(2);
+      map.entry("key2".to_string()).or_insert_with(Vec::new).push(3);
+      
+      for (key, values) in &map {
+          println!("{}: {:?}", key, values);
+      }
+  }
+  ```
+
+  What is the result of this code?
+answers:
+- 'key1: [1, 2], key2: [3]'
+- 'key1: [1], key1: [2], key2: [3] (separate entries)'
+- 'key1: [2], key2: [3] (first push overwritten)'
+- 'Compilation error: `or_insert_with` expects a closure, not a function'
+correct_answer: 0
+expected_output:
+- 'key1: [1, 2]'
+- 'key2: [3]'
+explanation: |-
+  This question tests understanding of the HashMap entry API and the
+  `or_insert_with` method. The entry API provides an efficient way to work with
+  HashMap entries, allowing you to insert or modify values based on whether a key
+  exists.
+
+  The `or_insert_with` method takes a function or closure that returns a value. It
+  only calls this function and inserts the returned value if the key does not
+  already exist in the map. If the key exists, it returns a mutable reference to
+  the existing value without calling the function.
+
+  In this code, the execution proceeds as follows:
+  1. First call with "key1": The key doesn't exist, so `Vec::new()` is called to
+  create an empty vector, which is inserted. Then `push(1)` adds 1 to this vector,
+  resulting in `key1: [1]`.
+  2. Second call with "key1": The key already exists, so the existing vector is
+  returned without creating a new one. Then `push(2)` adds 2 to the same vector,
+  resulting in `key1: [1, 2]`.
+  3. Third call with "key2": The key doesn't exist, so a new empty vector is
+  created and inserted. Then `push(3)` adds 3 to it, resulting in `key2: [3]`.
+
+  Note that `Vec::new` is a function pointer that implements the `FnOnce() ->
+  Vec<i32>` trait, so it can be passed directly to `or_insert_with` without
+  needing closure syntax like `|| Vec::new()`. The output order may vary since
+  HashMap iteration order is not guaranteed, but both key-value pairs will be
+  printed.
+
+  The key takeaway is that `or_insert_with` only creates and inserts a new value
+  when the key is missing, making it ideal for building up collections within a
+  HashMap efficiently.

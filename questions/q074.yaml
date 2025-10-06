@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  struct Counter {
+      count: i32,
+  }
+
+  impl Counter {
+      fn new() -> Self {
+          Counter { count: 0 }
+      }
+      
+      fn increment(&mut self) {
+          self.count += 1;
+      }
+      
+      fn get(&self) -> i32 {
+          self.count
+      }
+  }
+
+  fn main() {
+      let mut c = Counter::new();
+      c.increment();
+      c.increment();
+      println!("{}", c.get());
+  }
+  ```
+
+  What will this code print?
+answers:
+- '0'
+- '1'
+- '2'
+- Compilation error
+correct_answer: 2
+expected_output:
+- '2'
+explanation: |-
+  This question tests understanding of basic method calls and mutable borrows in
+  Rust. The code demonstrates a common pattern for stateful objects with methods
+  that take different types of self references.
+
+  The `Counter` struct has three methods: `new()` creates a new instance with
+  `count` initialized to 0, `increment()` takes `&mut self` to modify the internal
+  state, and `get()` takes `&self` to read the state without modification.
+
+  In `main()`, a mutable `Counter` is created with `count: 0`. The first call to
+  `increment()` borrows `c` mutably and increases `count` to 1. The second call to
+  `increment()` again borrows `c` mutably and increases `count` to 2. Finally,
+  `get()` borrows `c` immutably and returns the current value of 2, which is
+  printed.
+
+  The code compiles successfully because the mutable borrows from each
+  `increment()` call end before the next operation begins. Non-lexical lifetimes
+  (NLL) ensure that borrows only last as long as they're actually used, so the
+  mutable borrows don't overlap with each other or with the immutable borrow in
+  `get()`. Since `c` is declared as mutable, it can be borrowed mutably for the
+  `increment()` calls.
+
+  The key takeaway is understanding how Rust's borrowing rules work with method
+  calls: mutable references (`&mut self`) allow modification of state, immutable
+  references (`&self`) allow reading, and the borrow checker ensures these borrows
+  don't conflict as long as they don't overlap in time.

@@ -1,0 +1,65 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::sync::Arc;
+  use std::thread;
+
+  // Version A
+  fn version_a() {
+      let data = Rc::new(vec![1, 2, 3]);
+      let data_clone = Rc::clone(&data);
+      
+      thread::spawn(move || {
+          println!("{:?}", data_clone);
+      });
+  }
+
+  // Version B  
+  fn version_b() {
+      let data = Arc::new(vec![1, 2, 3]);
+      let data_clone = Arc::clone(&data);
+      
+      thread::spawn(move || {
+          println!("{:?}", data_clone);
+      });
+  }
+
+  fn main() {
+      // Uncommenting version_a() would cause a compilation error
+      version_a();
+      // version_b();
+  }
+  ```
+
+  Which code compiles?
+answers:
+- Both compile
+- Only A compiles
+- Only B compiles
+- Neither compiles
+correct_answer: 2
+expected_output:
+- 'error[E0277]: `Rc<Vec<i32>>` cannot be sent between threads safely'
+explanation: |-
+  This question tests understanding of the difference between `Rc` and `Arc` for
+  thread safety in Rust.
+
+  **Version A (Rc) - Does Not Compile:**
+  `Rc<T>` (Reference Counted) is designed for single-threaded use only and is not
+  thread-safe. It does not implement the `Send` trait, which means it cannot be
+  safely transferred between threads. When attempting to use `Rc` with
+  `thread::spawn`, the compiler will produce an error because `thread::spawn`
+  requires its closure to be `Send`. The error indicates that `Rc<Vec<i32>>`
+  cannot be sent between threads safely.
+
+  **Version B (Arc) - Compiles:**
+  `Arc<T>` (Atomically Reference Counted) is the thread-safe version of `Rc`. It
+  implements both `Send` and `Sync` traits (when `T` is `Send` and `Sync`),
+  allowing it to be safely shared across thread boundaries. `Arc` uses atomic
+  operations to manage its reference count, ensuring thread safety at the cost of
+  slightly higher overhead compared to `Rc`.
+
+  The key takeaway is choosing the right smart pointer for your use case:
+  - Use `Rc<T>` for single-threaded shared ownership (faster, no atomic overhead)
+  - Use `Arc<T>` for multi-threaded shared ownership (necessary for thread safety,
+  uses atomic operations)

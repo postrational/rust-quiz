@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  use std::path::Path;
+
+  fn main() {
+      let paths = vec![
+          "/usr/bin/../lib/file.so",
+          "relative/../path/to/file",
+          "../../../etc/passwd",
+          "normal/path/file.txt"
+      ];
+      
+      for path_str in paths {
+          let path = Path::new(path_str);
+          let parent = path.parent()
+              .and_then(|p| p.file_name())
+              .and_then(|name| name.to_str());
+          
+          println!("{}: {:?}", path_str, parent);
+      }
+  }
+  ```
+
+  What does this code print?
+answers:
+- All print `Some("file")` as the parent directory name
+- First prints `Some("lib")`, second prints `Some("to")`, third prints `Some("etc")`, fourth prints `Some("path")`
+- First prints `Some("lib")`, second prints `Some("to")`, third prints `None`, fourth prints `Some("path")`
+- All print `None` because parent directories cannot be determined from strings
+correct_answer: 1
+expected_output:
+- '/usr/bin/../lib/file.so: Some("lib")'
+- 'relative/../path/to/file: Some("to")'
+- '../../../etc/passwd: Some("etc")'
+- 'normal/path/file.txt: Some("path")'
+explanation: |-
+  This question tests understanding of Rust's `Path` API, specifically how
+  `parent()` and `file_name()` work together when processing path strings.
+
+  The code chains three operations for each path: `parent()` gets the parent
+  directory, `file_name()` extracts the final component of that parent path, and
+  `to_str()` converts it to a string.
+
+  For `/usr/bin/../lib/file.so`, the parent is `/usr/bin/../lib`, and its file
+  name component is `lib`, resulting in `Some("lib")`.
+
+  For `relative/../path/to/file`, the parent is `relative/../path/to`, and its
+  file name component is `to`, resulting in `Some("to")`.
+
+  For `../../../etc/passwd`, the parent is `../../../etc`. Rust's `Path` API
+  performs lexical (string-based) path operations. When extracting the file name
+  from `../../../etc`, it treats `etc` as a regular path component and returns
+  `Some("etc")`. The `..` components earlier in the path don't affect the file
+  name extraction of the final component.
+
+  For `normal/path/file.txt`, the parent is `normal/path`, and its file name
+  component is `path`, resulting in `Some("path")`.
+
+  The key takeaway is that Rust's `Path` API performs lexical operations without
+  filesystem access or path normalization. The `file_name()` method extracts the
+  final component of a path as a string operation, treating each segment between
+  separators as a distinct component. Path components like `..` are treated as
+  regular components in the path string, and `file_name()` simply returns the last
+  non-empty component.

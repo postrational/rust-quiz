@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  fn print_ref<T: std::fmt::Display + 'static>(value: &T) {
+      println!("{}", value);
+  }
+
+  fn main() {
+      let string = String::from("hello");
+      print_ref(&string);
+      print_ref(&"world");
+  }
+  ```
+
+  What will this code print?
+answers:
+- hello, world
+- 'Compilation error: `string` does not live long enough'
+- "Compilation error: `&String` does not satisfy `'static` bound"
+- hello, Compilation error on the second call
+correct_answer: 0
+expected_output:
+- hello
+- world
+explanation: |-
+  This question tests understanding of deref coercion and the `'static` bound on
+  types versus lifetimes.
+
+  When `print_ref(&string)` is called, the compiler performs deref coercion from
+  `&String` to `&str`. This means the type parameter `T` is inferred as `&str`,
+  not `String`. The function signature becomes `print_ref::<&str>(value: &&str)`.
+
+  The key insight is understanding what `T: 'static` means when `T` is a reference
+  type like `&str`. The `'static` bound on a type means the type itself cannot
+  contain any non-`'static` references. For `&str`, this constraint is satisfied
+  when the reference itself has a `'static` lifetime (like string literals) OR
+  when the data being referenced is owned and the reference type doesn't capture
+  any non-`'static` lifetimes in its type signature.
+
+  In the case of `&str` derived from a `String`, the `&str` type itself doesn't
+  contain non-`'static` references—it's just a reference to string data. The
+  `'static` bound is about the type structure, not about how long the actual data
+  lives. Since `&str` as a type can be `'static` (as demonstrated by string
+  literals), it satisfies the bound.
+
+  For the second call `print_ref(&"world")`, the string literal `"world"` has type
+  `&'static str`, which clearly satisfies all bounds.
+
+  Both calls succeed and print their respective values. The key takeaway is
+  understanding deref coercion and how `'static` bounds work with reference
+  types—the bound constrains the type structure, not the actual lifetime of the
+  data being referenced.

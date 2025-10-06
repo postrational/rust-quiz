@@ -1,0 +1,50 @@
+question: |-
+  ```rust
+  #[tokio::main]
+  async fn main() {
+      let x = vec![1, 2, 3];
+      
+      let future1 = async move {
+          println!("Future1: {:?}", x);
+          x.len()
+      };
+      
+      let future2 = async move {
+          println!("Future2: {:?}", x);
+          x.first().copied().unwrap_or(0)
+      };
+      
+      let (len, first) = tokio::join!(future1, future2);
+      println!("Results: {} {}", len, first);
+  }
+  ```
+
+  What's the behavior of this async move closure?
+answers:
+- "Prints both futures' output, then \"Results: 3 1\""
+- Compilation error - `x` moved into first future
+- 'Prints "Future1: [1, 2, 3]" then compilation error'
+- Runtime panic - double move of `x`
+correct_answer: 1
+expected_output:
+- 'use of moved value: `x`'
+explanation: |-
+  This question tests understanding of ownership semantics with `async move`
+  closures. The `async move` keyword creates an asynchronous block that takes
+  ownership of all captured variables from the surrounding scope.
+
+  In this code, the first `async move` block captures and takes ownership of `x`
+  when `future1` is created. This means `x` is moved into the closure's internal
+  state. When the second `async move` block tries to capture `x` for `future2`,
+  the value has already been moved and is no longer available in the outer scope.
+
+  Rust's ownership system prevents this at compile time with an error indicating
+  that `x` has been moved. The error occurs during the creation of `future2`, not
+  during execution of the futures. This is a compile-time safety check, not a
+  runtime issue.
+
+  The key takeaway is that each `async move` block creates an independent future
+  that owns its captured data. To use the same data in multiple async move blocks,
+  you need to either clone the data for each future or use shared ownership
+  mechanisms like `Arc` (Atomic Reference Counted pointer) to allow multiple
+  futures to share read access to the same data.

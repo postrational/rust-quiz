@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut v = vec![1, 2, 3];
+      let slice = &mut v[1..];
+      v[0] = 10;
+      println!("{:?}", slice);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- '[2, 3]'
+- 'Compilation error: cannot borrow `v` as mutable because it is also borrowed as mutable'
+- 'Runtime panic: overlapping mutable borrows'
+- '[10, 3]'
+correct_answer: 1
+expected_output:
+- 'error[E0499]: cannot borrow `v` as mutable more than once at a time'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and how they apply
+  to mutable references. The code attempts to create multiple mutable borrows of
+  the same vector, which violates Rust's core safety guarantees.
+
+  When `let slice = &mut v[1..]` executes, it creates a mutable borrow of the
+  vector `v` (specifically a mutable slice to elements from index 1 onward). This
+  mutable borrow remains active until `slice` is no longer used. Then, `v[0] = 10`
+  attempts to mutably access the vector through indexing, which requires another
+  mutable borrow of `v`.
+
+  Even though the slice and the indexed access target different elements of the
+  vector, Rust's borrow checker operates at the level of the entire data
+  structure. It doesn't track which specific elements are borrowed—it only knows
+  that `v` is mutably borrowed. This prevents the second mutable access from
+  compiling.
+
+  The key takeaway is that Rust enforces the rule that you cannot have multiple
+  mutable borrows of the same value at the same time, even if they would access
+  different parts of the data. This prevents data races and ensures memory safety
+  at compile time. To fix this code, you would need to ensure the first mutable
+  borrow (`slice`) is no longer in use before attempting the second mutable access
+  (`v[0] = 10`).

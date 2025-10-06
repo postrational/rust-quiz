@@ -1,0 +1,73 @@
+question: |-
+  ```rust
+  async fn step_one() -> Result<i32, &'static str> {
+      println!("Step 1");
+      Ok(10)
+  }
+
+  async fn step_two(x: i32) -> Result<i32, &'static str> {
+      println!("Step 2: {}", x);
+      if x > 5 {
+          Err("Too big!")
+      } else {
+          Ok(x * 2)
+      }
+  }
+
+  async fn step_three(x: i32) -> Result<i32, &'static str> {
+      println!("Step 3: {}", x);
+      Ok(x + 1)
+  }
+
+  #[tokio::main]
+  async fn main() {
+      let result = async {
+          let a = step_one().await?;
+          let b = step_two(a).await?;
+          let c = step_three(b).await?;
+          Ok::<i32, &'static str>(c)
+      }.await;
+      
+      match result {
+          Ok(val) => println!("Success: {}", val),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  What's the output of this async/await chain?
+answers:
+- 'Prints: "Step 1", "Step 2: 10", "Error: Too big!"'
+- 'Prints: "Step 1", "Step 2: 10", "Step 3: 20", "Success: 21"'
+- Compilation error - cannot use `?` in async block
+- 'Prints: "Step 1", "Error: Too big!"'
+correct_answer: 0
+expected_output:
+- Step 1
+- 'Step 2: 10'
+- 'Error: Too big!'
+explanation: |-
+  This question tests understanding of error propagation with the `?` operator in
+  async contexts and the execution order of async functions.
+
+  The execution proceeds as follows:
+
+  1. `step_one().await?` executes and prints "Step 1", returning `Ok(10)`, so `a =
+  10`.
+
+  2. `step_two(10).await?` executes and prints "Step 2: 10". Since `10 > 5`, the
+  function returns `Err("Too big!")`. The `?` operator then propagates this error
+  immediately, short-circuiting the async block.
+
+  3. `step_three()` is never called because the error from `step_two()` causes
+  early return from the async block.
+
+  4. The `match` statement receives `Err("Too big!")` and prints "Error: Too
+  big!".
+
+  The key takeaway is that the `?` operator short-circuits execution after the
+  awaited future completes with an error. The async function runs to completion
+  (including any side effects like printing), and only then does the `?` operator
+  check the result and propagate the error if necessary. This is the same behavior
+  as `?` in synchronous code - it doesn't prevent the function from executing, but
+  rather handles the error after the function returns.

@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn main() {
+      let s1 = "hello";
+      let s2 = "hello";
+      
+      println!("{}", s1.as_ptr() == s2.as_ptr());
+      println!("{}", std::ptr::eq(s1, s2));
+  }
+  ```
+
+  What does this compile to and print?
+answers:
+- false, false
+- true, true
+- false, true
+- Implementation defined
+correct_answer: 1
+expected_output:
+- 'true'
+- 'true'
+explanation: |-
+  This question tests understanding of string literal interning in Rust. String
+  literals are stored in the binary's read-only data section, and Rust performs
+  string literal interning as an optimization.
+
+  When multiple string literals have identical content (like "hello" in this
+  case), the compiler stores them at the same memory location rather than
+  duplicating the data. This is safe because string literals are immutable and
+  have a 'static lifetime.
+
+  Both `s1` and `s2` are references to string slices (&str) pointing to the same
+  interned "hello" literal. The first comparison, `s1.as_ptr() == s2.as_ptr()`,
+  retrieves the raw pointer to the beginning of each string's data and compares
+  them. Since both point to the same interned string, this returns `true`.
+
+  The second comparison, `std::ptr::eq(s1, s2)`, compares the addresses of the
+  string slice fat pointers themselves. Since both slices point to the same memory
+  location with the same length metadata, this also returns `true`.
+
+  The key takeaway is that string literal interning is a compiler optimization
+  that deduplicates identical string literals within a binary, resulting in both
+  memory savings and pointer equality for identical literals. This behavior is
+  guaranteed for string literals within the same compilation unit.

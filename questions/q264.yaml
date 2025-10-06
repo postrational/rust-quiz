@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert("key", "value");
+      
+      let value_ref = map.get("key").unwrap();
+      map.insert("another", "data");
+      
+      println!("{}", value_ref);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "value"
+- 'Compilation error: cannot borrow `map` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: HashMap reallocated'
+- 'Compilation error: `value_ref` type cannot be inferred'
+correct_answer: 1
+expected_output:
+- 'error[E0502]: cannot borrow `map` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and how they
+  interact with collections like HashMap. The key concept is that Rust enforces
+  that mutable and immutable references cannot coexist for the same data.
+
+  In this code, `map.get("key").unwrap()` returns an immutable reference (`&str`)
+  to the value stored in the HashMap. This reference is stored in `value_ref`,
+  which keeps the immutable borrow active. When the code then attempts to call
+  `map.insert("another", "data")`, it tries to mutably borrow `map`. However,
+  since `value_ref` still holds an immutable reference to data within the map,
+  Rust's borrow checker prevents this mutable borrow.
+
+  The compiler error occurs because Rust's borrowing rules prohibit having both an
+  immutable reference and a mutable reference to the same data at the same time.
+  This rule exists to prevent data races and ensure memory safety. The immutable
+  reference `value_ref` remains valid until it goes out of scope or is no longer
+  used, which in this case extends through the `println!` statement.
+
+  The key takeaway is that when working with collections, any reference obtained
+  from them (like through `get()`) keeps an immutable borrow active, preventing
+  modifications to the collection until that reference is no longer in use. To fix
+  this code, you would need to either drop the reference before the insert, or
+  restructure the code to avoid holding the reference across the mutation.

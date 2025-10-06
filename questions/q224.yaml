@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  mod parent {
+      struct PrivateStruct {
+          pub field: i32,
+      }
+      
+      pub struct PublicStruct {
+          field: i32,
+      }
+      
+      pub fn test() -> i32 {
+          let ps = PublicStruct { field: 10 };
+          ps.field
+      }
+  }
+
+  fn main() {
+      println!("{}", parent::test());
+  }
+  ```
+
+  What happens when this code compiles?
+answers:
+- Compiles successfully and runs
+- Fails because PrivateStruct has a public field
+- Fails because PublicStruct.field is private
+- Fails because parent::test() cannot access private structs
+correct_answer: 0
+expected_output:
+- '10'
+explanation: |-
+  This question tests understanding of Rust's visibility and privacy rules at
+  module boundaries.
+
+  The key concept is that privacy in Rust is enforced at module boundaries, not
+  within modules. Code within a module can access all items and fields defined in
+  that module, regardless of their visibility modifiers.
+
+  In this code:
+  - `PrivateStruct` is private to the `parent` module but is never used, so it has
+  no effect on compilation
+  - `PublicStruct` is public, making the struct type visible outside the module
+  - `PublicStruct.field` is private (lacks the `pub` keyword), but this only
+  restricts access from outside the `parent` module
+  - The `test()` function is defined within the `parent` module, so it can freely
+  access all fields of `PublicStruct`, including the private `field`
+  - Since `test()` is marked `pub`, it can be called from `main()`
+
+  The code compiles successfully because all field access occurs within the
+  defining module. If code outside the `parent` module tried to access
+  `PublicStruct.field` directly, that would fail. The takeaway is that visibility
+  modifiers control access across module boundaries, but within a module, all
+  items are fully accessible.

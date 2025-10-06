@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn process_string(s: &mut String) {
+      let slice = &s[1..];
+      s.push_str(" world");
+      println!("{}", slice);
+  }
+
+  fn main() {
+      let mut text = String::from("hello");
+      process_string(&mut text);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: `ello`'
+- 'Prints: `ello world`'
+- 'Compilation error: cannot borrow `s` as mutable while immutable borrow exists'
+- 'Runtime panic: slice invalidated by string mutation'
+correct_answer: 2
+expected_output:
+- 'error[E0502]: cannot borrow `*s` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the rules
+  preventing simultaneous mutable and immutable borrows.
+
+  In the `process_string` function, the line `let slice = &s[1..]` creates an
+  immutable borrow of the string's content, producing a string slice that
+  references the data starting from index 1. This immutable borrow remains active
+  because `slice` is used later in the `println!` statement.
+
+  The next line, `s.push_str(" world")`, attempts to mutably borrow `s` to modify
+  it by appending text. However, Rust's borrow checker prevents this because an
+  immutable borrow (`slice`) is still active and will be used later. Allowing both
+  borrows simultaneously would violate Rust's aliasing rules and could lead to
+  memory safety issues.
+
+  If this code were allowed to compile, the `push_str` operation could reallocate
+  the string's internal buffer to accommodate the additional text. This
+  reallocation would invalidate the `slice` reference, causing it to point to
+  freed memory—a classic use-after-free bug. Rust's borrow checker prevents this
+  entire class of errors at compile time.
+
+  The key takeaway is that Rust enforces that you cannot have a mutable borrow
+  while any immutable borrows are still in use. This ensures memory safety by
+  preventing references from being invalidated while they're still accessible. To
+  fix this code, you would need to either copy the slice content before modifying
+  the string, or restructure the code so the borrows don't overlap.

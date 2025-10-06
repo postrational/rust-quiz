@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  #[repr(C)]
+  struct Point {
+      x: f64,
+      y: f64,
+  }
+
+  extern "C" {
+      fn distance(p1: Point, p2: Point) -> f64;
+  }
+
+  fn main() {
+      let p1 = Point { x: 0.0, y: 0.0 };
+      let p2 = Point { x: 3.0, y: 4.0 };
+      
+      let dist = unsafe { distance(p1, p2) };
+      println!("Distance: {}", dist);
+  }
+  ```
+
+  What's required for this code to compile and run correctly?
+answers:
+- A C library with a `distance` function must be linked at compile time
+- The `Point` struct must implement `Copy` trait
+- The `extern "C"` block requires `unsafe` annotation
+- The `#[repr(C)]` attribute is unnecessary for simple structs
+correct_answer: 0
+expected_output:
+- 'error: linking with `cc` failed'
+- undefined reference to `distance'
+explanation: |-
+  This question tests understanding of Foreign Function Interface (FFI) and C
+  interoperability in Rust. The `extern "C"` block declares a function that uses
+  the C calling convention, but it only provides a declaration, not an
+  implementation.
+
+  For this code to compile and link successfully, a C library (or object file)
+  containing an actual implementation of the `distance` function must be provided
+  and linked at compile time. Without this, the linker will fail with an
+  "undefined reference to `distance`" error because the symbol cannot be resolved.
+
+  The `#[repr(C)]` attribute is essential for FFI as it ensures the struct uses
+  C-compatible memory layout, preventing Rust from reordering fields or using
+  different padding. The `extern "C"` block itself does not require an `unsafe`
+  annotation—only the call to the C function needs to be wrapped in `unsafe`. The
+  `Copy` trait is not required for passing structs by value across FFI boundaries,
+  though it may be convenient in some cases.
+
+  The key takeaway is that `extern` blocks are declarations that tell the compiler
+  about external symbols, but the actual implementations must be provided by
+  linking appropriate libraries or object files at compile time.

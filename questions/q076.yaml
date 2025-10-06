@@ -1,0 +1,76 @@
+question: |-
+  ```rust
+  use std::ops::{Deref, DerefMut};
+
+  struct Secret<T> {
+      value: T,
+      accessed: bool,
+  }
+
+  impl<T> Secret<T> {
+      fn new(value: T) -> Self {
+          Secret { value, accessed: false }
+      }
+  }
+
+  impl<T> Deref for Secret<T> {
+      type Target = T;
+      
+      fn deref(&self) -> &Self::Target {
+          &self.value
+      }
+  }
+
+  impl<T> DerefMut for Secret<T> {
+      fn deref_mut(&mut self) -> &mut Self::Target {
+          self.accessed = true;
+          &mut self.value
+      }
+  }
+
+  fn main() {
+      let mut secret = Secret::new(String::from("password"));
+      
+      println!("Length: {}", secret.len());
+      secret.push_str("123");
+      
+      println!("Accessed: {}", secret.accessed);
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Length: 8, Accessed: false'
+- 'Length: 8, Accessed: true'
+- Won't compile - cannot call `len()` on `Secret<String>`
+- Won't compile - cannot call `push_str()` without explicit dereference
+correct_answer: 1
+expected_output:
+- 'Length: 8'
+- 'Accessed: true'
+explanation: |-
+  This question tests understanding of Rust's `Deref` and `DerefMut` traits and
+  when each is invoked during method calls.
+
+  The `Secret<T>` struct wraps a value and tracks whether it has been mutably
+  accessed. The key distinction is that `Deref` is used for immutable operations
+  while `DerefMut` is used for mutable operations.
+
+  When `secret.len()` is called, Rust needs to invoke a method on `String`. Since
+  `len()` takes `&self` (an immutable reference), Rust uses the `Deref` trait to
+  coerce `&Secret<String>` to `&String`. This calls `deref()`, which simply
+  returns a reference to the inner value without modifying the `accessed` field.
+
+  When `secret.push_str("123")` is called, `push_str()` requires `&mut self` (a
+  mutable reference). Rust uses the `DerefMut` trait to coerce `&mut
+  Secret<String>` to `&mut String`. This calls `deref_mut()`, which sets `accessed
+  = true` before returning the mutable reference to the inner value.
+
+  Finally, when `secret.accessed` is printed, it shows `true` because the mutable
+  dereference occurred.
+
+  The key takeaway is that `Deref` and `DerefMut` enable deref coercion for method
+  calls, and `DerefMut` is only invoked when a mutable reference is needed. This
+  pattern can be used to track mutations, implement lazy initialization, or add
+  side effects when values are mutably accessed, though such side effects should
+  be used judiciously as they can be surprising to users.

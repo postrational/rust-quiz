@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  trait MyTrait {
+      fn method(&self) -> Self;
+  }
+
+  struct MyStruct;
+
+  impl MyTrait for MyStruct {
+      fn method(&self) -> Self {
+          MyStruct
+      }
+  }
+
+  fn main() {
+      let s = MyStruct;
+      let _trait_obj: &dyn MyTrait = &s;
+  }
+  ```
+
+  What happens when you try to compile this code?
+answers:
+- The code compiles and runs successfully
+- 'Compilation error: the trait `MyTrait` is not dyn compatible'
+- 'Compilation error: `MyStruct` does not implement `MyTrait`'
+- Runtime panic occurs when creating the trait object
+correct_answer: 1
+expected_output:
+- the trait `MyTrait` is not dyn compatible
+- method `method` references the `Self` type in its return type
+explanation: |-
+  This question tests understanding of dyn compatibility (formerly called object
+  safety) in Rust, which determines whether a trait can be used as a trait object
+  (with `dyn`).
+
+  A trait is dyn compatible only if it meets certain criteria. One key requirement
+  is that methods cannot return `Self` (except in specific cases like
+  `Box<Self>`). When a method returns `Self`, the compiler cannot determine the
+  concrete size of the return type at compile time when working with a trait
+  object, since trait objects are dynamically sized.
+
+  In this code, the `method` function in `MyTrait` returns `Self`, which violates
+  dyn compatibility rules. When attempting to create a trait object `&dyn
+  MyTrait`, the compiler detects this violation and produces a compilation error
+  indicating that the trait is not dyn compatible because the method references
+  `Self` in its return type.
+
+  The key takeaway is that not all traits can be used as trait objects. To make a
+  trait dyn compatible, methods should avoid returning `Self` directly, avoid
+  using generic type parameters, and avoid having `where Self: Sized` bounds
+  (unless the method itself is marked with `where Self: Sized` to exclude it from
+  the trait object). Understanding dyn compatibility is crucial when designing
+  traits that need to support dynamic dispatch.

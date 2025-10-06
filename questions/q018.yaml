@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  use std::mem;
+
+  fn main() {
+      let x: Option<&u8> = None;
+      let y: Option<&u8> = Some(&42);
+      
+      println!("{}", mem::size_of_val(&x));
+      println!("{}", mem::size_of_val(&y));
+      println!("{}", mem::size_of::<Option<&u8>>());
+  }
+  ```
+
+  What will this code print?
+answers:
+- 16, 16, 16
+- 8, 8, 8
+- 1, 9, 16
+- 0, 8, 8
+correct_answer: 1
+expected_output:
+- '8'
+- '8'
+- '8'
+explanation: |-
+  This question tests understanding of Rust's null pointer optimization, a memory
+  layout optimization that eliminates overhead for certain `Option` types.
+
+  In general, an `Option<T>` enum needs to store both the value and a discriminant
+  tag to indicate whether it's `Some` or `None`. This typically requires extra
+  memory beyond the size of `T` itself. However, Rust applies a special
+  optimization when the wrapped type has "unused" bit patterns.
+
+  For reference types like `&u8`, Rust knows that valid references can never be
+  null in safe code. This means the null pointer value (all zeros) is an unused
+  bit pattern. Rust leverages this by using the null pointer to represent `None`
+  and any non-null pointer to represent `Some`. This way, no additional
+  discriminant byte is needed.
+
+  On a 64-bit system, a reference `&u8` is 8 bytes (a single pointer). With null
+  pointer optimization, `Option<&u8>` is also exactly 8 bytes—the same size as the
+  reference itself. Both `x` (containing `None`) and `y` (containing `Some(&42)`)
+  are of type `Option<&u8>`, so they both have size 8 bytes.
+
+  The key takeaway is that Rust's null pointer optimization applies to references,
+  `Box<T>`, `NonNull<T>`, function pointers, and other types with unused bit
+  patterns, allowing `Option` wrappers to have zero memory overhead in these
+  cases.

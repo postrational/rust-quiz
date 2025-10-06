@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut v = vec![1, 2, 3];
+      {
+          let r = &mut v[1];
+          *r = 10;
+      }
+      v.push(4);
+      println!("{:?}", v);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '[1, 10, 3, 4]'
+- 'Compilation error: cannot borrow `v` as mutable more than once'
+- 'Runtime panic: mutable borrow during push'
+- '[1, 2, 3, 4]'
+correct_answer: 0
+expected_output:
+- '[1, 10, 3, 4]'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and scope-based
+  lifetime management. The key concept is that borrows are tied to lexical scopes,
+  and when a scope ends, any borrows created within that scope are released.
+
+  In this code, a mutable reference `r` to `v[1]` is created inside an inner block
+  scope. This reference is used to modify the value from 2 to 10. Crucially, when
+  the inner block ends, the mutable borrow `r` goes out of scope and is released.
+  At this point, there are no active borrows of `v`.
+
+  After the inner block, `v.push(4)` can safely execute because it requires a
+  mutable borrow of the entire vector, and no conflicting borrows exist at that
+  point. The borrow checker verifies that the earlier mutable borrow has ended
+  before allowing the new one.
+
+  The final vector contains [1, 10, 3, 4] because the modification to the second
+  element (index 1) persists, and the new element 4 is appended to the end.
+
+  The key takeaway is that Rust's borrow checker uses lexical scopes to determine
+  borrow lifetimes. By placing the mutable borrow in a limited scope, you can
+  ensure it ends before you need to perform other operations that require
+  borrowing the same data. This is a common pattern for managing borrows in Rust
+  code.

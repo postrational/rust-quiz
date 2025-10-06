@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  fn validate_positive(n: i32) -> Result<i32, &'static str> {
+      if n > 0 { Ok(n) } else { Err("not positive") }
+  }
+
+  fn validate_even(n: i32) -> Result<i32, &'static str> {
+      if n % 2 == 0 { Ok(n) } else { Err("not even") }
+  }
+
+  fn main() {
+      let x = Ok(4);
+      
+      let result = x
+          .and_then(validate_positive)
+          .and_then(validate_even);
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok(4)
+- Err("not positive")
+- Err("not even")
+- 'Compilation error: type mismatch in validation chain'
+correct_answer: 0
+expected_output:
+- Ok(4)
+explanation: |-
+  This question tests understanding of `and_then` for chaining Result operations
+  in Rust. The `and_then` method allows you to chain multiple operations that
+  return Results, where each operation only executes if the previous one
+  succeeded.
+
+  In this code, we start with `x = Ok(4)` and chain two validation functions. The
+  execution proceeds as follows:
+
+  1. `.and_then(validate_positive)` is called on `Ok(4)`. Since `x` is `Ok`, the
+  closure is invoked with the value `4`. The function checks if `4 > 0`, which is
+  true, so it returns `Ok(4)`.
+
+  2. `.and_then(validate_even)` is called on the result from step 1, which is
+  `Ok(4)`. Again, since the result is `Ok`, the closure is invoked with `4`. The
+  function checks if `4 % 2 == 0`, which is true, so it returns `Ok(4)`.
+
+  Since both validations pass, the final result is `Ok(4)`.
+
+  The key behavior of `and_then` is that it only calls the provided function if
+  the Result is `Ok`, passing the unwrapped value to the function. If at any point
+  in the chain a function returns an `Err`, that error is propagated and
+  subsequent `and_then` calls are skipped. This creates a validation pipeline
+  where all checks must pass to get an `Ok` result, and the first error
+  encountered stops the chain and becomes the final result.

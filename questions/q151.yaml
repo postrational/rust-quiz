@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  use tokio::time::{sleep, timeout, Duration};
+
+  async fn slow_task(id: u32) -> Result<String, &'static str> {
+      println!("Task {} started", id);
+      sleep(Duration::from_millis(200)).await;
+      println!("Task {} middle", id);
+      sleep(Duration::from_millis(200)).await;
+      println!("Task {} finished", id);
+      Ok(format!("Result {}", id))
+  }
+
+  #[tokio::main]
+  async fn main() {
+      let result = timeout(
+          Duration::from_millis(300),
+          slow_task(1)
+      ).await;
+      
+      match result {
+          Ok(task_result) => println!("Success: {:?}", task_result),
+          Err(_) => println!("Timeout occurred"),
+      }
+      
+      // Give any remaining work time to complete
+      sleep(Duration::from_millis(500)).await;
+  }
+  ```
+
+  What's the output of this async timeout and cancellation scenario?
+answers:
+- 'Prints: "Task 1 started", "Task 1 middle", "Timeout occurred"'
+- 'Prints: "Task 1 started", "Task 1 middle", "Task 1 finished", "Success: Ok(\"Result 1\")"'
+- 'Prints: "Task 1 started", "Timeout occurred", then "Task 1 middle", "Task 1 finished"'
+- 'Prints: "Task 1 started", "Timeout occurred" only'
+correct_answer: 0
+expected_output:
+- Task 1 started
+- Task 1 middle
+- Timeout occurred
+explanation: |-
+  This question tests understanding of async timeout behavior and task
+  cancellation in Tokio. The `timeout` function wraps a future and cancels it if
+  it doesn't complete within the specified duration.
+
+  The timeline of execution is:
+  - At 0ms: "Task 1 started" prints
+  - At 200ms: First sleep completes, "Task 1 middle" prints, second sleep begins
+  - At 300ms: The timeout fires, immediately cancelling the `slow_task` future
+  - At 400ms: The task would have finished, but it was already cancelled
+
+  When `timeout` expires, it immediately cancels the wrapped future. Cancellation
+  in async Rust is cooperative and happens at `.await` points. Once cancelled, the
+  future stops executing and cannot continue, even though there's a subsequent
+  `sleep(500ms)` in main that would theoretically give it time to complete.
+
+  The key takeaway is that `timeout()` provides hard cancellation semantics - when
+  the timeout expires, the future is dropped and cannot continue execution. This
+  is different from some other languages where timeouts might allow graceful
+  cleanup. The cancelled task stops at the next `.await` point (in this case,
+  during the second sleep) and never reaches the "Task 1 finished" print
+  statement.

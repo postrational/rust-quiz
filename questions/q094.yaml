@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  fn main() {
+      let words = vec!["hello", "world", "rust"];
+      
+      let result: String = words
+          .iter()
+          .enumerate()
+          .filter(|(i, _)| i % 2 == 0)
+          .map(|(_, &word)| word)
+          .collect();
+      
+      println!("{}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- hellorust
+- hello rust
+- helloworld
+- 'Compiler error: cannot collect `&str` into `String`'
+correct_answer: 0
+expected_output:
+- hellorust
+explanation: |-
+  This question tests understanding of iterator combinators, particularly
+  `enumerate()`, `filter()`, `map()`, and how `collect()` works with `String`.
+
+  The code processes a vector of string slices through several iterator
+  operations:
+
+  1. **`enumerate()`** adds indices to each element, producing tuples: `(0,
+  "hello")`, `(1, "world")`, `(2, "rust")`
+
+  2. **`filter(|(i, _)| i % 2 == 0)`** keeps only elements at even indices (0 and
+  2), filtering out index 1 ("world")
+
+  3. **`map(|(_, &word)| word)`** extracts just the string slices from the tuples
+  using pattern matching. The `&word` pattern dereferences the reference to get
+  the `&str` value.
+
+  4. **`collect::<String>()`** concatenates the remaining string slices directly
+  into a `String` without any separator, resulting in `"hellorust"`
+
+  The key takeaway is that when collecting an iterator of `&str` into a `String`,
+  Rust concatenates them directly with no separators. If spaces or other
+  separators are needed, you would need to use `join(" ")` on a collected `Vec` or
+  use `intersperse()` in the iterator chain. The pattern matching syntax in
+  closures (`|(i, _)|` and `|(_, &word)|`) is also important for working with
+  tuples in iterator chains.

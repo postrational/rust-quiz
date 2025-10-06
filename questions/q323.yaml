@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  use std::collections::BTreeMap;
+
+  fn main() {
+      let mut map = BTreeMap::new();
+      map.insert(2, "two");
+      map.insert(1, "one");
+      map.insert(3, "three");
+      
+      let slice: Vec<_> = map.range(..2).map(|(k, v)| *k).collect();
+      println!("{:?}", slice);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '[1]'
+- '[2]'
+- '[1, 2]'
+- '[]'
+correct_answer: 0
+expected_output:
+- '[1]'
+explanation: |-
+  This question tests understanding of BTreeMap's range queries and Rust's range
+  syntax. A BTreeMap maintains its entries sorted by key, so even though the
+  insertions happen in the order 2, 1, 3, the map internally stores them as {1:
+  "one", 2: "two", 3: "three"}.
+
+  The `range(..2)` method uses exclusive range syntax, meaning it selects all keys
+  that are strictly less than 2. The `..` syntax creates a range that is exclusive
+  on the upper bound. From the keys [1, 2, 3], only key 1 satisfies the condition
+  of being less than 2.
+
+  The `map` function extracts just the keys (dereferencing them with `*k`), and
+  `collect` gathers them into a vector. Therefore, the output is `[1]`.
+
+  The key takeaway is understanding range syntax in Rust: `..n` is exclusive (less
+  than n), while `..=n` would be inclusive (less than or equal to n). If the range
+  were `..=2`, the result would include both 1 and 2.

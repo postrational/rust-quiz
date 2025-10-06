@@ -1,0 +1,72 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+  use std::rc::Rc;
+
+  fn main() {
+      let mut cache: HashMap<Rc<str>, i32> = HashMap::new();
+      
+      let key1: Rc<str> = Rc::from("hello");
+      let key2: Rc<str> = Rc::from("hello");  
+      let key3 = key1.clone();
+      
+      cache.insert(key1.clone(), 10);
+      cache.insert(key2, 20);
+      cache.insert(key3, 30);
+      
+      println!("Cache size: {}", cache.len());
+      println!("Value for 'hello': {:?}", cache.get("hello"));
+      
+      let key4: Rc<str> = "hello".into();
+      cache.insert(key4, 40);
+      
+      println!("Final cache size: {}", cache.len());
+      for (key, value) in &cache {
+          println!("Key ptr: {:p}, Value: {}", key.as_ptr(), value);
+      }
+  }
+  ```
+
+  What will this code output?
+answers:
+- Cache size 3, value Some(10), final size 4, showing 4 different pointer addresses
+- Cache size 1, value Some(30), final size 1, showing 1 pointer address with value 40
+- Cache size 2, value Some(30), final size 2, showing 2 different pointer addresses
+- 'Compilation error: cannot use Rc<str> as HashMap key without Hash trait'
+correct_answer: 1
+expected_output:
+- 'Cache size: 1'
+- "Value for 'hello': Some(30)"
+- 'Final cache size: 1'
+explanation: |-
+  This question tests understanding of how `Rc<str>` behaves as a HashMap key,
+  specifically how hashing and equality work with reference-counted string slices.
+
+  The key concept is that `Rc<str>` implements `Hash` and `Eq` based on the
+  **string content**, not pointer identity. This means that all `Rc<str>`
+  instances containing the same string content are considered equal keys in a
+  HashMap, regardless of whether they share the same allocation or come from
+  different allocations.
+
+  In the code, multiple `Rc<str>` instances are created:
+  - `key1` is a new allocation containing "hello"
+  - `key2` is a separate new allocation also containing "hello"
+  - `key3` shares `key1`'s allocation (via `clone()`)
+  - `key4` is yet another separate allocation containing "hello"
+
+  When these are inserted into the HashMap:
+  1. `cache.insert(key1.clone(), 10)` creates the first entry for "hello" with
+  value 10
+  2. `cache.insert(key2, 20)` overwrites the entry because `key2` equals "hello",
+  updating to value 20
+  3. `cache.insert(key3, 30)` overwrites again because `key3` also equals "hello",
+  updating to value 30
+  4. `cache.insert(key4, 40)` overwrites once more, updating to value 40
+
+  The result is a HashMap with only one entry (size 1) because all keys are
+  considered equal. The final value is 40, and when iterating, only one pointer
+  address is shown.
+
+  The key takeaway is that smart pointers like `Rc<T>` typically implement `Hash`
+  and `Eq` by delegating to the contained type `T`, making them behave based on
+  content equality rather than pointer identity when used as HashMap keys.

@@ -1,0 +1,74 @@
+question: |-
+  ```rust
+  trait Iterator {
+      type Item;
+      fn next(&mut self) -> Option<Self::Item>;
+  }
+
+  struct Counter {
+      current: usize,
+      max: usize,
+  }
+
+  impl Iterator for Counter {
+      type Item = usize;
+      
+      fn next(&mut self) -> Option<Self::Item> {
+          if self.current < self.max {
+              let current = self.current;
+              self.current += 1;
+              Some(current)
+          } else {
+              None
+          }
+      }
+  }
+
+  fn main() {
+      let mut counter = Counter { current: 0, max: 3 };
+      println!("{:?}", counter.next());
+      println!("{:?}", counter.next());
+      println!("{:?}", counter.next());
+      println!("{:?}", counter.next());
+  }
+  ```
+
+  What will this code output?
+answers:
+- Some(0), Some(1), Some(2), Some(3)
+- Some(1), Some(2), Some(3), None
+- Some(0), Some(1), Some(2), None
+- None, None, None, None
+correct_answer: 2
+expected_output:
+- Some(0)
+- Some(1)
+- Some(2)
+- None
+explanation: |-
+  This question tests understanding of associated types in traits and iterator
+  implementation logic. Associated types allow traits to define placeholder types
+  that implementors must specify. In this case, the `Iterator` trait uses `type
+  Item` as an associated type, which `Counter` implements as `usize`.
+
+  The `Counter` struct maintains a `current` position and a `max` limit. Each call
+  to `next()` checks if `current < max`. If true, it captures the current value,
+  increments the counter, and returns `Some(current)`. If false, it returns
+  `None`.
+
+  Tracing through the execution:
+  - Initial state: `current = 0, max = 3`
+  - First `next()`: `0 < 3` is true, returns `Some(0)`, increments to `current =
+  1`
+  - Second `next()`: `1 < 3` is true, returns `Some(1)`, increments to `current =
+  2`
+  - Third `next()`: `2 < 3` is true, returns `Some(2)`, increments to `current =
+  3`
+  - Fourth `next()`: `3 < 3` is false, returns `None`
+
+  The key takeaway is understanding how associated types work in trait
+  definitions. Associated types are preferred over generic type parameters when
+  there is only one logical type that makes sense for a given implementation. For
+  a `Counter`, there's only one sensible item type, making associated types the
+  appropriate choice. This provides better type inference and cleaner API design
+  compared to using generics.

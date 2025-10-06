@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  fn process(s: &str) -> Result<i32, Box<dyn std::error::Error>> {
+      let n: i32 = s.parse()?;
+      Ok(n * 2)
+  }
+
+  fn main() {
+      println!("{:?}", process("42"));
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok(84)
+- 'Compilation error: type annotations needed for `n`'
+- 'Compilation error: `?` cannot convert `ParseIntError` to `Box<dyn Error>`'
+- Err(ParseIntError { ... })
+correct_answer: 0
+expected_output:
+- Ok(84)
+explanation: |-
+  This question tests understanding of the `?` operator, type annotations, and
+  error conversion with trait objects in Rust.
+
+  The code successfully compiles and runs with the explicit type annotation `let
+  n: i32`. Without this annotation, Rust cannot infer the type for `parse()`
+  because there isn't enough context from the usage alone. The expression `n * 2`
+  could work with multiple numeric types, so the compiler needs explicit guidance.
+
+  **Error Conversion:** The `parse::<i32>()` method returns `Result<i32,
+  ParseIntError>`, while the function signature specifies `Result<i32, Box<dyn
+  std::error::Error>>`. The `?` operator automatically converts the error type
+  from `ParseIntError` to `Box<dyn Error>` because `ParseIntError` implements the
+  `Error` trait, and `Box<dyn Error>` has a blanket `From<E>` implementation for
+  all types `E` that implement `Error`.
+
+  **Execution Flow:** When `process("42")` is called, `"42".parse::<i32>()`
+  returns `Ok(42)`. The `?` operator unwraps this to `n = 42`, then `Ok(42 * 2)`
+  produces `Ok(84)`, which is printed.
+
+  The key takeaway is that `Box<dyn Error>` is a flexible error type that can
+  accept any error implementing the `Error` trait through automatic conversion via
+  the `?` operator. This makes it useful for applications where you want to handle
+  multiple error types without explicit conversion code. However, when using
+  `parse()`, you typically need to provide a type annotation to specify what type
+  you're parsing into.

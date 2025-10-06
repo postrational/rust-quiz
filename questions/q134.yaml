@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel();
+      
+      let tx1 = tx.clone();
+      let tx2 = tx;
+      
+      thread::spawn(move || {
+          tx1.send("Hello").unwrap();
+          drop(tx1);
+      });
+      
+      thread::spawn(move || {
+          tx2.send("World").unwrap();
+          drop(tx2);
+      });
+      
+      for msg in rx {
+          println!("{}", msg);
+      }
+      
+      println!("Done");
+  }
+  ```
+
+  What does this print?
+answers:
+- Hello, World, Done
+- World, Hello, Done
+- Either Hello then World, or World then Hello, followed by Done
+- Compilation error - tx moved twice
+correct_answer: 2
+expected_output:
+- Done
+explanation: |-
+  This question tests understanding of Rust's multiple producer, single consumer
+  (mpsc) channels, thread concurrency, and non-deterministic execution ordering.
+
+  The code creates a channel and clones the sender. The line `let tx1 =
+  tx.clone()` creates a clone of the sender, and `let tx2 = tx` moves the original
+  sender. This is valid because `tx` is only moved once (to `tx2`), while `tx1`
+  holds a separate clone.
+
+  Two threads are spawned concurrently, each with its own sender. The first thread
+  sends "Hello" using `tx1`, and the second sends "World" using `tx2`. Since
+  threads execute concurrently with no synchronization between them, there is no
+  guaranteed order of execution. Either thread could send its message first,
+  depending on thread scheduling by the operating system.
+
+  The `for msg in rx` loop iterates over messages received from the channel. This
+  loop blocks until all senders are dropped. Once both `tx1` and `tx2` are dropped
+  (which happens explicitly via `drop()` calls in each thread), the channel closes
+  and the loop exits. At that point, "Done" is printed.
+
+  The key takeaway is that concurrent threads have non-deterministic execution
+  order unless explicitly synchronized. The mpsc channel remains open as long as
+  at least one sender exists, and the receiving iterator blocks until all senders
+  are dropped. This pattern is commonly used for coordinated shutdown in
+  multi-threaded producer-consumer scenarios.

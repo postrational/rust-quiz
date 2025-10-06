@@ -1,0 +1,58 @@
+question: |-
+  ```rust
+  #[derive(Debug, Clone, PartialEq)]
+  struct Container<T> {
+      value: T,
+      metadata: Box<dyn std::fmt::Display>,
+  }
+
+  fn main() {
+      let c1 = Container {
+          value: 42,
+          metadata: Box::new("info"),
+      };
+      
+      let c2 = c1.clone();
+      println!("{:?}", c1);
+  }
+  ```
+
+  What compilation error occurs?
+answers:
+- Box<dyn Display> cannot be cloned because trait objects don't implement Clone
+- Debug cannot be derived because Box<dyn Display> doesn't implement Debug
+- PartialEq cannot be derived because trait objects cannot be compared
+- All three traits fail to derive for different reasons
+correct_answer: 3
+expected_output:
+- the trait `Debug` is not implemented for `(dyn std::fmt::Display + 'static)`
+- the trait `Clone` is not implemented for `dyn std::fmt::Display`
+- binary operation `==` cannot be applied to type `Box<dyn std::fmt::Display>`
+explanation: |-
+  This question tests understanding of derive macro limitations when working with
+  trait objects. When using `#[derive]` macros, the compiler generates
+  implementations that require all fields to implement the derived trait. With
+  trait objects like `Box<dyn Display>`, multiple issues arise simultaneously.
+
+  **Debug**: The compiler reports that `(dyn std::fmt::Display + 'static)` doesn't
+  implement `Debug`. Trait objects only provide access to methods of the specified
+  trait. Since `Display` doesn't include `Debug` in its trait bounds, the trait
+  object cannot be debugged.
+
+  **Clone**: The trait bound `dyn std::fmt::Display: Clone` is not satisfied.
+  Trait objects cannot be cloned because cloning requires knowing the concrete
+  type to create a new instance. The `Display` trait doesn't require `Clone`, and
+  trait objects erase type information, making it impossible to clone the
+  underlying value.
+
+  **PartialEq**: The binary operation `==` cannot be applied to `Box<dyn
+  std::fmt::Display>`. Trait objects cannot be compared for equality because
+  comparing them would require comparing the underlying concrete types, but the
+  type information has been erased.
+
+  All three derive macros fail because trait objects have fundamental
+  limitations—they erase the concrete type information needed for these
+  operations. The compiler reports all three errors simultaneously. To work with
+  trait objects in such scenarios, you would need to either use concrete types,
+  manually implement these traits with custom logic, or use alternative patterns
+  like enum dispatch that preserve type information.

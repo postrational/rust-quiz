@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  use std::sync::atomic::{AtomicUsize, Ordering};
+  use std::sync::Arc;
+  use std::thread;
+
+  fn main() {
+      let counter = Arc::new(AtomicUsize::new(0));
+      
+      let handles: Vec<_> = (0..3).map(|i| {
+          let counter = Arc::clone(&counter);
+          thread::spawn(move || {
+              let old = counter.fetch_add(10, Ordering::SeqCst);
+              println!("Thread {}: old={}, new={}", i, old, old + 10);
+          })
+      }).collect();
+      
+      for handle in handles {
+          handle.join().unwrap();
+      }
+      
+      println!("Final: {}", counter.load(Ordering::SeqCst));
+  }
+  ```
+
+  What will this code output?
+answers:
+- 'Prints thread results with old values 0,10,20 in random order, then "Final: 30"'
+- 'Prints thread results with old values 0,0,0, then "Final: 10"'
+- 'Runtime panic: fetch_add overflow with concurrent access'
+- 'Compilation error: fetch_add requires mutable reference to atomic'
+correct_answer: 0
+expected_output:
+- 'Final: 30'
+explanation: |-
+  This question tests understanding of atomic fetch-and-modify operations in
+  concurrent Rust programming. The `fetch_add` method is a key atomic operation
+  that combines reading, modifying, and writing in a single indivisible step.
+
+  The `fetch_add(10, Ordering::SeqCst)` operation atomically adds 10 to the
+  counter and returns the previous value before the addition. Unlike separate load
+  and store operations, this is a single atomic operation that cannot be
+  interrupted or interleaved by other threads, preventing race conditions.
+
+  In this code, three threads each call `fetch_add(10)`. Each thread receives a
+  unique \"old\" value: the first thread to execute gets 0 (and increments to 10),
+  the second gets 10 (and increments to 20), and the third gets 20 (and increments
+  to 30). However, the order in which threads execute and print is
+  non-deterministic due to thread scheduling. The thread ID (i) printed may not
+  correspond to the order of execution - for example, Thread 2 might execute
+  before Thread 1.
+
+  The final counter value is always 30, which is the sum of all three increments
+  (3 threads × 10 each). Each thread will print a line showing its thread ID, a
+  unique old value (one of 0, 10, or 20), and the corresponding new value, but the
+  order of these lines is unpredictable. The only deterministic output is the
+  final line showing \"Final: 30\".
+
+  The key takeaway is that atomic fetch-and-modify operations like `fetch_add`
+  provide thread-safe read-modify-write semantics without requiring locks or
+  mutable references. While the operation itself is atomic and guarantees each
+  thread gets a unique previous value, the order of thread execution and output is
+  non-deterministic in concurrent programs.

@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  fn main() {
+      let x = vec![1, 2, 3];
+      let y = x;
+      
+      match y {
+          ref z => {
+              println!("{:?}", z);
+              println!("{:?}", y);
+          }
+      }
+  }
+  ```
+
+  What does this code output?
+answers:
+- '[1, 2, 3] twice'
+- '[1, 2, 3] then compilation error'
+- Compilation error
+- '[1, 2, 3] then []'
+correct_answer: 0
+expected_output:
+- '[1, 2, 3]'
+- '[1, 2, 3]'
+explanation: |-
+  This question tests understanding of the `ref` pattern in match expressions and
+  how it affects ownership and borrowing in Rust.
+
+  When `let y = x;` executes, the vector is moved from `x` to `y`. In the match
+  expression, the pattern `ref z` creates a reference to `y` rather than moving
+  `y` into the pattern variable. This means `z` has type `&Vec<i32>` and borrows
+  `y` instead of taking ownership of it.
+
+  Because `y` was not moved by the match (thanks to the `ref` keyword), it remains
+  valid and can still be used within the match arm. Both `z` (which is `&y`) and
+  `y` refer to the same vector data, so both `println!` statements output `[1, 2,
+  3]`.
+
+  The key takeaway is that the `ref` keyword in patterns creates a reference to
+  the matched value rather than moving it. This is conceptually similar to using
+  `&` in other contexts, but it appears on the left side of the binding in a
+  pattern. Without `ref`, the match would move `y` into the pattern variable,
+  making `y` unusable afterward and causing a compilation error when trying to use
+  `y` in the second `println!`.

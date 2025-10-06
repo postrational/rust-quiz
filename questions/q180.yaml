@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  use std::sync::{Arc, Mutex, Condvar};
+  use std::thread;
+
+  fn main() {
+      let pair = Arc::new((Mutex::new(false), Condvar::new()));
+      let pair2 = Arc::clone(&pair);
+      
+      thread::spawn(move || {
+          let (lock, cvar) = &*pair2;
+          let mut started = lock.lock().unwrap();
+          println!("Thread waiting...");
+          while !*started {
+              started = cvar.wait(started).unwrap();
+          }
+          println!("Thread woken up!");
+      });
+      
+      thread::sleep(std::time::Duration::from_millis(100));
+      
+      let (lock, cvar) = &*pair;
+      let mut started = lock.lock().unwrap();
+      *started = true;
+      println!("Main signaling...");
+      cvar.notify_one();
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Deadlock - main thread blocks forever on mutex acquisition
+- 'Prints all three messages in order: "Thread waiting...", "Main signaling...", "Thread woken up!"'
+- 'Runtime panic: condition variable used without proper mutex synchronization'
+- May miss the signal and thread waits forever
+correct_answer: 1
+expected_output:
+- Thread waiting...
+- Main signaling...
+- Thread woken up!
+explanation: |-
+  This question tests understanding of condition variables (`Condvar`) and their
+  proper usage for thread synchronization in Rust.
+
+  The code demonstrates the classic producer-consumer synchronization pattern.
+  Here's how the execution flows:
+
+  1. The spawned thread acquires the mutex and enters the `while !*started` loop
+  2. It prints "Thread waiting..." and calls `cvar.wait(started)`, which
+  atomically releases the mutex and blocks the thread
+  3. The main thread sleeps for 100ms, giving the spawned thread time to start
+  waiting
+  4. The main thread then acquires the mutex (which is available because `wait()`
+  released it)
+  5. Main sets `*started = true`, prints "Main signaling...", and calls
+  `cvar.notify_one()`
+  6. The spawned thread is woken up, re-acquires the mutex automatically, checks
+  the condition `!*started` (now false), exits the loop, and prints "Thread woken
+  up!"
+
+  The key insight is that `cvar.wait()` atomically releases the mutex and waits
+  for a notification. When notified, it re-acquires the mutex before returning.
+  This prevents race conditions and ensures proper synchronization. The 100ms
+  sleep ensures the spawned thread starts waiting before the main thread signals,
+  guaranteeing the expected output order.
+
+  The while loop pattern (`while !condition { guard =
+  condvar.wait(guard).unwrap(); }`) is the standard idiom for condition variable
+  usage, protecting against spurious wakeups and ensuring the condition is
+  actually met before proceeding.

@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn main() {
+      let v1 = vec![1, 2, 3];
+      let v2 = vec![10, 20, 30];
+      
+      let result: Vec<_> = v1.iter()
+          .chain(v2.iter())
+          .skip(2)
+          .take(3)
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[3, 10, 20]'
+- '[2, 3, 10]'
+- '[10, 20, 30]'
+- '[3, 10]'
+correct_answer: 0
+expected_output:
+- '[3, 10, 20]'
+explanation: |-
+  This question tests understanding of iterator chaining and adapter methods in
+  Rust. The `chain()` method connects two iterators end-to-end, creating a single
+  continuous sequence.
+
+  The execution flow is as follows:
+  1. `v1.iter()` creates an iterator over references to elements in v1: `&1, &2,
+  &3`
+  2. `v2.iter()` creates an iterator over references to elements in v2: `&10, &20,
+  &30`
+  3. `.chain(v2.iter())` concatenates these iterators sequentially: `&1, &2, &3,
+  &10, &20, &30`
+  4. `.skip(2)` skips the first 2 elements (`&1, &2`), leaving: `&3, &10, &20,
+  &30`
+  5. `.take(3)` takes the next 3 elements: `&3, &10, &20`
+  6. `.collect()` gathers these into a vector, dereferencing the values: `[3, 10,
+  20]`
+
+  The key takeaway is that `chain()` concatenates iterators by running the first
+  iterator to completion before starting the second. This allows seamless
+  iteration across multiple collections. The method is lazy and doesn't copy
+  data—it simply creates an adapter that manages the transition between the two
+  underlying iterators. Combined with methods like `skip()` and `take()`, it
+  enables flexible manipulation of sequences from multiple sources.

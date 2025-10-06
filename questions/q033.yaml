@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  trait Display {
+      fn fmt(&self) -> String;
+  }
+
+  trait Debug {
+      fn dbg(&self) -> String;
+  }
+
+  impl Display for i32 {
+      fn fmt(&self) -> String { format!("Display: {}", self) }
+  }
+
+  impl Debug for i32 {
+      fn dbg(&self) -> String { format!("Debug: {}", self) }
+  }
+
+  fn print_both<T>(item: &T) 
+  where 
+      T: Display + Debug
+  {
+      println!("{}", item.fmt());
+      println!("{}", item.dbg());
+  }
+
+  fn main() {
+      let x = 42i32;
+      print_both(&x);
+  }
+  ```
+
+  What does this code print?
+answers:
+- 'Display: 42, Debug: 42'
+- Compilation error - conflicting trait methods
+- 42, 42
+- Compilation error - multiple trait bounds not allowed
+correct_answer: 0
+expected_output:
+- 'Display: 42'
+- 'Debug: 42'
+explanation: |-
+  This question tests understanding of multiple trait bounds and trait method
+  resolution in Rust. The code demonstrates that a type can implement multiple
+  traits simultaneously and that generic functions can require multiple trait
+  bounds using the `+` syntax.
+
+  The code defines two separate traits, `Display` and `Debug`, each with distinct
+  method names (`fmt()` and `dbg()` respectively). Both traits are implemented for
+  the `i32` type with different implementations. The generic function
+  `print_both<T>` uses the trait bound `T: Display + Debug`, which requires that
+  type `T` must implement both traits.
+
+  When `print_both(&x)` is called with an `i32` reference, the compiler verifies
+  that `i32` implements both `Display` and `Debug`. Since both traits are
+  implemented and have different method names, there is no conflict. The method
+  calls `item.fmt()` and `item.dbg()` are unambiguous and resolve to their
+  respective trait implementations, printing "Display: 42" and "Debug: 42".
+
+  The key takeaway is that multiple trait bounds are a fundamental feature of
+  Rust's trait system, allowing functions to require that types implement multiple
+  capabilities. Conflicts only arise when multiple traits define methods with
+  identical names, in which case disambiguation syntax would be required.

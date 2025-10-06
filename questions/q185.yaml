@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  use std::collections::VecDeque;
+
+  fn main() {
+      let mut deque = VecDeque::with_capacity(3);
+      deque.push_back(1);
+      deque.push_back(2);
+      deque.push_front(0);
+      
+      println!("Deque: {:?}", deque);
+      println!("Capacity: {}", deque.capacity());
+      
+      deque.push_back(3);
+      println!("After push_back(3): {:?}", deque);
+      println!("New capacity: {}", deque.capacity());
+      
+      let front = deque.pop_front().unwrap();
+      let back = deque.pop_back().unwrap();
+      println!("Removed front: {}, back: {}", front, back);
+      println!("Remaining: {:?}", deque);
+  }
+  ```
+
+  What will this code output?
+answers:
+- 'Compilation error: VecDeque cannot mix push_front and push_back operations'
+- Prints deque [0,1,2], capacity 3, then [0,1,2,3], capacity 6, removes 0 and 3, remaining [1,2]
+- Prints deque [0,1,2], capacity 4, then [0,1,2,3], capacity 4, removes 0 and 3, remaining [1,2]
+- 'Runtime panic: capacity exceeded when pushing fourth element'
+correct_answer: 1
+expected_output:
+- 'Deque: [0, 1, 2]'
+- 'Capacity: 3'
+- 'After push_back(3): [0, 1, 2, 3]'
+- 'New capacity: 6'
+- 'Removed front: 0, back: 3'
+- 'Remaining: [1, 2]'
+explanation: |-
+  This question tests understanding of VecDeque's double-ended queue operations
+  and automatic capacity management in Rust.
+
+  VecDeque is a growable ring buffer that allows efficient O(1) insertions and
+  deletions at both ends. The code demonstrates several key operations:
+
+  First, three elements are added using both `push_back` (adds to the end) and
+  `push_front` (adds to the beginning). After `push_back(1)`, `push_back(2)`, and
+  `push_front(0)`, the deque contains `[0, 1, 2]` with the initial capacity of 3.
+
+  When `push_back(3)` is called, the deque needs to exceed its current capacity.
+  VecDeque automatically grows its capacity when needed, typically doubling it. In
+  this case, the capacity grows from 3 to 6, and the deque now contains `[0, 1, 2,
+  3]`.
+
+  The `pop_front()` and `pop_back()` operations remove elements from the beginning
+  and end respectively. `pop_front()` removes and returns 0, while `pop_back()`
+  removes and returns 3, leaving `[1, 2]` in the deque.
+
+  The key takeaway is that VecDeque combines dynamic sizing (like Vec) with
+  efficient double-ended operations, making it ideal for implementing queues,
+  stacks, and algorithms that require efficient access to both ends of a
+  collection. Unlike arrays, it automatically manages capacity growth, and unlike
+  Vec, it provides O(1) operations at both ends rather than just the back.

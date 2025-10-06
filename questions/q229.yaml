@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  mod math_utils {
+      pub fn add(a: i32, b: i32) -> i32 { a + b }
+      pub fn multiply(a: i32, b: i32) -> i32 { a * b }
+  }
+
+  mod string_utils {
+      pub fn add(a: &str, b: &str) -> String { format!("{}{}", a, b) }
+      pub fn trim(s: &str) -> &str { s.trim() }
+  }
+
+  use math_utils::*;
+  use string_utils::*;
+
+  fn main() {
+      println!("{}", add(5, 3));
+  }
+  ```
+
+  What happens when this code compiles?
+answers:
+- Prints "8" using the math version of `add`
+- Prints "53" using the string version of `add`
+- Compilation fails due to ambiguous name `add`
+- Compilation succeeds but panics at runtime
+correct_answer: 2
+expected_output:
+- 'error[E0659]: `add` is ambiguous'
+explanation: |-
+  This question tests understanding of glob imports and name conflicts in Rust's
+  module system. When using glob imports (`use module::*`), all public items from
+  that module are brought into the current scope.
+
+  In this code, two glob imports are used: `use math_utils::*;` brings `add(i32,
+  i32) -> i32` into scope, and `use string_utils::*;` brings `add(&str, &str) ->
+  String` into scope. Both functions have the same name `add` but different
+  signatures.
+
+  When the code attempts to call `add(5, 3)` in main, the compiler encounters a
+  name conflict. Unlike languages that support function overloading, Rust does not
+  allow multiple items with the same name in the same scope, regardless of their
+  signatures. The compiler fails at the import level, reporting that the name
+  `add` is defined multiple times or is ambiguous.
+
+  Even though the arguments `(5, 3)` would only type-check with the math version
+  of `add`, Rust's name resolution happens before type checking, so the ambiguity
+  is detected early in the compilation process.
+
+  To resolve this issue, you can use qualified paths (`math_utils::add(5, 3)`),
+  import selectively (`use math_utils::add;` without importing the string
+  version), or use aliases (`use string_utils::add as str_add;`).
+
+  The key takeaway is that glob imports can lead to name conflicts when multiple
+  modules export items with the same name, and Rust will reject such conflicts at
+  compile time to maintain clarity and prevent ambiguity.

@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  use std::cell::Cell;
+
+  fn main() {
+      let data = Cell::new(42);
+      let ptr1 = &data;
+      let ptr2 = &data;
+      
+      ptr1.set(100);
+      println!("{}", ptr2.get());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '42'
+- '100'
+- 'Compilation error: multiple borrows'
+- Runtime panic
+correct_answer: 1
+expected_output:
+- '100'
+explanation: |-
+  This question tests understanding of `Cell<T>` and interior mutability in Rust.
+  `Cell<T>` is a type that provides interior mutability for `Copy` types through
+  shared references.
+
+  Unlike regular Rust borrowing rules that prevent multiple mutable accesses,
+  `Cell<T>` allows mutation through shared references (`&Cell<T>`). This is safe
+  because `Cell` uses `Copy` semantics: the `get()` method copies the value out,
+  and the `set()` method replaces the entire value atomically. There's no actual
+  borrowing of the inner value, so multiple shared references to the same `Cell`
+  can coexist without violating Rust's safety guarantees.
+
+  In this code, both `ptr1` and `ptr2` are immutable references to the same
+  `Cell<i32>`. When `ptr1.set(100)` is called, it replaces the value inside the
+  cell with 100. When `ptr2.get()` is subsequently called, it retrieves the
+  current value from the cell, which is now 100.
+
+  The key takeaway is that `Cell<T>` enables controlled mutation through shared
+  references for `Copy` types without runtime overhead or panic risks. This
+  differs from `RefCell<T>`, which tracks borrows at runtime and can panic if
+  borrowing rules are violated. `Cell` is simpler and more efficient but only
+  works with `Copy` types.

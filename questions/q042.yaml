@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  fn apply_to_all<F>(f: F) 
+  where
+      F: for<'a> Fn(&'a str) -> &'a str
+  {
+      let s1 = "hello";
+      let s2 = "world";
+      println!("{}", f(s1));
+      println!("{}", f(s2));
+  }
+
+  fn identity(s: &str) -> &str { s }
+
+  fn main() {
+      apply_to_all(identity);
+  }
+  ```
+
+  What does this code do?
+answers:
+- Compilation error - higher-rank trait bounds not allowed
+- '`hello`, `world`'
+- Compilation error - lifetime mismatch
+- '`identity`, `identity`'
+correct_answer: 1
+expected_output:
+- hello
+- world
+explanation: |-
+  This question tests understanding of Higher-Rank Trait Bounds (HRTB) in Rust,
+  which use the `for<'a>` syntax to express that a trait must be implemented for
+  all possible lifetimes.
+
+  The key concept is the bound `F: for<'a> Fn(&'a str) -> &'a str`, which means "F
+  must be a function that works for any lifetime 'a". This is more flexible than
+  specifying a single concrete lifetime parameter. The `for<'a>` quantifier
+  indicates that the function must be polymorphic over lifetimes - it must work
+  regardless of what lifetime is chosen.
+
+  The `identity` function has the signature `fn(&str) -> &str`, which with
+  lifetime elision is equivalent to `fn<'a>(&'a str) -> &'a str`. Since `identity`
+  can work with any lifetime (it simply returns its input), it satisfies the HRTB
+  constraint.
+
+  When `apply_to_all(identity)` is called, the function applies `identity` to two
+  different string literals. The call `f(s1)` returns "hello" and `f(s2)` returns
+  "world", which are then printed.
+
+  Higher-rank trait bounds are necessary in situations where a generic function
+  needs to work with closures or function pointers that themselves must be
+  lifetime-polymorphic. Without HRTB, you would need to specify a concrete
+  lifetime that all invocations must share, which is often too restrictive. HRTB
+  allows each invocation of the function to use a different lifetime as needed.

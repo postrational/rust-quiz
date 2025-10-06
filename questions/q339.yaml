@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  struct Fibonacci {
+      curr: u32,
+      next: u32,
+  }
+
+  impl Iterator for Fibonacci {
+      type Item = u32;
+      
+      fn next(&mut self) -> Option<Self::Item> {
+          let result = self.curr;
+          let new_next = self.curr + self.next;
+          self.curr = self.next;
+          self.next = new_next;
+          Some(result)
+      }
+  }
+
+  fn main() {
+      let fib = Fibonacci { curr: 0, next: 1 };
+      let sum: u32 = fib.take(10).sum();
+      println!("{}", sum);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '55'
+- '88'
+- '143'
+- Infinite loop
+correct_answer: 1
+expected_output:
+- '88'
+explanation: |-
+  This question tests understanding of custom iterator implementation in Rust and
+  the Fibonacci sequence. The code implements the Iterator trait for a Fibonacci
+  struct that generates Fibonacci numbers on demand.
+
+  The iterator starts with curr=0 and next=1. On each call to next(), it returns
+  the current value, then updates the state by moving next to curr and computing a
+  new next value as the sum of the previous two numbers.
+
+  Tracing through the first 10 values:
+  1. Returns 0, state becomes (1, 1)
+  2. Returns 1, state becomes (1, 2)
+  3. Returns 1, state becomes (2, 3)
+  4. Returns 2, state becomes (3, 5)
+  5. Returns 3, state becomes (5, 8)
+  6. Returns 5, state becomes (8, 13)
+  7. Returns 8, state becomes (13, 21)
+  8. Returns 13, state becomes (21, 34)
+  9. Returns 21, state becomes (34, 55)
+  10. Returns 34, state becomes (55, 89)
+
+  The sum is: 0 + 1 + 1 + 2 + 3 + 5 + 8 + 13 + 21 + 34 = 88.
+
+  The key takeaway is that custom iterators in Rust maintain internal state and
+  can generate infinite sequences. The take() method limits the iteration to a
+  specific number of elements, and sum() consumes the iterator to compute the
+  total. This demonstrates how Rust's iterator pattern enables lazy evaluation and
+  composable operations on sequences.

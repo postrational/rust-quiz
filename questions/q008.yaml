@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map: HashMap<&str, Vec<i32>> = HashMap::new();
+      
+      map.entry("key").or_insert_with(|| {
+          println!("Creating vector");
+          vec![1, 2, 3]
+      });
+      
+      map.entry("key").or_insert_with(|| {
+          println!("Creating vector");
+          vec![4, 5, 6]
+      });
+      
+      println!("{:?}", map.get("key"));
+  }
+  ```
+
+  What will this code print?
+answers:
+- Creating vector (once), then Some([1, 2, 3])
+- Creating vector (twice), then Some([4, 5, 6])
+- Creating vector (twice), then Some([1, 2, 3])
+- Just Some([1, 2, 3]) with no "Creating vector" output
+correct_answer: 0
+expected_output:
+- Creating vector
+- Some([1, 2, 3])
+explanation: |-
+  This question tests understanding of the `or_insert_with` method on HashMap
+  entries and lazy evaluation in Rust.
+
+  The `or_insert_with` method takes a closure and only executes it when the key
+  doesn't already exist in the map. This is the key behavior being tested.
+
+  In the first call to `map.entry("key").or_insert_with(...)`, the key "key"
+  doesn't exist yet in the HashMap. Therefore, the closure is executed, which
+  prints "Creating vector" and returns `vec![1, 2, 3]`. This vector is then
+  inserted into the map.
+
+  In the second call to `map.entry("key").or_insert_with(...)`, the key "key"
+  already exists in the map. Because the entry is already present, the closure is
+  never executed. This means "Creating vector" is not printed a second time, and
+  the existing value `vec![1, 2, 3]` remains unchanged. The `vec![4, 5, 6]` is
+  never created.
+
+  Finally, `map.get("key")` returns `Some([1, 2, 3])` because that's the value
+  that was inserted during the first call.
+
+  The key takeaway is that `or_insert_with` provides lazy evaluation - the closure
+  is only called when needed (when the key is absent). This is more efficient than
+  `or_insert`, which would always evaluate its argument even if the key already
+  exists.

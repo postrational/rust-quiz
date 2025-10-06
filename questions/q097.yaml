@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  fn main() {
+      let numbers = vec![1, 2, 3, 4, 5];
+      
+      let sum = numbers
+          .iter()
+          .fold(0, |acc, &x| acc + x);
+      
+      let product = numbers
+          .iter()
+          .fold(1, |acc, &x| acc * x);
+      
+      println!("{}, {}", sum, product);
+  }
+  ```
+
+  What does this print?
+answers:
+- 15, 120
+- 0, 1
+- 15, 0
+- 'Compiler error: `fold` consumes the iterator'
+correct_answer: 0
+expected_output:
+- 15, 120
+explanation: |-
+  This question tests understanding of the `fold()` iterator method, one of the
+  most powerful and general-purpose iterator adapters in Rust.
+
+  The `fold()` method performs a reduction operation by:
+  1. Starting with an initial accumulator value
+  2. Applying a closure to each element that takes the accumulator and current
+  item
+  3. Using the closure's return value as the new accumulator for the next
+  iteration
+  4. Returning the final accumulator value
+
+  For the sum calculation, `fold(0, |acc, &x| acc + x)` starts with 0 and adds
+  each element: 0 + 1 = 1, 1 + 2 = 3, 3 + 3 = 6, 6 + 4 = 10, 10 + 5 = 15.
+
+  For the product calculation, `fold(1, |acc, &x| acc * x)` starts with 1 and
+  multiplies each element: 1 × 1 = 1, 1 × 2 = 2, 2 × 3 = 6, 6 × 4 = 24, 24 × 5 =
+  120.
+
+  The choice of initial value is crucial: 0 is the identity element for addition
+  (0 + x = x), while 1 is the identity element for multiplication (1 × x = x).
+
+  Since `.iter()` creates a borrowing iterator, it doesn't consume the vector,
+  allowing `numbers` to be used multiple times. The `fold()` method consumes the
+  iterator it's called on, but not the underlying collection.
+
+  The key takeaway is that `fold()` is a general-purpose reduction that can
+  implement many other iterator methods like `sum()`, `product()`, and even build
+  collections. It's particularly useful when you need custom aggregation logic
+  beyond what specialized methods provide.

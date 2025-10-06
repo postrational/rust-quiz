@@ -6,7 +6,7 @@ export interface QuestionData {
   explanation: string;
 }
 
-const questionModules = import.meta.glob<QuestionData>('../../data/questions/rust/formatted/*.yaml', {
+const questionModules = import.meta.glob<QuestionData>('../questions/*.yaml', {
   eager: true,
 });
 

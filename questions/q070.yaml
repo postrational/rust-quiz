@@ -1,0 +1,81 @@
+question: |-
+  ```rust
+  trait Animal {
+      fn make_sound(&self) -> String;
+      fn clone_animal(&self) -> Box<dyn Animal>;
+  }
+
+  struct Dog;
+  struct Cat;
+
+  impl Animal for Dog {
+      fn make_sound(&self) -> String {
+          "Woof!".to_string()
+      }
+      
+      fn clone_animal(&self) -> Box<dyn Animal> {
+          Box::new(Dog)
+      }
+  }
+
+  impl Animal for Cat {
+      fn make_sound(&self) -> String {
+          "Meow!".to_string()
+      }
+      
+      fn clone_animal(&self) -> Box<dyn Animal> {
+          Box::new(Cat)
+      }
+  }
+
+  fn main() {
+      let animals: Vec<Box<dyn Animal>> = vec![
+          Box::new(Dog),
+          Box::new(Cat),
+      ];
+      
+      let cloned: Vec<Box<dyn Animal>> = animals
+          .iter()
+          .map(|a| a.clone_animal())
+          .collect();
+      
+      for animal in &cloned {
+          println!("{}", animal.make_sound());
+      }
+  }
+  ```
+
+  What does this code demonstrate?
+answers:
+- This won't compile - `Animal` is not object-safe because of `clone_animal`
+- This won't compile - you can't have `Box<dyn Animal>` in a Vec
+- This compiles and prints "Woof!" and "Meow!" - it's a workaround for cloning trait objects
+- This compiles but causes a runtime panic when calling `clone_animal`
+correct_answer: 2
+expected_output:
+- Woof!
+- Meow!
+explanation: |-
+  This question tests understanding of object safety and the pattern for cloning
+  trait objects in Rust.
+
+  The code demonstrates a workaround for cloning trait objects. The standard
+  `Clone` trait cannot be used with trait objects because it returns `Self`, which
+  makes it non-object-safe. When a trait method returns `Self`, the compiler
+  cannot determine the size of the return type at compile time for dynamic
+  dispatch.
+
+  The `clone_animal` method solves this by returning `Box<dyn Animal>` instead of
+  `Self`. This is object-safe because the return type has a known size (a boxed
+  trait object). Each concrete implementation (`Dog` and `Cat`) knows its own type
+  and can construct a new instance of itself, wrapping it in a `Box<dyn Animal>`.
+
+  When the code runs, it creates a vector of trait objects, clones them using the
+  custom `clone_animal` method, and then iterates over the cloned animals to print
+  their sounds. The output is "Woof!" followed by "Meow!".
+
+  This pattern is commonly used in scenarios requiring dynamic dispatch with
+  cloning capabilities, such as plugin systems, UI frameworks, and game engines.
+  The key takeaway is that while `Clone` itself is not object-safe, you can create
+  a custom cloning method that returns a boxed trait object to achieve similar
+  functionality with trait objects.

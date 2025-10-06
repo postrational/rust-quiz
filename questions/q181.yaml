@@ -1,0 +1,80 @@
+question: |-
+  ```rust
+  use std::sync::{Arc, RwLock};
+  use std::thread;
+
+  fn main() {
+      let data = Arc::new(RwLock::new(vec![1, 2, 3]));
+      
+      let readers: Vec<_> = (0..3).map(|i| {
+          let data = Arc::clone(&data);
+          thread::spawn(move || {
+              let guard = data.read().unwrap();
+              println!("Reader {} sees: {:?}", i, *guard);
+              thread::sleep(std::time::Duration::from_millis(100));
+              println!("Reader {} done", i);
+          })
+      }).collect();
+      
+      thread::sleep(std::time::Duration::from_millis(50));
+      
+      let writer = {
+          let data = Arc::clone(&data);
+          thread::spawn(move || {
+              println!("Writer trying to acquire lock...");
+              let mut guard = data.write().unwrap();
+              guard.push(4);
+              println!("Writer modified data: {:?}", *guard);
+          })
+      };
+      
+      for reader in readers {
+          reader.join().unwrap();
+      }
+      writer.join().unwrap();
+  }
+  ```
+
+  What will this code do?
+answers:
+- All readers complete first, then writer acquires lock and modifies data
+- Writer starves - readers keep renewing locks and writer never gets access
+- 'Compilation error: cannot have multiple read locks simultaneously'
+- 'Runtime panic: write lock attempted while read locks active'
+correct_answer: 0
+expected_output:
+- 'Reader 0 sees: [1, 2, 3]'
+- 'Reader 1 sees: [1, 2, 3]'
+- 'Reader 2 sees: [1, 2, 3]'
+- Writer trying to acquire lock...
+- Reader 0 done
+- Reader 1 done
+- Reader 2 done
+- 'Writer modified data: [1, 2, 3, 4]'
+explanation: |-
+  This question tests understanding of RwLock (read-write lock) semantics and
+  reader-writer coordination in Rust's concurrency model.
+
+  An RwLock allows multiple concurrent readers OR one exclusive writer, but not
+  both simultaneously. This is a common synchronization primitive that optimizes
+  for read-heavy workloads.
+
+  In this code, three reader threads spawn and immediately acquire read locks.
+  RwLock permits all three to hold read locks concurrently since they don't modify
+  the data. Each reader prints what it sees, then sleeps for 100ms while still
+  holding the lock.
+
+  After 50ms, the main thread spawns a writer thread that attempts to acquire a
+  write lock. However, the writer must wait because read locks are still active.
+  The writer blocks until all readers release their locks.
+
+  After the full 100ms, the readers complete their sleep, print their "done"
+  messages, and release their read locks. Only then can the writer acquire the
+  write lock, modify the data by pushing 4 to the vector, and print the modified
+  result.
+
+  The key takeaway is that RwLock provides fairness and prevents writer
+  starvation. While the writer must wait for existing readers to finish, Rust's
+  RwLock implementation typically prevents new readers from acquiring locks once a
+  writer is waiting. This ensures writers eventually get access rather than being
+  indefinitely blocked by a continuous stream of readers.

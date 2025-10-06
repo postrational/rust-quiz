@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  // src/lib.rs
+  pub mod a {
+      use crate::b::GLOBAL_B;
+      pub const GLOBAL_A: i32 = GLOBAL_B + 10;
+  }
+
+  pub mod b {
+      pub const GLOBAL_B: i32 = 42;
+  }
+
+  fn main() {
+      println!("{}", a::GLOBAL_A);
+  }
+  ```
+
+  What happens when this code compiles and runs?
+answers:
+- Prints 52
+- Compilation fails because GLOBAL_B is not yet defined when GLOBAL_A uses it
+- Runtime error because constants cannot reference other module constants
+- Compilation succeeds and prints 52
+correct_answer: 3
+expected_output:
+- '52'
+explanation: |-
+  This question tests understanding of constant evaluation and module dependencies
+  in Rust. Constants in Rust are evaluated at compile time, and the compiler can
+  resolve constant dependencies across modules regardless of module declaration
+  order.
+
+  In this code, `GLOBAL_B` is defined as `42` in module `b`, and `GLOBAL_A` in
+  module `a` references it using `crate::b::GLOBAL_B` and adds `10`, resulting in
+  `52`. The `use` statement brings the constant into scope for module `a`.
+
+  Unlike runtime initialization where order matters, Rust's const evaluation
+  happens during compilation after all modules are parsed. This means the compiler
+  can resolve cross-module constant dependencies automatically, even when a
+  constant references another constant that appears later in the source code.
+
+  The output prints `52` because `GLOBAL_A` evaluates to `42 + 10 = 52` at compile
+  time.
+
+  The key takeaway is that constants can reference other constants from different
+  modules, and Rust's compiler resolves these dependencies at compile time
+  regardless of declaration order. This is different from static variables with
+  runtime initialization, where initialization order can be more complex.

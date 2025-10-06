@@ -1,0 +1,40 @@
+question: |-
+  ```rust
+  fn main() {
+      let x: Result<i32, &str> = Err("first error");
+      let y: Result<i32, &str> = Err("second error");
+      let z: Result<i32, &str> = Ok(100);
+      
+      let result = x.or(y).or(z);
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- Err("first error")
+- Err("second error")
+- Ok(100)
+- 'Compilation error: cannot chain `or` methods'
+correct_answer: 2
+expected_output:
+- Ok(100)
+explanation: |-
+  This question tests understanding of the `or` method on `Result` types, which
+  implements a fallback chain pattern. The `or` method tries alternatives until
+  one succeeds.
+
+  When `x.or(y).or(z)` is evaluated, it proceeds left to right. First, `x.or(y)`
+  is evaluated: since `x` is `Err("first error")`, the method returns the
+  alternative `y`, which is `Err("second error")`. Next, this result is chained
+  with `.or(z)`: since the previous result is still an `Err`, it returns the
+  alternative `z`, which is `Ok(100)`.
+
+  The key behavior of `or` is that it returns `self` if `self` is `Ok`, otherwise
+  it returns the argument. This creates a fallback mechanism that stops at the
+  first `Ok` value encountered from left to right.
+
+  The key takeaway is that `or` is useful for implementing retry logic or fallback
+  mechanisms where you want to try multiple alternatives until one succeeds. This
+  contrasts with `and`, which chains successes and stops at the first `Err`.

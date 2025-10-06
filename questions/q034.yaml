@@ -1,0 +1,84 @@
+question: |-
+  ```rust
+  // Version A - Generic type parameter
+  trait ContainerA<T> {
+      fn get(&self) -> &T;
+  }
+
+  struct MyVecA<T>(Vec<T>);
+
+  impl<T> ContainerA<T> for MyVecA<T> {
+      fn get(&self) -> &T {
+          &self.0[0]
+      }
+  }
+
+  // Version B - Associated type
+  trait ContainerB {
+      type Item;
+      fn get(&self) -> &Self::Item;
+  }
+
+  struct MyVecB<T>(Vec<T>);
+
+  impl<T> ContainerB for MyVecB<T> {
+      type Item = T;
+      fn get(&self) -> &Self::Item {
+          &self.0[0]
+      }
+  }
+
+  fn main() {
+      let vec_a = MyVecA(vec![1, 2, 3]);
+      let vec_b = MyVecB(vec![1, 2, 3]);
+      
+      println!("{}", vec_a.get());
+      println!("{}", vec_b.get());
+  }
+  ```
+
+  Which version compiles?
+answers:
+- Both versions compile and work identically
+- Only A compiles
+- Only B compiles
+- Both compile but behave differently
+correct_answer: 0
+expected_output:
+- '1'
+- '1'
+explanation: |-
+  This question tests understanding of the difference between generic type
+  parameters and associated types in traits.
+
+  Both approaches are valid and produce the same behavior in this example:
+
+  **Version A (Generic Type Parameter):**
+  - `ContainerA<T>` uses a generic type parameter on the trait itself
+  - This allows multiple implementations for the same type with different `T`
+  values
+  - For example, `MyVecA<i32>` could implement both `ContainerA<i32>` and
+  `ContainerA<String>` if needed
+  - More flexible but requires specifying the type parameter when using the trait
+
+  **Version B (Associated Type):**
+  - `ContainerB` uses an associated type `Item`
+  - There can only be one implementation of `ContainerB` per type
+  - The associated type is determined by the implementation
+  - Cleaner syntax and usually preferred when there's one logical type
+  relationship
+
+  In this code, both versions successfully implement their respective traits for
+  `MyVec<T>`, and both `get()` methods return a reference to the first element.
+  The output is identical: both print `1`.
+
+  **When to use each:**
+  - **Generic type parameter**: Use when a type might have multiple valid
+  implementations with different type arguments (like `From<T>` in the standard
+  library)
+  - **Associated type**: Use when there's one logical type relationship per
+  implementation (like `Iterator::Item` in the standard library)
+
+  The key takeaway is that associated types and generic type parameters serve
+  different design purposes, but both are valid approaches depending on the
+  flexibility requirements of your trait design.

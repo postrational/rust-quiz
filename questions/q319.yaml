@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      let key = String::from("test");
+      map.insert(&key, 42);
+      drop(key);
+      println!("{}", map.len());
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: 1'
+- 'Prints: 0'
+- 'Compilation error: borrow after move'
+- 'Compilation error: borrowed value does not live long enough'
+correct_answer: 2
+expected_output:
+- cannot move out of `key` because it is borrowed
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and the interaction
+  between borrows and moves. The code attempts to insert a reference `&key` into a
+  HashMap, which creates a borrow of `key`. Then it tries to move `key` by calling
+  `drop(key)`, while the borrow is still active (the HashMap still holds the
+  reference and uses it in the subsequent `println!` statement).
+
+  Rust's borrow checker prevents this scenario because allowing a move while a
+  borrow exists would create a dangling reference. The error message "cannot move
+  out of `key` because it is borrowed" (E0505) indicates that you cannot move
+  ownership of a value while references to it are still in use.
+
+  The borrow occurs at `map.insert(&key, 42)` where the HashMap stores a reference
+  to `key`. This borrow must remain valid for as long as the map needs to use it.
+  The attempted move at `drop(key)` would invalidate that reference, so the
+  compiler rejects it. The borrow is later used when `map.len()` is called, as the
+  map still needs access to its keys.
+
+  In practice, using references as HashMap keys creates complex lifetime
+  constraints and is rarely the right choice. Better approaches include using
+  owned values like `String` directly as keys, or using string slices `&str` when
+  the underlying data has a suitable lifetime. The key takeaway is that Rust
+  enforces that you cannot move a value while it is borrowed, preventing
+  use-after-free bugs at compile time.

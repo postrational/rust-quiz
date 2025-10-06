@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::with_capacity(0);
+      map.insert(1, "one");
+      map.insert(2, "two");
+      
+      println!("{}", map.capacity() >= 2);
+  }
+  ```
+
+  What does this program print?
+answers:
+- 'true'
+- 'false'
+- Compilation error
+- The result is unspecified
+correct_answer: 0
+expected_output:
+- 'true'
+explanation: |-
+  This question tests understanding of HashMap capacity management and dynamic
+  memory allocation in Rust.
+
+  When a HashMap is created with `with_capacity(0)`, it starts with no
+  pre-allocated space for storing elements. However, as soon as elements are
+  inserted, the HashMap must allocate memory to accommodate them.
+
+  After inserting two elements into a HashMap that started with zero capacity, the
+  HashMap will have reallocated to provide sufficient space. While the exact
+  capacity after reallocation depends on the HashMap's internal growth strategy
+  (which typically involves doubling capacity and considering load factors), the
+  capacity is guaranteed to be at least large enough to hold the inserted
+  elements.
+
+  Therefore, after inserting 2 elements, `map.capacity()` will return a value that
+  is at least 2 (and likely higher due to growth strategies). The expression
+  `map.capacity() >= 2` evaluates to `true`.
+
+  The key takeaway is that HashMap dynamically manages its capacity, automatically
+  growing as needed when elements are inserted, regardless of the initial capacity
+  specified. The `capacity()` method returns the number of elements the map can
+  hold without reallocating, which will always be sufficient for the currently
+  stored elements.

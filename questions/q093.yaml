@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  fn main() {
+      let numbers = vec![1, 2, 3, 4, 5];
+      
+      let mut iter = numbers.iter();
+      
+      let first = iter.next();
+      let second = iter.next();
+      
+      let remaining: Vec<_> = iter.collect();
+      
+      println!("{:?}, {:?}, {:?}", first, second, remaining);
+  }
+  ```
+
+  What does this print?
+answers:
+- Some(1), Some(2), [3, 4, 5]
+- Some(&1), Some(&2), [&3, &4, &5]
+- 'Compiler error: cannot move out of `iter` after calling `next()`'
+- 1, 2, [3, 4, 5]
+correct_answer: 0
+expected_output:
+- Some(1), Some(2), [3, 4, 5]
+explanation: |-
+  This question tests understanding of iterator types and how Rust's debug
+  formatter displays references.
+
+  When calling `.iter()` on a vector, it creates an iterator that yields
+  references to the elements (`Iterator<Item = &i32>`), not the elements
+  themselves. This allows iteration without taking ownership or moving values out
+  of the collection.
+
+  In this code:
+  - `numbers.iter()` creates an iterator of type `Iterator<Item = &i32>`
+  - `iter.next()` returns `Option<&i32>`, so `first` contains `Some(&1)` (a
+  reference to 1)
+  - Similarly, `second` contains `Some(&2)` (a reference to 2)
+  - `iter.collect()` gathers the remaining references into a `Vec<&i32>`,
+  resulting in a vector containing `[&3, &4, &5]`
+
+  However, when using the `{:?}` debug formatter, Rust's default behavior is to
+  dereference and display the values themselves for common types like integers,
+  rather than explicitly showing the `&` symbol. This is why the output appears as
+  `Some(1), Some(2), [3, 4, 5]` even though the underlying types are references.
+
+  The key takeaway is understanding the difference between the three main
+  iteration methods:
+  - `.iter()` yields `&T` (immutable references)
+  - `.iter_mut()` yields `&mut T` (mutable references)
+  - `.into_iter()` yields `T` (owned values, consuming the collection)
+
+  While `.iter()` does produce references, the debug output may not always make
+  this visually obvious for primitive types.

@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  macro_rules! create_function {
+      ($name:ident) => {
+          fn $name() -> i32 {
+              let x = 10;
+              x * 2
+          }
+      };
+  }
+
+  create_function!(double_it);
+
+  fn main() {
+      let x = 5;
+      println!("{}", double_it());
+      println!("{}", x);
+  }
+  ```
+
+  What does this program output?
+answers:
+- 20 then 5
+- 10 then 5
+- 20 then 10
+- Compilation fails due to variable name conflict
+correct_answer: 0
+expected_output:
+- '20'
+- '5'
+explanation: |-
+  This question tests understanding of macro hygiene in Rust. Macro hygiene is a
+  feature that prevents variables declared in different scopes from interfering
+  with each other, even when macros expand code into various contexts.
+
+  The macro `create_function!(double_it);` expands to create a function named
+  `double_it` that declares a local variable `x` with value 10 and returns `x *
+  2`, which equals 20.
+
+  When the program executes, `double_it()` is called first, which returns 20 and
+  prints it. Then the `x` variable in `main`'s scope (which has value 5) is
+  printed.
+
+  The crucial concept here is that the `x` inside the generated `double_it()`
+  function is completely separate from the `x` in `main()`. Rust's macro hygiene
+  ensures that variables in macro expansions don't conflict with variables in the
+  calling scope. Each variable exists in its own scope: one inside the function
+  created by the macro, and one in the `main` function.
+
+  The key takeaway is that Rust macros are hygienic by default, meaning
+  identifiers introduced by macro expansions are kept separate from identifiers in
+  the surrounding code, preventing accidental variable capture and naming
+  conflicts.

@@ -1,0 +1,66 @@
+question: |-
+  ```rust
+  use tokio::time::{sleep, Duration};
+
+  async fn fast_path() -> i32 {
+      sleep(Duration::from_millis(100)).await;
+      println!("Fast path completed");
+      42
+  }
+
+  async fn slow_path() -> i32 {
+      sleep(Duration::from_millis(300)).await;
+      println!("Slow path completed");
+      99
+  }
+
+  #[tokio::main]
+  async fn main() {
+      tokio::select! {
+          result = fast_path() => {
+              println!("Got fast result: {}", result);
+          }
+          result = slow_path() => {
+              println!("Got slow result: {}", result);
+          }
+      }
+      
+      sleep(Duration::from_millis(500)).await;
+      println!("Main finished");
+  }
+  ```
+
+  What happens with this async select and branch racing?
+answers:
+- 'Prints: "Fast path completed", "Got fast result: 42", "Slow path completed", "Main finished"'
+- 'Prints: "Fast path completed", "Got fast result: 42", "Main finished"'
+- 'Prints: "Slow path completed", "Got slow result: 99", "Main finished"'
+- Prints both paths completing, then both results
+correct_answer: 1
+expected_output:
+- Fast path completed
+- 'Got fast result: 42'
+- Main finished
+explanation: |-
+  This question tests understanding of Tokio's `select!` macro and how it handles
+  racing async operations.
+
+  The `select!` macro races multiple async operations concurrently and executes
+  the branch corresponding to whichever operation completes first. Critically,
+  when one branch completes, all other pending branches are immediately cancelled.
+
+  In this code, both `fast_path()` and `slow_path()` begin executing concurrently
+  when the `select!` block is entered. The `fast_path()` sleeps for 100ms while
+  `slow_path()` sleeps for 300ms. After 100ms, `fast_path()` completes first,
+  printing "Fast path completed" and returning 42. The `select!` macro immediately
+  takes the first branch, printing "Got fast result: 42".
+
+  At this point, `slow_path()` is cancelled and dropped. It never gets to complete
+  its sleep or print "Slow path completed". The program then continues, sleeping
+  for an additional 500ms before printing "Main finished".
+
+  The key takeaway is that `select!` implements a first-wins racing pattern where
+  only the fastest branch executes to completion, and all losing branches are
+  immediately cancelled without any cleanup or completion. This makes `select!`
+  ideal for timeout scenarios, racing multiple data sources, or implementing
+  "whichever completes first" logic in async code.

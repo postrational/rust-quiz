@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  fn main() {
+      let strings = vec!["1", "2", "not a number", "4"];
+      
+      let numbers: Vec<_> = strings
+          .iter()
+          .map(|s| s.parse::<i32>())
+          .filter_map(Result::ok)
+          .collect();
+      
+      println!("{:?}", numbers);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[1, 2, 4]'
+- 'Compilation error: type mismatch'
+- '[1, 2]'
+- Panic on parse error
+correct_answer: 0
+expected_output:
+- '[1, 2, 4]'
+explanation: |-
+  This question tests understanding of iterator methods and how method references
+  work in Rust, particularly with `filter_map` and `Result::ok`.
+
+  The code successfully compiles and runs. While `Result::ok` might look unusual,
+  it actually works as a valid function pointer in this context. The `ok` method
+  on `Result<T, E>` has the signature `fn ok(self) -> Option<T>`, which matches
+  what `filter_map` expects: a function that takes the iterator's item type and
+  returns an `Option`.
+
+  The iterator chain works as follows:
+  - `map(|s| s.parse::<i32>())` produces an iterator of `Result<i32,
+  ParseIntError>` values
+  - `filter_map(Result::ok)` applies the `ok` method to each `Result`, converting
+  `Ok(value)` to `Some(value)` and `Err(_)` to `None`, then filters out the `None`
+  values
+  - `collect()` gathers the remaining values into a `Vec`
+
+  The string "not a number" fails to parse, producing an `Err` which becomes
+  `None` and is filtered out. The other three strings parse successfully as 1, 2,
+  and 4.
+
+  The key takeaway is that Rust allows method names to be used as function
+  pointers when the signature matches. The `Result::ok` syntax refers to the `ok`
+  method as a function, which can be passed to higher-order functions like
+  `filter_map`. This pattern is commonly used to filter out errors and keep only
+  successful values from an iterator of `Result`s.

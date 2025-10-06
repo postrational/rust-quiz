@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
+      let r1 = &s;
+      let r2 = &s;
+      println!("{} {}", r1, r2);
+      
+      let r3 = &mut s;
+      r3.push_str(" world");
+      println!("{}", r3);
+  }
+  ```
+
+  What does this code print?
+answers:
+- hello hello, hello world
+- Compilation error - cannot borrow as mutable while immutable borrows exist
+- hello hello, then runtime panic
+- hello hello, hello
+correct_answer: 0
+expected_output:
+- hello hello
+- hello world
+explanation: |-
+  This question tests understanding of Rust's non-lexical lifetimes (NLL), a
+  feature that makes the borrow checker more precise about when borrows actually
+  end.
+
+  In earlier versions of Rust (before NLL), borrows were considered active for
+  their entire lexical scope, which would have caused this code to fail
+  compilation. The immutable borrows `r1` and `r2` would have been considered
+  active until the end of `main`, preventing the mutable borrow `r3` from being
+  created.
+
+  However, with non-lexical lifetimes, the borrow checker tracks the actual usage
+  of references more precisely. The immutable borrows `r1` and `r2` are only used
+  in the first `println!` statement. After that line executes, these borrows are
+  no longer active, even though the variables are still in scope. This means that
+  by the time `r3 = &mut s` is created, there are no active immutable borrows, so
+  the mutable borrow is allowed.
+
+  The code successfully prints "hello hello" from the first println, then modifies
+  the string to add " world", and finally prints "hello world" from the second
+  println.
+
+  The key takeaway is that NLL allows borrows to end at their last use rather than
+  at the end of their scope, making Rust's borrowing rules more flexible while
+  maintaining memory safety guarantees.

@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  macro_rules! vec_of_strings {
+      ($($x:expr),*) => {
+          vec![$($x.to_string()),*]
+      };
+  }
+
+  fn main() {
+      let words = vec_of_strings!("hello", "world", 42, true);
+      println!("{:?}", words);
+  }
+  ```
+
+  What does this program output?
+answers:
+- '["hello", "world", "42", "true"]'
+- Compilation fails because 42 and true don't implement to_string()
+- '["hello", "world"] - stops at the first non-string'
+- Compilation fails due to incorrect repetition syntax
+correct_answer: 0
+expected_output:
+- '["hello", "world", "42", "true"]'
+explanation: |-
+  This question tests understanding of Rust macro repetition patterns and the
+  ToString trait. The macro `vec_of_strings!` uses the pattern `($($x:expr),*)` to
+  capture a comma-separated list of expressions, and the expansion
+  `vec![$($x.to_string()),*]` applies `.to_string()` to each captured expression.
+
+  When the macro is invoked with `vec_of_strings!("hello", "world", 42, true)`, it
+  expands to `vec!["hello".to_string(), "world".to_string(), 42.to_string(),
+  true.to_string()]`. The key insight is that in Rust, many primitive types
+  implement the `ToString` trait, including string literals (`&str`), integers
+  (`i32`), and booleans (`bool`).
+
+  Each expression is converted to a `String`:
+  - `"hello".to_string()` produces `"hello"`
+  - `"world".to_string()` produces `"world"`
+  - `42.to_string()` produces `"42"`
+  - `true.to_string()` produces `"true"`
+
+  The result is a `Vec<String>` containing all four converted values: `["hello",
+  "world", "42", "true"]`.
+
+  The key takeaway is that Rust's `ToString` trait is widely implemented across
+  primitive types, making it possible to convert various types to strings
+  uniformly. Macro repetition patterns with `$()*` apply the same transformation
+  to each captured element, making them powerful tools for generating repetitive
+  code patterns.

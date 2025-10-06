@@ -1,0 +1,61 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+  use std::hash::{Hash, Hasher};
+
+  #[derive(Debug)]
+  struct BadKey(i32);
+
+  impl PartialEq for BadKey {
+      fn eq(&self, other: &Self) -> bool { true }
+  }
+
+  impl Eq for BadKey {}
+
+  impl Hash for BadKey {
+      fn hash<H: Hasher>(&self, state: &mut H) {
+          self.0.hash(state);
+      }
+  }
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert(BadKey(1), "first");
+      map.insert(BadKey(2), "second");
+      println!("{}", map.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '1'
+- '2'
+- Undefined behavior
+correct_answer: 2
+expected_output:
+- '2'
+explanation: |-
+  This question tests understanding of the Hash and PartialEq contract
+  requirements for HashMap keys. The `BadKey` type violates a fundamental
+  invariant: equal keys must produce equal hash values.
+
+  In this implementation, `BadKey(1).eq(&BadKey(2))` returns `true` (all instances
+  are considered equal), but `BadKey(1)` and `BadKey(2)` hash to different values
+  (1 and 2 respectively). This breaks HashMap's internal consistency assumptions.
+
+  When inserting keys, HashMap uses the hash value to determine which bucket to
+  place the entry in. Since `BadKey(1)` and `BadKey(2)` have different hash
+  values, they are placed in different buckets. Even though they are "equal"
+  according to the `PartialEq` implementation, HashMap doesn't detect this during
+  insertion because it relies on hash values for bucket placement, not equality
+  checks.
+
+  As a result, both entries remain in the map, and `map.len()` returns 2. This
+  demonstrates HashMap corruption where supposedly equal keys can coexist as
+  separate entries.
+
+  The key takeaway is that when implementing Hash and PartialEq/Eq for types used
+  as HashMap keys, you must maintain the invariant: if `a == b`, then `hash(a) ==
+  hash(b)`. Violating this contract leads to unpredictable and incorrect HashMap
+  behavior.

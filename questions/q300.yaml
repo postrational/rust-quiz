@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert("a", 1);
+      
+      let entry = map.entry("a").or_insert(2);
+      *entry += 10;
+      
+      let entry2 = map.entry("b").or_insert(5);
+      *entry2 *= 2;
+      
+      println!("{} {}", map["a"], map["b"]);
+  }
+  ```
+
+  What does this program print?
+answers:
+- 1 5
+- 11 10
+- 2 5
+- 12 5
+correct_answer: 1
+expected_output:
+- 11 10
+explanation: |-
+  This question tests understanding of Rust's HashMap Entry API, specifically the
+  `or_insert` method. The Entry API provides an efficient way to conditionally
+  insert or modify values in a HashMap.
+
+  When `map.entry("a").or_insert(2)` is called, the key "a" already exists in the
+  map with value 1. The `or_insert(2)` method checks if the key exists: since it
+  does, it does not insert the value 2, but instead returns a mutable reference to
+  the existing value (1). The subsequent `*entry += 10` operation modifies this
+  existing value, changing it from 1 to 11.
+
+  For the second entry operation, `map.entry("b").or_insert(5)`, the key "b" does
+  not exist in the map. Therefore, `or_insert(5)` inserts the value 5 and returns
+  a mutable reference to it. The `*entry2 *= 2` operation then modifies this newly
+  inserted value, changing it from 5 to 10.
+
+  The key takeaway is that `or_insert` only inserts a value when the key doesn't
+  exist; otherwise, it provides mutable access to the existing value. This pattern
+  is commonly used for "update if exists, insert default if not" operations,
+  making it more efficient than separate lookup and insert operations.

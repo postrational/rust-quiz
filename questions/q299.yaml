@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  use std::collections::VecDeque;
+
+  fn main() {
+      let mut deque = VecDeque::with_capacity(2);
+      deque.push_back(1);
+      deque.push_back(2);
+      deque.push_front(0);
+      
+      println!("{}", deque.capacity());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '2'
+- '3'
+- '4'
+- The capacity is undefined
+correct_answer: 2
+expected_output:
+- '4'
+explanation: |-
+  This question tests understanding of VecDeque capacity management and
+  reallocation behavior. A VecDeque is a double-ended queue that allows efficient
+  insertion and removal from both ends.
+
+  When `VecDeque::with_capacity(2)` is called, it creates a deque with an initial
+  capacity of 2. The first two operations, `push_back(1)` and `push_back(2)`, fill
+  the deque to its capacity without triggering reallocation. At this point, the
+  deque has 2 elements and a capacity of 2.
+
+  When `push_front(0)` is called to add a third element to the front, the deque is
+  already at capacity and must reallocate to accommodate the new element. Similar
+  to Vec, VecDeque typically doubles its capacity when it needs to grow.
+  Therefore, the capacity increases from 2 to 4.
+
+  The key takeaway is that VecDeque follows similar capacity growth patterns to
+  Vec: when the collection needs more space than its current capacity allows, it
+  reallocates with increased capacity (commonly doubling) to amortize the cost of
+  future insertions. This growth strategy provides efficient amortized performance
+  for push operations.

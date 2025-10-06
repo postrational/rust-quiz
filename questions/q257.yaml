@@ -1,0 +1,38 @@
+question: |-
+  ```rust
+  fn main() {
+      let x = 42;
+      let y = &x;
+      let z = *y;
+      println!("{}", z + x);
+  }
+  ```
+
+  What does this code print?
+answers:
+- '84'
+- 'Compilation error: cannot dereference `y`'
+- 'Runtime panic: invalid dereference'
+- 'Compilation error: cannot add reference to value'
+correct_answer: 0
+expected_output:
+- '84'
+explanation: |-
+  This question tests understanding of references and dereferencing in Rust. The
+  code demonstrates basic reference creation and dereferencing operations with an
+  integer value.
+
+  In this code, `x` is bound to the value 42. The variable `y` is created as an
+  immutable reference to `x` using `&x`. The expression `*y` dereferences the
+  reference, accessing the value that `y` points to (which is 42). Since integers
+  implement the `Copy` trait, this value is copied into `z`.
+
+  At the point of the addition, both `z` and `x` contain the value 42, so `z + x`
+  evaluates to 84, which is then printed.
+
+  The key takeaway is that dereferencing a reference with the `*` operator is a
+  fundamental operation in Rust that allows you to access the value behind a
+  reference. For types that implement `Copy` (like integers), dereferencing
+  creates a copy of the value. This code compiles and runs successfully because
+  all operations are valid: creating references to values, dereferencing those
+  references, and performing arithmetic on copied values.

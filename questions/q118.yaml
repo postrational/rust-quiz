@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  fn main() {
+      let nums = vec![5, -3, 2, -8, 1];
+      
+      let result: Vec<_> = nums.iter()
+          .scan(0, |sum, &x| {
+              *sum += x;
+              if *sum < 0 {
+                  None
+              } else {
+                  Some(*sum)
+              }
+          })
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[5, 2, 4]'
+- '[5, 2, 4, 1]'
+- '[5, 2]'
+- '[5]'
+correct_answer: 0
+expected_output:
+- '[5, 2, 4]'
+explanation: |-
+  This question tests understanding of the `scan` iterator adapter and its
+  short-circuiting behavior when returning `None`.
+
+  The `scan` method maintains internal state (in this case, a running sum) and
+  transforms each element based on that state. The key behavior is that when the
+  closure returns `None`, the iterator terminates immediately—it doesn't just skip
+  that element, but stops processing entirely.
+
+  Tracing through the execution:
+  1. `x = 5`: `sum = 0 + 5 = 5`, which is not negative, so yields `Some(5)`
+  2. `x = -3`: `sum = 5 + (-3) = 2`, which is not negative, so yields `Some(2)`
+  3. `x = 2`: `sum = 2 + 2 = 4`, which is not negative, so yields `Some(4)`
+  4. `x = -8`: `sum = 4 + (-8) = -4`, which is negative, so returns `None` and the
+  iterator stops
+  5. `x = 1`: Never processed because the iterator has already terminated
+
+  The result is `[5, 2, 4]`.
+
+  The key takeaway is that `scan` is useful for stateful transformations with
+  conditional termination. When you need to process elements while maintaining
+  state and stop when a condition is violated (like keeping a running total
+  positive), `scan` provides an elegant solution. This pattern is common in
+  scenarios like processing transactions until an account balance goes negative,
+  or parsing input until hitting an invalid value.

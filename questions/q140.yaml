@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel();
+      
+      for i in 0..3 {
+          let tx_clone = tx.clone();
+          thread::spawn(move || {
+              tx_clone.send(format!("Thread {}", i)).unwrap();
+          });
+      }
+      
+      // What happens here?
+      drop(tx);
+      
+      let messages: Vec<_> = rx.iter().collect();
+      println!("{:?}", messages);
+      println!("Received {} messages", messages.len());
+  }
+  ```
+
+  What does this print?
+answers:
+- '["Thread 0", "Thread 1", "Thread 2"] (or some permutation), Received 3 messages'
+- '[], Received 0 messages'
+- Deadlock - rx.iter() blocks forever
+- Compilation error - tx used after being cloned and moved
+correct_answer: 0
+expected_output:
+- Received 3 messages
+explanation: |-
+  This question tests understanding of sender lifecycle management in Rust's mpsc
+  (multi-producer, single-consumer) channels. The key concept is that channels
+  remain open as long as at least one sender exists.
+
+  In this code, the original `tx` is cloned three times (once for each spawned
+  thread), creating four total senders: the original `tx` and three `tx_clone`
+  instances. When `drop(tx)` is called, it only drops the original sender, but the
+  three clones still exist in the spawned threads. Each thread sends its message
+  and then terminates, automatically dropping its `tx_clone`.
+
+  The channel only closes when all senders are dropped. The `rx.iter()` method
+  blocks until the channel closes, then returns an iterator over all received
+  messages. Once all three threads complete and their clones are dropped, the
+  channel closes and `rx.iter()` terminates, allowing the program to collect all
+  three messages.
+
+  The order of messages is non-deterministic because threads execute concurrently,
+  so any permutation of "Thread 0", "Thread 1", and "Thread 2" is possible.
+  However, the count will always be 3.
+
+  The key takeaway is that explicitly dropping the original sender with `drop(tx)`
+  is a common pattern when coordinating multiple producer threads. It ensures that
+  once all worker threads complete, the receiver knows the channel is closed and
+  can stop waiting for more messages. Without this drop, if the original `tx`
+  remained in scope, `rx.iter()` would block forever waiting for more messages.

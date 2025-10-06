@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  use std::ffi::CStr;
+
+  fn main() {
+      let data = b"hello\0world\0rust\0";
+      
+      unsafe {
+          let mut ptr = data.as_ptr() as *const i8;
+          
+          while !(*ptr == 0 && ptr.offset(1) == data.as_ptr().offset(data.len() as isize)) {
+              let cstr = CStr::from_ptr(ptr);
+              println!("{:?}", cstr.to_str().unwrap());
+              ptr = ptr.offset(cstr.to_bytes().len() as isize + 1);
+          }
+      }
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: "hello", "world", "rust"'
+- 'Runtime panic: invalid pointer arithmetic'
+- 'Compilation error: cannot compare pointers with `==`'
+- 'Segmentation fault: reading past buffer end'
+correct_answer: 2
+expected_output:
+- 'error[E0308]: mismatched types'
+- expected raw pointer `*const i8`
+- found raw pointer `*const u8`
+explanation: |-
+  This question tests understanding of pointer type compatibility in Rust's type
+  system. The code attempts to iterate through null-terminated strings in a byte
+  buffer, but fails to compile due to a type mismatch.
+
+  The issue occurs in the while loop condition where `ptr.offset(1)` (which has
+  type `*const i8`) is compared with `data.as_ptr().offset(data.len() as isize)`
+  (which has type `*const u8`). The variable `ptr` is explicitly cast to `*const
+  i8` for use with `CStr::from_ptr`, which expects a pointer to signed bytes.
+  However, `data.as_ptr()` returns `*const u8` because byte string literals
+  (`b"..."`) are arrays of unsigned bytes.
+
+  Rust's type system does not allow direct comparison between `*const i8` and
+  `*const u8` even though they have the same memory representation. This is a
+  safety feature that prevents accidental mixing of pointer types with different
+  signedness semantics.
+
+  To fix this code, all pointers would need to use consistent types - either
+  keeping everything as `*const u8` and casting only when calling
+  `CStr::from_ptr`, or casting the comparison pointer to `*const i8` as well.
+
+  The key takeaway is that Rust enforces strict type checking even for raw
+  pointers, preventing type mismatches that could lead to subtle bugs in unsafe
+  code. This demonstrates how Rust's type system provides safety guarantees even
+  when working with low-level pointer operations.

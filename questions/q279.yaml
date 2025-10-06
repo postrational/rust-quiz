@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec!["a", "b", "c"];
+      match data.get(1) {
+          Some(value) => {
+              data.clear();
+              println!("{}", value);
+          }
+          None => println!("Not found"),
+      }
+  }
+  ```
+
+  What does this code output?
+answers:
+- Prints "b"
+- 'Compilation error: cannot borrow `data` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: cleared vector accessed'
+- Prints "Not found"
+correct_answer: 1
+expected_output:
+- cannot borrow `data` as mutable because it is also borrowed as immutable
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and how they
+  interact with pattern matching. The `get` method on a vector returns an
+  `Option<&T>`, which means it returns an optional reference to an element in the
+  vector.
+
+  When `data.get(1)` is called, it creates an immutable borrow of the vector and
+  returns `Some(&"b")`. The pattern matching binds `value` to this immutable
+  reference, which remains valid throughout the `Some` branch scope.
+
+  Inside the `Some` branch, the code attempts to call `data.clear()`, which
+  requires a mutable borrow of the vector. However, Rust's borrowing rules
+  prohibit having both an immutable reference (held by `value`) and a mutable
+  reference (required by `clear()`) to the same data at the same time. This
+  prevents potential data races and use-after-free bugs.
+
+  The compiler detects this violation and produces a compilation error indicating
+  that `data` cannot be borrowed as mutable because it is already borrowed as
+  immutable. This is a fundamental safety guarantee in Rust that prevents memory
+  safety issues at compile time.
+
+  The key takeaway is that references obtained from collections remain valid and
+  enforce borrowing rules throughout their scope, preventing modifications to the
+  collection while those references exist.

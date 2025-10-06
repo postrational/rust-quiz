@@ -1,0 +1,67 @@
+question: |-
+  ```rust
+  use std::collections::HashSet;
+
+  fn main() {
+      let set1: HashSet<i32> = [1, 2, 3, 4].iter().cloned().collect();
+      let set2: HashSet<i32> = [3, 4, 5, 6].iter().cloned().collect();
+      
+      let intersection: HashSet<_> = set1.intersection(&set2).cloned().collect();
+      println!("Intersection: {:?}", intersection);
+      
+      let union: HashSet<_> = set1.union(&set2).cloned().collect();
+      println!("Union: {:?}", union);
+      
+      let difference: HashSet<_> = set1.difference(&set2).cloned().collect();
+      println!("Difference: {:?}", difference);
+      
+      println!("Is subset: {}", [1, 2].iter().cloned().collect::<HashSet<_>>().is_subset(&set1));
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Compilation error: cannot collect iterator of references into HashSet<i32>'
+- 'Prints intersection containing {3,4}, union containing {1,2,3,4,5,6}, difference containing {1,2}, is_subset: true (order may vary)'
+- 'Prints intersection containing {3,4}, union containing {1,2,3,4,5,6}, difference containing {5,6}, is_subset: false (order may vary)'
+- 'Runtime panic: set operations require sorted data'
+correct_answer: 1
+expected_output:
+- 'Intersection:'
+- 'Union:'
+- 'Difference:'
+- 'Is subset: true'
+explanation: |-
+  This question tests understanding of HashSet mathematical operations in Rust.
+  HashSet provides several set theory operations that return iterators over
+  references to the elements.
+
+  The code creates two sets: set1 contains {1, 2, 3, 4} and set2 contains {3, 4,
+  5, 6}. The intersection operation finds elements present in both sets, which are
+  3 and 4. The union operation combines all unique elements from both sets,
+  resulting in {1, 2, 3, 4, 5, 6}. The difference operation
+  (set1.difference(&set2)) finds elements in set1 that are not in set2, which are
+  1 and 2.
+
+  An important detail is that these set operations return iterators over
+  references (&i32), not owned values. This is why .cloned() is needed to convert
+  the references into owned values before collecting into a new HashSet.
+
+  The subset check creates a temporary HashSet from the values 1 and 2, and
+  verifies whether all its elements are contained in set1. Since both 1 and 2 are
+  in set1, the result is true.
+
+  A critical aspect of HashSet is that it does not maintain any particular order.
+  The elements are stored based on their hash values, so the order in which they
+  appear when printed with {:?} is unpredictable and may vary between runs or
+  compiler versions. However, the contents of the sets are deterministic -
+  intersection will always contain 3 and 4 (though possibly in different order),
+  union will always contain all six numbers, and difference will always contain 1
+  and 2.
+
+  The key takeaway is understanding how HashSet set operations work: intersection
+  finds common elements, union combines all unique elements, and difference is
+  directional (A - B finds elements in A but not in B). These operations return
+  iterators over references, requiring cloning when owned values are needed.
+  Additionally, HashSet does not guarantee any ordering of elements, which is a
+  fundamental characteristic of hash-based collections.

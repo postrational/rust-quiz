@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  enum List {
+      Cons(i32, List),
+      Nil,
+  }
+
+  fn main() {
+      let list = List::Cons(1, List::Cons(2, List::Nil));
+  }
+  ```
+
+  What's the problem with this code, and what's the minimal fix?
+answers:
+- "The compiler can't determine the size of `List` at compile time. Fix: `Cons(i32, Box<List>)`"
+- 'Recursive types cause stack overflow. Fix: `Cons(i32, Rc<List>)`'
+- 'The enum needs interior mutability. Fix: `Cons(i32, RefCell<List>)`'
+- "Missing lifetime annotations. Fix: `Cons(i32, &'static List)`"
+correct_answer: 0
+expected_output:
+- recursive type `List` has infinite size
+- insert some indirection
+explanation: |-
+  This question tests understanding of recursive types and the need for
+  indirection in Rust. The fundamental issue is that the compiler cannot determine
+  the size of the `List` type at compile time because it contains itself directly,
+  creating infinite recursion when calculating size.
+
+  When the compiler tries to determine the size of `List`, it encounters:
+  size_of(List) = max(size_of(Cons), size_of(Nil)), where size_of(Cons) =
+  size_of(i32) + size_of(List). This creates an infinite loop in size calculation.
+
+  The solution is to use `Box<List>` instead of `List` directly in the `Cons`
+  variant. `Box<T>` is a heap-allocated pointer with a known, fixed size (the size
+  of a pointer, typically 8 bytes on 64-bit systems). This breaks the infinite
+  recursion: size_of(Cons) = size_of(i32) + size_of(Box<List>) = 4 + 8 = 12 bytes
+  (plus padding).
+
+  `Box<T>` is the minimal fix because it provides the necessary indirection with
+  unique ownership and no additional overhead. While `Rc<List>` would technically
+  work, it adds unnecessary reference counting overhead when shared ownership
+  isn't needed. `RefCell<List>` doesn't solve the size problem since it still
+  contains the type directly. Using references with lifetime annotations doesn't
+  address the fundamental size calculation issue.
+
+  The key takeaway is that recursive types in Rust require indirection through a
+  pointer type like `Box`, and `Box<T>` is the standard choice for recursive data
+  structures when you need unique ownership without additional overhead.

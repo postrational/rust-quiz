@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  use std::collections::BTreeMap;
+
+  fn main() {
+      let mut map = BTreeMap::new();
+      map.insert(3, "three");
+      map.insert(1, "one");
+      map.insert(4, "four");
+      map.insert(2, "two");
+      
+      for (key, value) in &map {
+          print!("{}{} ", key, value);
+      }
+  }
+  ```
+
+  What does this program print?
+answers:
+- 3three 1one 4four 2two
+- 1one 2two 3three 4four
+- 4four 3three 2two 1one
+- The order is undefined
+correct_answer: 1
+expected_output:
+- '1one 2two 3three 4four '
+explanation: |-
+  This question tests understanding of BTreeMap's ordering guarantees in Rust.
+  Unlike HashMap, which provides no guarantees about iteration order, BTreeMap
+  maintains its entries in sorted order by key at all times.
+
+  When elements are inserted into the BTreeMap (keys 3, 1, 4, 2), the data
+  structure internally organizes them in ascending key order. When iterating over
+  the map, entries are visited in this sorted order: 1, 2, 3, 4.
+
+  The output "1one 2two 3three 4four " demonstrates this sorted iteration, where
+  each key-value pair is printed in ascending key order.
+
+  The key takeaway is that BTreeMap is the appropriate choice when you need
+  predictable, sorted iteration order or when you need to perform range queries.
+  This comes with slightly higher overhead compared to HashMap for basic insert
+  and lookup operations, but provides the benefit of maintaining sorted order.
+  This makes BTreeMap particularly useful in scenarios where ordered traversal or
+  range-based operations are important.

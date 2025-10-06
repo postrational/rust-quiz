@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::iter;
+
+  fn main() {
+      let result: Vec<_> = iter::repeat(42)
+          .zip(1..)
+          .take_while(|(val, count)| *count <= *val)
+          .map(|(val, count)| val + count)
+          .collect();
+          
+      println!("{}", result.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '1'
+- '42'
+- Infinite loop
+correct_answer: 2
+expected_output:
+- '42'
+explanation: |-
+  This question tests understanding of iterator combinators and how `take_while`
+  can convert infinite iterators into finite collections.
+
+  The code creates an infinite iterator using `iter::repeat(42)`, which produces
+  the value 42 indefinitely. This is then zipped with `1..`, an infinite range
+  starting from 1, creating pairs: (42, 1), (42, 2), (42, 3), and so on.
+
+  The `take_while` combinator continues consuming elements as long as the
+  predicate `*count <= *val` is true. Since `val` is always 42, the condition
+  holds for count values 1 through 42. When count reaches 43, the condition
+  becomes false (43 <= 42 is false), and `take_while` stops consuming elements.
+
+  This means exactly 42 pairs are collected: (42, 1) through (42, 42). The `map`
+  operation transforms these pairs by adding the values together, but this doesn't
+  affect the count. The final vector contains 42 elements, so `result.len()`
+  returns 42.
+
+  The key takeaway is that `take_while` provides a powerful way to extract a
+  finite sequence from an infinite iterator based on a dynamic condition, and
+  understanding how iterator combinators interact is essential for effective Rust
+  programming.

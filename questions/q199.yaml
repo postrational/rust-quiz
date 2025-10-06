@@ -1,0 +1,74 @@
+question: |-
+  ```rust
+  use std::collections::{HashMap, HashSet};
+
+  fn main() {
+      let words = vec!["apple", "banana", "apple", "cherry", "banana", "date"];
+      
+      let mut word_positions: HashMap<&str, Vec<usize>> = HashMap::new();
+      for (i, word) in words.iter().enumerate() {
+          word_positions.entry(word).or_insert_with(Vec::new).push(i);
+      }
+      
+      println!("Word positions: {:?}", word_positions);
+      
+      let unique_words: HashSet<_> = words.iter().collect();
+      println!("Unique words: {:?}", unique_words);
+      
+      let repeated_words: Vec<_> = word_positions
+          .iter()
+          .filter(|(_, positions)| positions.len() > 1)
+          .map(|(word, positions)| (*word, positions.len()))
+          .collect();
+      
+      println!("Repeated words: {:?}", repeated_words);
+  }
+  ```
+
+  What will this code do?
+answers:
+- Shows positions map, unique words set with 4 elements, repeated words with apple(2) and banana(2)
+- 'Compilation error: cannot use string slices as both HashMap keys and HashSet elements'
+- Shows positions map, unique words set with 6 elements, repeated words with all words
+- 'Runtime panic: HashMap entry API cannot be used with or_insert_with'
+correct_answer: 0
+expected_output:
+- 'Word positions:'
+- 'Unique words:'
+- 'Repeated words:'
+explanation: |-
+  This question tests understanding of HashMap entry API, HashSet deduplication,
+  and the non-deterministic ordering of hash-based collections in Rust.
+
+  The code performs word frequency analysis in three steps:
+
+  1. **Building the position map**: The code iterates through the words vector
+  with `enumerate()` to get both index and word. For each word, it uses the
+  HashMap entry API with `or_insert_with(Vec::new)` to either get an existing
+  vector or create a new one, then pushes the current index. This builds a map
+  where each unique word points to all positions where it appears: "apple" appears
+  at indices [0, 2], "banana" at [1, 4], "cherry" at [3], and "date" at [5].
+
+  2. **Collecting unique words**: The HashSet is created by collecting iterators
+  over the words. Since HashSet automatically deduplicates elements, the result
+  contains only the 4 unique words: "apple", "banana", "cherry", and "date". This
+  is not 6 elements (the original vector size) because duplicates are removed.
+
+  3. **Finding repeated words**: The code filters the position map to keep only
+  entries where the positions vector has more than one element (words that appear
+  multiple times). It then maps each entry to a tuple of the word and its count.
+  Only "apple" and "banana" appear more than once, each appearing 2 times.
+
+  Important note: Both HashMap and HashSet use hashing internally, which means
+  their iteration order is not guaranteed and may vary between runs or Rust
+  versions. The debug output will show all the correct key-value pairs, but the
+  order in which they appear is non-deterministic. Therefore, the expected output
+  only checks for the presence of the output labels rather than exact ordering of
+  elements.
+
+  The key takeaways are: (1) HashMap's entry API provides an ergonomic way to
+  handle the "insert if absent, otherwise update" pattern, (2) HashSet
+  automatically deduplicates elements when collecting, (3) string slices (`&str`)
+  can be used as both HashMap keys and HashSet elements because they implement the
+  required traits (Hash, Eq), and (4) hash-based collections do not maintain
+  insertion order.

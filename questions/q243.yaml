@@ -1,0 +1,73 @@
+question: |-
+  ```rust
+  // In your crate
+  struct MyStruct {
+      value: i32,
+  }
+
+  // External trait from standard library
+  use std::fmt::Display;
+
+  // Which implementations are allowed?
+
+  // Implementation 1
+  impl Display for MyStruct {
+      fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+          write!(f, "MyStruct({})", self.value)
+      }
+  }
+
+  // Implementation 2  
+  impl Display for Vec<i32> {
+      fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+          write!(f, "Vec with {} items", self.len())
+      }
+  }
+
+  // Implementation 3
+  impl ToString for MyStruct {
+      fn to_string(&self) -> String {
+          format!("MyStruct: {}", self.value)
+      }
+  }
+  ```
+
+  Which implementations violate Rust's orphan rule?
+answers:
+- Only Implementation 2
+- Only Implementation 3
+- Implementations 2 and 3
+- All implementations are allowed
+correct_answer: 2
+expected_output:
+- error
+- conflicting implementations
+explanation: |-
+  This question tests understanding of Rust's orphan rule and trait coherence. The
+  orphan rule states that you can only implement a trait for a type if either the
+  trait or the type (or both) is defined in your local crate. This rule ensures
+  that trait implementations remain unambiguous and prevents conflicts when
+  multiple crates are combined.
+
+  **Implementation 1** (`impl Display for MyStruct`) is allowed because `MyStruct`
+  is a local type defined in your crate. Even though `Display` is an external
+  trait from the standard library, you own the type, so this implementation is
+  valid.
+
+  **Implementation 2** (`impl Display for Vec<i32>`) violates the orphan rule
+  because both `Display` and `Vec<i32>` are external types from the standard
+  library. You own neither the trait nor the type, so this implementation is
+  forbidden. The compiler will reject this with an error about the orphan rule.
+
+  **Implementation 3** (`impl ToString for MyStruct`) also violates coherence
+  rules, though for a more subtle reason. While `MyStruct` is a local type, the
+  standard library provides a blanket implementation: `impl<T: Display> ToString
+  for T`. This means any type implementing `Display` automatically gets
+  `ToString`. Since Implementation 1 provides `Display` for `MyStruct`,
+  implementing `ToString` directly would conflict with the blanket implementation.
+  The compiler rejects this to maintain coherence.
+
+  The key takeaway is that Rust's orphan rule and coherence system prevent
+  ambiguous trait implementations, ensuring that there's always exactly one
+  implementation of a trait for any given type. This is fundamental to Rust's
+  trait system and enables safe composition of code from multiple crates.

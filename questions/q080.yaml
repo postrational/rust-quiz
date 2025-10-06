@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  struct Cache<'a> {
+      data: &'a str,
+  }
+
+  impl<'a> Cache<'a> {
+      fn new(s: &'a str) -> Self {
+          Cache { data: s }
+      }
+      
+      fn get_data(&self) -> &str {
+          self.data
+      }
+  }
+
+  fn main() {
+      let cache;
+      {
+          let text = String::from("cached");
+          cache = Cache::new(&text);
+      }
+      println!("{}", cache.get_data());
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Prints "cached" successfully
+- 'Compiler error: `text` does not live long enough'
+- Runtime panic due to use-after-free
+- 'Compiler error: cannot infer lifetime for `cache`'
+correct_answer: 1
+expected_output:
+- 'error[E0597]: `text` does not live long enough'
+explanation: |-
+  This question tests understanding of Rust's lifetime system and how the borrow
+  checker prevents dangling references at compile time.
+
+  The code attempts to create a `Cache` instance that holds a reference to a
+  `String` (`text`) that exists only within an inner scope. The `Cache` struct has
+  a lifetime parameter `'a` that ties the lifetime of the cache to the lifetime of
+  the borrowed data. When `cache = Cache::new(&text)` is called, the cache's
+  lifetime becomes bound to `text`.
+
+  The problem occurs when the inner block ends: `text` is dropped, but `cache`
+  continues to exist in the outer scope. If this were allowed, `cache.get_data()`
+  would return a reference to freed memory, creating a dangling pointer. However,
+  Rust's borrow checker detects this lifetime violation at compile time.
+
+  The compiler produces an error indicating that `text` does not live long enough
+  because it's dropped while the borrow is still in use. The borrow checker
+  ensures that any reference stored in a struct cannot outlive the data it points
+  to, preventing use-after-free bugs entirely at compile time.
+
+  To fix this code, `text` would need to be moved to the outer scope so it lives
+  at least as long as `cache`. This demonstrates one of Rust's core safety
+  guarantees: memory safety without runtime overhead by catching lifetime errors
+  during compilation.

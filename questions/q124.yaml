@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  fn main() {
+      let v = vec![1, 2, 3, 4];
+      
+      let mut iter = v.iter().skip(1).peekable();
+      
+      if iter.peek().is_some() {
+          println!("First: {:?}", iter.next());
+      }
+      
+      let sum: i32 = iter.sum();
+      println!("Sum: {}", sum);
+  }
+  ```
+
+  What does this print?
+answers:
+- 'First: Some(1), Sum: 9'
+- 'First: Some(2), Sum: 7'
+- 'First: Some(2), Sum: 3'
+- 'First: Some(1), Sum: 6'
+correct_answer: 1
+expected_output:
+- 'First: Some(2)'
+- 'Sum: 7'
+explanation: |-
+  This question tests understanding of iterator adapters, specifically `skip()`
+  and `peekable()`, and the difference between consuming and non-consuming
+  iterator operations.
+
+  The execution proceeds as follows:
+  1. `v.iter()` creates an iterator over references to the vector elements: `&1,
+  &2, &3, &4`
+  2. `.skip(1)` skips the first element, so the iterator now yields: `&2, &3, &4`
+  3. `.peekable()` wraps the iterator, allowing non-consuming look-ahead
+  4. `iter.peek()` returns `Some(&&2)` without consuming the element - it just
+  looks at what's next
+  5. `iter.next()` consumes and returns `Some(&2)`, advancing the iterator
+  6. After the `next()` call, the iterator is positioned at: `&3, &4`
+  7. `iter.sum()` consumes the remaining elements and adds them: `3 + 4 = 7`
+
+  The key concepts are:
+  - **`peek()`** is a non-consuming operation that allows you to look at the next
+  element without advancing the iterator
+  - **`next()`** is a consuming operation that returns the next element and
+  advances the iterator
+  - **`skip(n)`** modifies the iterator to skip the first n elements before any
+  other operations
+  - Iterator adapters like `skip()` are applied in the order they're chained, so
+  `skip(1)` happens before the iterator is made peekable
+
+  This pattern is useful when you need to conditionally process the first element
+  of an iterator while still being able to process the remaining elements
+  afterward.

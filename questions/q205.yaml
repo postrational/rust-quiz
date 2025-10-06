@@ -1,0 +1,67 @@
+question: |-
+  ```rust
+  trait Shape {
+      fn area(&self) -> f64;
+      fn scale(&self, factor: f64) -> Self;
+  }
+
+  struct Circle {
+      radius: f64,
+  }
+
+  impl Shape for Circle {
+      fn area(&self) -> f64 {
+          3.14 * self.radius * self.radius
+      }
+      
+      fn scale(&self, factor: f64) -> Self {
+          Circle { radius: self.radius * factor }
+      }
+  }
+
+  fn main() {
+      let circle = Circle { radius: 5.0 };
+      let shape: &dyn Shape = &circle;
+      println!("{}", shape.area());
+  }
+  ```
+
+  What happens when you try to compile this code?
+answers:
+- The code compiles and prints `78.5`
+- The code compiles and prints `15.7`
+- 'Compilation error: the trait `Shape` is not dyn compatible'
+- 'Compilation error: cannot find type `Self` in this scope'
+correct_answer: 2
+expected_output:
+- error[E0038]
+- is not dyn compatible
+explanation: |-
+  This question tests understanding of object safety (now called "dyn
+  compatibility") in Rust, which determines whether a trait can be used as a trait
+  object (with `dyn`).
+
+  A trait is dyn compatible only if all its methods meet certain criteria. One key
+  requirement is that methods cannot return `Self` by value, because when using a
+  trait object, the concrete type is erased at runtime and the compiler doesn't
+  know the size of `Self`.
+
+  In this code, the `Shape` trait has a `scale` method that returns `Self`. This
+  violates dyn compatibility rules because:
+  1. When you create a trait object `&dyn Shape`, the concrete type information is
+  erased
+  2. The compiler cannot know the size or exact type to return from `scale`
+  3. This makes it impossible to use `Shape` as a trait object
+
+  The error occurs at the line `let shape: &dyn Shape = &circle;` because the
+  compiler detects that `Shape` is not dyn compatible due to the `scale` method
+  returning `Self`.
+
+  To make this trait dyn compatible, you could:
+  - Remove the `scale` method
+  - Change `scale` to return `Box<dyn Shape>` instead of `Self`
+  - Use generic constraints instead of trait objects
+
+  The key takeaway is that dyn compatibility is a compile-time check that ensures
+  trait objects can work correctly. Methods returning `Self`, having generic type
+  parameters, or using `Self: Sized` bounds can make traits not dyn compatible.

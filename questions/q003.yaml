@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::cell::RefCell;
+
+  fn main() {
+      let data = Rc::new(RefCell::new(vec![1, 2, 3]));
+      let data_clone = Rc::clone(&data);
+      
+      {
+          let mut borrowed = data.borrow_mut();
+          borrowed.push(4);
+          // What happens here?
+          let _borrowed2 = data_clone.borrow();
+      }
+      
+      println!("{:?}", data.borrow());
+  }
+  ```
+
+  What will this code print?
+answers:
+- '[1, 2, 3, 4]'
+- '[1, 2, 3]'
+- Runtime panic
+- Compilation error
+correct_answer: 2
+expected_output:
+- already mutably borrowed
+explanation: |-
+  This question tests understanding of `RefCell`'s runtime borrow checking and how
+  it interacts with `Rc` for shared ownership.
+
+  The code creates a `RefCell<Vec<i32>>` wrapped in an `Rc` for shared ownership.
+  Both `data` and `data_clone` are `Rc` pointers to the same underlying `RefCell`.
+  When `data.borrow_mut()` is called, it creates a mutable borrow of the
+  `RefCell`'s contents. This mutable borrow remains active throughout the inner
+  scope.
+
+  The critical moment occurs when `data_clone.borrow()` attempts to create an
+  immutable borrow. Since `data` and `data_clone` point to the same `RefCell`,
+  this is effectively trying to borrow the same data both mutably and immutably at
+  the same time. While `Rc` allows multiple owners, `RefCell` enforces Rust's
+  borrowing rules at runtime: you cannot have a mutable borrow and an immutable
+  borrow active simultaneously.
+
+  This violation causes a runtime panic with a message containing "already mutably
+  borrowed". The panic occurs because `RefCell` dynamically tracks borrows and
+  panics when the borrowing rules are violated.
+
+  The key takeaway is that `RefCell` moves borrow checking from compile-time to
+  runtime, allowing for more flexible patterns but requiring careful management to
+  avoid panics. Multiple `Rc` clones all access the same `RefCell`, so borrows
+  through any clone affect all others.

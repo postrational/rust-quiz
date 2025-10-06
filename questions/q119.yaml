@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  fn main() {
+      let inputs = vec!["1", "2", "fail", "3"];
+      
+      let result: Result<Vec<i32>, _> = inputs
+          .iter()
+          .map(|s| s.parse::<i32>())
+          .collect();
+      
+      match result {
+          Ok(nums) => println!("Parsed: {:?}", nums),
+          Err(e) => println!("Error at: {}", e),
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Parsed: [1, 2, 3]'
+- 'Error at: invalid digit found in string'
+- 'Parsed: [1, 2]'
+- 'Compilation error: cannot collect `Result` iterator'
+correct_answer: 1
+expected_output:
+- 'Error at: invalid digit found in string'
+explanation: |-
+  This question tests understanding of Rust's all-or-nothing behavior when
+  collecting an iterator of `Result` values into a `Result<Vec<T>, E>`.
+
+  When collecting an `Iterator<Item = Result<T, E>>` into `Result<Vec<T>, E>`,
+  Rust uses a special implementation that provides early termination semantics.
+  The collection process proceeds as follows:
+
+  1. `"1".parse::<i32>()` returns `Ok(1)` - collection continues
+  2. `"2".parse::<i32>()` returns `Ok(2)` - collection continues
+  3. `"fail".parse::<i32>()` returns `Err(ParseIntError)` - collection stops
+  immediately
+  4. `"3"` is never processed because iteration terminates at the first error
+
+  The entire `collect()` operation returns `Err` with the first error encountered,
+  which contains the message "invalid digit found in string".
+
+  This all-or-nothing pattern is useful for validation scenarios where partial
+  success is unacceptable, such as parsing configuration files or validating user
+  input. If you need different behavior, Rust provides alternatives: use
+  `filter_map(|r| r.ok())` to skip errors and collect only successes, or use
+  `partition()` to separate successful and failed results.

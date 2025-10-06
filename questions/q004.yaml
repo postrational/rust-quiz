@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  use std::mem;
+
+  fn main() {
+      let mut x = Box::new(42);
+      let y = &mut *x;
+      let z = mem::replace(&mut x, Box::new(100));
+      
+      *y = 99;
+      
+      println!("{} {} {}", *x, *y, *z);
+  }
+  ```
+
+  What is the output of this code?
+answers:
+- 100 99 42
+- 99 99 42
+- 100 99 100
+- Compilation error
+correct_answer: 3
+expected_output:
+- error
+- cannot borrow `x`
+explanation: |-
+  This question tests understanding of Rust's borrow checker rules and how mutable
+  borrows interact with moves and replacements.
+
+  The code creates a mutable reference `y` to the contents of the Box `x` on line
+  5. This establishes a mutable borrow of `x`. On line 6, `mem::replace(&mut x,
+  Box::new(100))` attempts to take a mutable reference to `x` itself in order to
+  replace it.
+
+  However, this violates Rust's borrowing rules: you cannot have two mutable
+  borrows of the same data at the same time, even if one is to the Box and another
+  is to its contents. The reference `y` is still active (it's used later on line
+  8), so the borrow checker prevents the second mutable borrow required by
+  `mem::replace`.
+
+  The key takeaway is that when you create a mutable reference to the contents of
+  a Box (or any container), you're effectively borrowing the entire container. You
+  cannot then mutably borrow the container itself until the first borrow ends.
+  This is a fundamental safety guarantee of Rust's ownership system that prevents
+  data races and use-after-free bugs at compile time.

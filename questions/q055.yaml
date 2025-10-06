@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  use std::borrow::Cow;
+
+  fn make_cow<'a>(s: &'a str, uppercase: bool) -> Cow<'a, str> {
+      if uppercase {
+          Cow::Owned(s.to_uppercase())
+      } else {
+          Cow::Borrowed(s)
+      }
+  }
+
+  fn main() {
+      let result;
+      {
+          let temp = String::from("hello");
+          result = make_cow(&temp, false);
+      }
+      println!("{}", result);
+  }
+  ```
+
+  What does this code output?
+answers:
+- hello
+- HELLO
+- Compilation error - `temp` doesn't live long enough
+- Undefined behavior - dangling reference
+correct_answer: 2
+expected_output:
+- error
+- does not live long enough
+explanation: |-
+  This question tests understanding of `Cow` (Clone-on-Write) and lifetime
+  constraints in Rust. The `Cow` type can hold either borrowed or owned data, but
+  the lifetime parameter `'a` constrains how long the `Cow` can exist.
+
+  In this code, `make_cow(&temp, false)` is called with `uppercase` set to
+  `false`, so it returns `Cow::Borrowed(&temp)`. This creates a `Cow` that borrows
+  from `temp`. The lifetime `'a` of the returned `Cow<'a, str>` is tied to the
+  lifetime of the borrowed reference `&temp`.
+
+  The problem occurs because `temp` is created inside an inner scope and is
+  dropped when that scope ends. However, `result` is declared in the outer scope
+  and attempts to hold the `Cow` value beyond the lifetime of `temp`. This
+  violates Rust's borrow checker rules: the borrowed reference inside the `Cow`
+  would become a dangling reference.
+
+  The Rust compiler detects this lifetime violation at compile time and produces
+  an error indicating that `temp` does not live long enough. This demonstrates
+  Rust's safety guarantees - even when using smart pointer types like `Cow`, the
+  borrow checker ensures that references cannot outlive the data they point to.
+
+  The key takeaway is that `Cow::Borrowed` still maintains lifetime constraints
+  tied to the original borrowed data, and these constraints are enforced by the
+  compiler to prevent use-after-free bugs.

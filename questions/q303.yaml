@@ -1,0 +1,50 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert(1, "one");
+      map.insert(2, "two");
+      
+      let keys: Vec<_> = map.keys().collect();
+      for &key in &keys {
+          map.remove(&key);
+      }
+      
+      println!("{}", map.len());
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: 0'
+- 'Prints: 2'
+- 'Compilation error: cannot borrow as mutable'
+- 'Runtime panic: borrow checker violation'
+correct_answer: 0
+expected_output:
+- '0'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the pattern of
+  collecting keys before mutating a HashMap.
+
+  The code creates a HashMap with two entries and then removes all entries by
+  iterating over collected keys. The crucial point is that `map.keys().collect()`
+  creates a separate `Vec` containing copies of the keys. The `keys()` method
+  borrows the map immutably, but `collect()` consumes the iterator and ends that
+  borrow immediately.
+
+  Once the keys are collected into the `Vec`, the borrow on the map is released.
+  The subsequent for loop iterates over the `keys` vector (not the map itself),
+  which means the map is no longer borrowed during iteration. This allows
+  `map.remove(&key)` to mutably borrow the map without conflict, successfully
+  removing each key.
+
+  After both keys are removed, the map is empty, so `map.len()` returns 0.
+
+  The key takeaway is that collecting keys (or values) into a separate collection
+  before mutating a HashMap is a common pattern to avoid borrow checker errors.
+  This works because the keys are copied (since they implement `Copy` in this
+  case) or cloned into the new collection, breaking the dependency on the original
+  map's borrow.

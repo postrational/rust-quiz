@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn process(data: Vec<i32>) -> Vec<i32> {
+      data
+  }
+
+  fn main() {
+      let nums = vec![1, 2, 3];
+      let result = process(nums);
+      let sum: i32 = nums.iter().sum();
+      println!("{} {:?}", sum, result);
+  }
+  ```
+
+  What does this code output?
+answers:
+- 6 [1, 2, 3]
+- 'Compilation error: borrow of moved value `nums`'
+- 'Runtime panic: use after move'
+- 0 [1, 2, 3]
+correct_answer: 1
+expected_output:
+- borrow of moved value
+explanation: |-
+  This question tests understanding of Rust's ownership and move semantics. When a
+  value is moved, the original binding becomes invalid and cannot be used again.
+
+  In this code, the `process` function takes ownership of its parameter by value
+  (`data: Vec<i32>`). When `process(nums)` is called, ownership of the vector is
+  transferred from `nums` to the function's `data` parameter. After this move,
+  `nums` is no longer valid.
+
+  The subsequent line attempts to call `nums.iter().sum()`, which requires
+  borrowing `nums`. However, since `nums` has already been moved, it cannot be
+  borrowed or used in any way. The Rust compiler detects this violation of
+  ownership rules at compile time and produces an error: "borrow of moved value:
+  `nums`".
+
+  The key takeaway is that Rust's ownership system prevents use-after-move errors
+  at compile time. Once a value is moved, the original binding is invalidated and
+  any attempt to use it results in a compilation error. To fix this code, you
+  could either clone the vector before passing it to `process`, borrow it instead
+  (by changing the function signature to accept `&Vec<i32>`), or reorder the
+  operations to use `nums` before moving it.

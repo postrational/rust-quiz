@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("hello");
+      let s1 = &s[0..2];
+      let s2 = &s[1..3];
+      
+      println!("{} {}", s1.len(), s2.len());
+      println!("{} {}", s1, s2);
+  }
+  ```
+
+  What does this code print?
+answers:
+- 2 2` then `he el
+- 2 2` then `he ll
+- Compilation error due to overlapping borrows
+- 1 1` then `h e
+correct_answer: 0
+expected_output:
+- 2 2
+- he el
+explanation: |-
+  This question tests understanding of string slicing and Rust's borrowing rules
+  for immutable references. String slices in Rust use byte indices with exclusive
+  end ranges.
+
+  In this code, `s` contains the string "hello". The slice `s1 = &s[0..2]` creates
+  an immutable reference to bytes 0 and 1, which corresponds to "he" (length 2).
+  The slice `s2 = &s[1..3]` creates an immutable reference to bytes 1 and 2, which
+  corresponds to "el" (length 2).
+
+  Although these slices overlap in the original string (both reference byte 1,
+  which is 'e'), this is perfectly valid in Rust. The borrowing rules allow
+  multiple immutable references to the same data simultaneously, as long as there
+  are no mutable references. Since both `s1` and `s2` are immutable borrows, there
+  is no conflict.
+
+  The key takeaway is that Rust's borrowing rules permit any number of immutable
+  references to coexist, even when they reference overlapping memory regions. This
+  is safe because immutable references guarantee the data won't be modified.

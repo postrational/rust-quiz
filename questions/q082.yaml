@@ -1,0 +1,67 @@
+question: |-
+  ```rust
+  struct Parser<'a> {
+      data: &'a str,
+      position: usize,
+  }
+
+  impl<'a> Parser<'a> {
+      fn parse(&mut self) -> Option<&'a str> {
+          if self.position >= self.data.len() {
+              return None;
+          }
+          let start = self.position;
+          self.position += 1;
+          Some(&self.data[start..self.position])
+      }
+  }
+
+  fn main() {
+      let input = String::from("hello");
+      let mut parser = Parser { data: &input, position: 0 };
+      
+      let first = parser.parse();
+      let second = parser.parse();
+      
+      println!("{:?} {:?}", first, second);
+  }
+  ```
+
+  What does this print?
+answers:
+- Some("h") Some("e")
+- 'Compiler error: cannot borrow `parser` as mutable more than once'
+- Some("h") None
+- 'Compiler error: lifetime mismatch in `parse` method'
+correct_answer: 0
+expected_output:
+- Some("h") Some("e")
+explanation: |-
+  This question tests understanding of lifetimes, mutable borrows, and Non-Lexical
+  Lifetimes (NLL) in Rust.
+
+  The `parse` method takes `&mut self` and returns `Option<&'a str>`. The key
+  insight is that while the method mutably borrows the parser, the returned
+  reference has lifetime `'a`, which is tied to the original `data` string, not to
+  the parser itself.
+
+  When `parser.parse()` is called the first time, it mutably borrows `parser`,
+  increments the `position` from 0 to 1, and returns `Some("h")` (a reference to
+  the first character). Crucially, the mutable borrow of `parser` ends when the
+  method returns, thanks to Non-Lexical Lifetimes. The value stored in `first` is
+  a reference into `input`, not a borrow of `parser`.
+
+  When `parser.parse()` is called the second time, it's a new, independent mutable
+  borrow of `parser`. This is allowed because the previous mutable borrow has
+  already ended. The method increments `position` from 1 to 2 and returns
+  `Some("e")` (a reference to the second character).
+
+  Both `first` and `second` hold references into the original `input` string with
+  lifetime `'a`. Multiple immutable references to the same data are allowed in
+  Rust, so there's no conflict. The mutable borrows of `parser` don't overlap in
+  time.
+
+  This pattern is commonly used in iterators and parsers where you need to mutate
+  internal state while returning references to underlying data. The lifetime
+  parameter `'a` separates the lifetime of the data being parsed from the lifetime
+  of the parser itself.

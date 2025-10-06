@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  use std::collections::VecDeque;
+
+  fn main() {
+      let mut deque = VecDeque::new();
+      deque.extend([1, 2, 3, 4, 5]);
+      
+      let middle = deque.len() / 2;
+      let back_half = deque.split_off(middle);
+      
+      println!("{} {}", deque.len(), back_half.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- 2 3
+- 3 2
+- 5 0
+- 0 5
+correct_answer: 0
+expected_output:
+- 2 3
+explanation: |-
+  This question tests understanding of the `split_off` method on `VecDeque` and
+  how it partitions a collection.
+
+  The `split_off` method splits a collection at a given index. Elements before the
+  index remain in the original collection, while elements from the index onward
+  are moved to a new collection that is returned.
+
+  In this code:
+  1. A `VecDeque` is created with elements [1, 2, 3, 4, 5], giving it a length of
+  5
+  2. `middle` is calculated as `5 / 2 = 2` (integer division)
+  3. `split_off(2)` is called, which splits at index 2:
+     - Elements at indices 0 and 1 ([1, 2]) remain in the original `deque`
+     - Elements at indices 2, 3, and 4 ([3, 4, 5]) are moved to `back_half`
+  4. The original `deque` now has length 2, and `back_half` has length 3
+
+  The key takeaway is that `split_off(at)` keeps elements `[0..at)` in the
+  original collection and moves elements `[at..)` to the new collection. This is
+  useful for efficiently partitioning collections without copying all elements.

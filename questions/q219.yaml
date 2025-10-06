@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  trait MyTrait {
+      fn method(&self) -> Self;
+  }
+
+  struct MyStruct;
+
+  impl MyTrait for MyStruct {
+      fn method(&self) -> Self {
+          MyStruct
+      }
+  }
+
+  fn main() {
+      let s = MyStruct;
+      let _trait_obj: &dyn MyTrait = &s;
+      println!("Success");
+  }
+  ```
+
+  What happens when you try to compile this code?
+answers:
+- The code compiles and prints `Success`
+- 'Compilation error: the trait `MyTrait` is not dyn compatible because method `method` references the `Self` type in its return type'
+- 'Compilation error: trait objects must be behind a pointer'
+- Runtime panic occurs when creating the trait object
+correct_answer: 1
+expected_output:
+- the trait `MyTrait` is not dyn compatible
+- method `method` references the `Self` type in its return type
+explanation: |-
+  This question tests understanding of dyn compatibility (formerly called object
+  safety) in Rust, which determines whether a trait can be used as a trait object
+  (e.g., `dyn MyTrait`).
+
+  A trait is dyn compatible only if it meets certain criteria. One key requirement
+  is that methods cannot return `Self` by value. The reason is that when using a
+  trait object, the concrete type is erased at runtime—the compiler only knows
+  it's "some type that implements MyTrait," not the specific size or type.
+  Returning `Self` would require knowing the concrete type's size at compile time,
+  which is impossible with trait objects.
+
+  In this code, the `method` function returns `Self`, which violates dyn
+  compatibility rules. When the code attempts to create a trait object `&dyn
+  MyTrait`, the compiler rejects it with an error explaining that the trait is not
+  dyn compatible because the method references `Self` in its return type.
+
+  The key takeaway is that dyn compatibility is a compile-time property that
+  restricts which traits can be used as trait objects. Methods that return `Self`,
+  use `Self` in certain positions, or have generic type parameters generally make
+  a trait not dyn compatible. Understanding these rules is crucial when designing
+  traits that need to support dynamic dispatch.

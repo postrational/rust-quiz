@@ -1,0 +1,38 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let map: HashMap<i32, String> = HashMap::new();
+      let value = map.get(&42);
+      println!("{}", value.is_some());
+  }
+  ```
+
+  What does this program print?
+answers:
+- 'true'
+- 'false'
+- Compilation error
+- Runtime panic
+correct_answer: 1
+expected_output:
+- 'false'
+explanation: |-
+  This question tests understanding of HashMap's `get` method and Option types in
+  Rust. When you call `get` on a HashMap with a key that doesn't exist, it returns
+  `None` rather than panicking or causing an error.
+
+  The `get` method returns an `Option<&V>` where `V` is the value type. In this
+  case, since the HashMap is empty and we're looking for key `42`, the method
+  returns `None`. The `is_some()` method on Option returns `true` if the Option
+  contains a value (is `Some`) and `false` if it's `None`.
+
+  Since the map is empty and contains no entry for key `42`, `map.get(&42)`
+  returns `None`, and `value.is_some()` evaluates to `false`, which is what gets
+  printed.
+
+  The key takeaway is that HashMap's `get` method provides safe access to
+  potentially missing keys by returning an Option, allowing you to handle the
+  absence of a key gracefully without panicking. This is a fundamental pattern in
+  Rust for handling cases where a value might not exist.

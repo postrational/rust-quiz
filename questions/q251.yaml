@@ -1,0 +1,34 @@
+question: |-
+  ```rust
+  fn main() {
+      let s1 = String::from("hello");
+      let s2 = s1;
+      println!("{}", s1);
+  }
+  ```
+
+  What happens when you try to compile and run this code?
+answers:
+- Prints "hello" successfully
+- 'Compilation error: borrow of moved value `s1`'
+- Runtime panic due to double free
+- 'Compilation error: `s1` is not in scope'
+correct_answer: 1
+expected_output:
+- borrow of moved value
+explanation: |-
+  This question tests understanding of Rust's ownership system and move semantics.
+  When `let s2 = s1;` executes, ownership of the String data is transferred
+  (moved) from `s1` to `s2`. This is because `String` does not implement the
+  `Copy` trait—it owns heap-allocated data that cannot be implicitly copied.
+
+  After the move, `s1` is no longer valid and cannot be used. When the `println!`
+  macro attempts to borrow `s1`, the Rust compiler detects this use-after-move and
+  produces a compilation error: "borrow of moved value: `s1`". This is a key
+  safety feature of Rust's ownership system that prevents use-after-free bugs at
+  compile time.
+
+  The key takeaway is that Rust's ownership rules ensure memory safety by tracking
+  which variable owns each piece of data. When ownership is moved, the previous
+  owner becomes invalid, and the compiler enforces this at compile time rather
+  than allowing potential runtime errors.

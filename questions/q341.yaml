@@ -1,0 +1,50 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3];
+      let mut iter = data.iter().peekable();
+      
+      while let Some(&value) = iter.peek() {
+          if value == 2 {
+              iter.next();
+          }
+          break;
+      }
+      
+      println!("{}", iter.count());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '2'
+- '3'
+- The loop never terminates
+correct_answer: 2
+expected_output:
+- error[E0277]
+- can't compare `&{integer}` with `{integer}`
+explanation: |-
+  This question tests understanding of Rust's type system, pattern matching, and
+  the `Peekable` iterator's `peek()` method.
+
+  The code has a compilation error due to a type mismatch. The `peek()` method
+  returns `Option<&&T>` - an option containing a reference to a reference. When
+  pattern matching with `Some(&value)`, we dereference once, so `value` has type
+  `&i32` (a reference to an integer), not `i32`.
+
+  The comparison `value == 2` attempts to compare `&i32` with `i32`, which fails
+  because Rust doesn't automatically dereference in this context. The compiler
+  suggests dereferencing `value` with `*value == 2` or comparing with a reference
+  `value == &2`.
+
+  If the code were corrected (e.g., using `*value == 2`), the execution would be:
+  `peek()` returns a reference to the first element (1), the condition `*value ==
+  2` would be false, `iter.next()` wouldn't be called, `break` would exit the loop
+  immediately, and `iter.count()` would count all 3 remaining elements, printing
+  3.
+
+  The key takeaway is understanding that `peek()` returns `Option<&&T>` for an
+  iterator over references, requiring careful handling of reference layers in
+  pattern matching and comparisons.

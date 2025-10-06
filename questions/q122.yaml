@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let v1 = vec![1, 2, 3];
+      let v2 = vec![4, 5];
+      
+      let result: Vec<_> = v1.iter()
+          .zip(v2.iter())
+          .map(|(a, b)| a + b)
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[5, 7, 3]'
+- '[5, 7]'
+- Compilation error - vectors have different lengths
+- '[5, 7, 0]'
+correct_answer: 1
+expected_output:
+- '[5, 7]'
+explanation: |-
+  This question tests understanding of the `zip()` iterator adapter in Rust. The
+  `zip()` method combines two iterators by pairing up their elements, but it stops
+  when the shorter iterator is exhausted.
+
+  In this code, `v1` contains three elements `[1, 2, 3]` and `v2` contains two
+  elements `[4, 5]`. When `v1.iter().zip(v2.iter())` is called, it creates pairs
+  of corresponding elements: `(1, 4)` and `(2, 5)`. Since `v2` has no third
+  element, the iteration stops after two pairs. The third element `3` from `v1` is
+  simply ignored.
+
+  The `map(|(a, b)| a + b)` operation then adds each pair: `1 + 4 = 5` and `2 + 5
+  = 7`, resulting in the vector `[5, 7]`.
+
+  The key takeaway is that `zip()` takes the minimum length of both iterators and
+  does not produce a runtime error when iterators have different lengths. This
+  behavior is intentional and useful when processing corresponding elements from
+  two collections where you only care about the overlapping portion.

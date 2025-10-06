@@ -1,0 +1,40 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5, 6];
+      let result: Vec<_> = data
+          .chunks_exact(2)
+          .map(|chunk| chunk[0] + chunk[1])
+          .collect();
+          
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '[3, 7, 11]'
+- '[3, 7]'
+- '[1, 3, 5]'
+- Compilation error
+correct_answer: 0
+expected_output:
+- '[3, 7, 11]'
+explanation: |-
+  This question tests understanding of the `chunks_exact` iterator method in Rust.
+  The `chunks_exact(n)` method divides a slice into non-overlapping chunks of
+  exactly `n` elements each. If the slice length is not evenly divisible by `n`,
+  any remaining elements at the end are discarded and not included in the
+  iteration.
+
+  In this code, the vector `[1, 2, 3, 4, 5, 6]` has 6 elements, which divides
+  evenly by 2. The `chunks_exact(2)` call produces three chunks: `[1, 2]`, `[3,
+  4]`, and `[5, 6]`. The `map` operation then sums the two elements in each chunk:
+  1+2=3, 3+4=7, and 5+6=11. These results are collected into a vector, producing
+  `[3, 7, 11]`.
+
+  The key distinction is between `chunks_exact` and the regular `chunks` method.
+  While `chunks` would include any partial chunk at the end (if the length doesn't
+  divide evenly), `chunks_exact` only yields complete chunks of the specified
+  size. This makes `chunks_exact` useful when you need to guarantee that all
+  chunks have exactly the same size and want to ignore any incomplete remainder.

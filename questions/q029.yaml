@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  trait Greet {
+      fn greet(&self) -> String;
+  }
+
+  struct Person {
+      name: String,
+  }
+
+  impl Greet for Person {
+      fn greet(&self) -> String {
+          format!("Hello, I'm {}", self.name)
+      }
+  }
+
+  fn main() {
+      let p = Person { name: "Alice".to_string() };
+      let greeting = p.greet();
+      println!("{}", greeting);
+  }
+  ```
+
+  What will this code print?
+answers:
+- Hello, I'm Alice
+- 'Compilation error: trait method not implemented'
+- 'Compilation error: cannot call trait method directly'
+- Runtime panic
+correct_answer: 0
+expected_output:
+- Hello, I'm Alice
+explanation: |-
+  This question tests basic understanding of traits and trait implementation in
+  Rust. A trait defines a set of methods that types can implement, similar to
+  interfaces in other languages.
+
+  In this code, the `Greet` trait defines a single method `greet(&self)` that
+  returns a `String`. The `Person` struct implements this trait by providing a
+  concrete implementation of the `greet` method that formats a greeting string
+  using the person's name.
+
+  When `p.greet()` is called, Rust uses the implementation provided in the `impl
+  Greet for Person` block. The method borrows `self` immutably, accesses the
+  `name` field, and returns a formatted string "Hello, I'm Alice".
+
+  The key takeaway is that traits allow you to define shared behavior across
+  different types. Once a trait is implemented for a type, you can call the
+  trait's methods on instances of that type just like any other method.

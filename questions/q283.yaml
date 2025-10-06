@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  fn take_string(s: String) -> String {
+      s + " modified"
+  }
+
+  fn main() {
+      let original = String::from("test");
+      let modified = take_string(original);
+      let combined = original + &modified;
+      println!("{}", combined);
+  }
+  ```
+
+  What does this code output?
+answers:
+- testtest modified
+- 'Compilation error: borrow of moved value `original`'
+- 'Runtime panic: use after move'
+- test modified
+correct_answer: 1
+expected_output:
+- 'error[E0382]: use of moved value: `original`'
+explanation: |-
+  This question tests understanding of Rust's ownership system and move semantics.
+  When a value of a non-Copy type like `String` is passed to a function by value,
+  ownership is transferred (moved) to that function.
+
+  In this code, when `take_string(original)` is called, ownership of the `String`
+  stored in `original` is moved to the function parameter `s`. After this move,
+  `original` is no longer valid and cannot be used.
+
+  The subsequent line attempts to use `original` in the expression `original +
+  &modified`. Since `original` has already been moved, the Rust compiler detects
+  this error at compile time and prevents the code from compiling with error code
+  E0382: "use of moved value: `original`".
+
+  The key takeaway is that Rust's ownership system prevents use-after-move errors
+  at compile time. Once a value is moved, the original binding becomes invalid and
+  any attempt to use it will result in a compilation error. This is a fundamental
+  safety guarantee that Rust provides to prevent memory safety issues.

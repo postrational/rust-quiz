@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  use std::collections::HashSet;
+
+  fn main() {
+      let mut set1 = HashSet::new();
+      set1.insert(1);
+      set1.insert(2);
+      set1.insert(3);
+      
+      let mut set2 = HashSet::new();
+      set2.insert(3);
+      set2.insert(4);
+      set2.insert(5);
+      
+      let result: HashSet<_> = set1.intersection(&set2).cloned().collect();
+      println!("{}", result.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '1'
+- '5'
+- '6'
+correct_answer: 1
+expected_output:
+- '1'
+explanation: |-
+  This question tests understanding of set operations in Rust, specifically the
+  `intersection` method on `HashSet`.
+
+  The `intersection` method returns an iterator over elements that are present in
+  both sets. In this code:
+  - `set1` contains {1, 2, 3}
+  - `set2` contains {3, 4, 5}
+  - The only element present in both sets is 3
+
+  The `intersection(&set2)` method returns an iterator over references to the
+  common elements. The `cloned()` method is used to convert these references into
+  owned values, which are then collected into a new `HashSet`. Since only the
+  element 3 is common to both sets, the resulting `HashSet` contains exactly one
+  element, and `result.len()` returns 1.
+
+  The key takeaway is that set intersection finds the common elements between two
+  sets. This is a fundamental set operation useful for finding overlapping data
+  between collections.

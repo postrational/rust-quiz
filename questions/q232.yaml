@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  macro_rules! debug_print {
+      ($msg:expr) => {
+          println!("DEBUG: {}", $msg);
+      };
+  }
+
+  macro_rules! add_numbers {
+      ($a:expr, $b:expr) => {
+          $a + $b
+      };
+  }
+
+  fn main() {
+      debug_print!("Starting program");
+      let result = add_numbers!(5 * 2, 3 + 1);
+      debug_print!(result);
+  }
+  ```
+
+  What does this program output?
+answers:
+- 'DEBUG: Starting program, DEBUG: 14'
+- 'DEBUG: Starting program, DEBUG: 5 * 2 + 3 + 1'
+- Compilation fails because macro expressions are not evaluated
+- 'DEBUG: Starting program, DEBUG: 8'
+correct_answer: 0
+expected_output:
+- 'DEBUG: Starting program'
+- 'DEBUG: 14'
+explanation: |-
+  This question tests understanding of Rust's declarative macros and how they
+  handle expressions. Macros in Rust operate at the token level during
+  compilation, performing textual substitution before the code is compiled.
+
+  When `debug_print!("Starting program")` is invoked, it expands to
+  `println!("DEBUG: {}", "Starting program")`, which outputs "DEBUG: Starting
+  program".
+
+  The `add_numbers!(5 * 2, 3 + 1)` macro captures the expressions `5 * 2` and `3 +
+  1` as tokens and expands to `5 * 2 + 3 + 1`. After macro expansion, this
+  expression is evaluated following normal operator precedence: multiplication
+  happens first (5 * 2 = 10), then the additions are performed left to right (10 +
+  3 + 1 = 14). The result is stored in the `result` variable.
+
+  Finally, `debug_print!(result)` expands to `println!("DEBUG: {}", result)`,
+  which outputs "DEBUG: 14".
+
+  The key takeaway is that macros perform textual substitution of tokens, and the
+  resulting code is then compiled and evaluated normally. The `expr` fragment
+  specifier captures expressions that are later evaluated according to Rust's
+  standard evaluation rules, not treated as literal strings or left unevaluated.

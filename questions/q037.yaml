@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  trait Add<T> {
+      type Output;
+      fn add(self, other: T) -> Self::Output;
+  }
+
+  impl Add<i32> for i32 {
+      type Output = i32;
+      fn add(self, other: i32) -> i32 { self + other }
+  }
+
+  fn combine<T, U>(a: T, b: U) -> T::Output 
+  where 
+      T: Add<U>
+  {
+      a.add(b)
+  }
+
+  fn main() {
+      let result = combine(5, 10);
+      println!("{}", result);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '15'
+- '510'
+- Compilation error - generic constraints not satisfied
+- Compilation error - ambiguous associated type
+correct_answer: 0
+expected_output:
+- '15'
+explanation: |-
+  This question tests understanding of where clauses, associated types, and trait
+  bounds in Rust generics.
+
+  The code defines a custom `Add<T>` trait with an associated type `Output`, and
+  implements it for `i32` to add two `i32` values. The `combine` function is
+  generic over types `T` and `U`, with a where clause constraint `T: Add<U>`,
+  meaning type `T` must implement the `Add` trait for type `U`.
+
+  When `combine(5, 10)` is called, the compiler infers `T` as `i32` and `U` as
+  `i32`. The constraint `i32: Add<i32>` is satisfied by the implementation
+  provided. The associated type `T::Output` resolves unambiguously to `i32` based
+  on the `Add<i32>` implementation for `i32`.
+
+  The function call `a.add(b)` becomes `5.add(10)`, which executes the custom
+  `add` method returning `5 + 10 = 15`. This value is then printed.
+
+  The key takeaway is that where clauses allow expressing complex trait bounds on
+  generic parameters, and associated types in traits are resolved based on the
+  specific implementation that satisfies the trait bounds. The compiler can infer
+  all necessary types from the function arguments and trait implementations,
+  making the associated type reference unambiguous.

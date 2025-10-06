@@ -1,0 +1,75 @@
+question: |-
+  ```rust
+  async fn complex_process() -> Result<String, &'static str> {
+      println!("Starting");
+      
+      let step1 = async {
+          println!("Step 1 complete");
+          Ok::<i32, &'static str>(42)
+      };
+      
+      let step2 = async {
+          println!("Step 2 complete");  
+          Err("Step 2 failed")
+      };
+      
+      let step3 = async {
+          println!("Step 3 complete");
+          Ok::<i32, &'static str>(100)
+      };
+      
+      step1.await?;
+      step2.await?;
+      step3.await?;
+      
+      println!("All done");
+      Ok("Success".to_string())
+  }
+
+  #[tokio::main]
+  async fn main() {
+      match complex_process().await {
+          Ok(msg) => println!("Result: {}", msg),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  What happens when this async function with early return executes?
+answers:
+- 'Prints: "Starting", "Step 1 complete", "Step 2 complete", "Error: Step 2 failed"'
+- 'Prints: "Starting", "Step 1 complete", "Step 2 complete", "Step 3 complete", "Error: Step 2 failed"'
+- Compilation error - cannot use `?` with different error types
+- 'Prints: "Starting", "Error: Step 2 failed"'
+correct_answer: 0
+expected_output:
+- Starting
+- Step 1 complete
+- Step 2 complete
+- 'Error: Step 2 failed'
+explanation: |-
+  This question tests understanding of async/await execution flow and the `?`
+  operator's error propagation behavior in Rust.
+
+  The execution proceeds sequentially through each await point. First, "Starting"
+  is printed. Then `step1.await?` executes the first async block, which prints
+  "Step 1 complete" and returns `Ok(42)`. The `?` operator unwraps this
+  successfully and execution continues.
+
+  Next, `step2.await?` executes the second async block, which prints "Step 2
+  complete" and returns `Err("Step 2 failed")`. The `?` operator detects this
+  error and immediately returns it from the `complex_process` function, causing an
+  early return. This is the key behavior: the `?` operator provides fail-fast
+  semantics by propagating errors immediately.
+
+  Because of the early return, `step3.await?` is never reached, so "Step 3
+  complete" is never printed. Similarly, "All done" is never printed. The error
+  propagates back to `main`, where the `match` statement catches it and prints
+  "Error: Step 2 failed".
+
+  The key takeaway is that each `await` fully completes the async block before the
+  `?` operator checks the result. The `?` operator then provides fail-fast
+  behavior, stopping execution at the first error. This pattern is commonly used
+  for validation chains where you want to stop processing at the first failure,
+  while still allowing each step to complete its work (such as logging or cleanup)
+  before the error is propagated.

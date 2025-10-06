@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  use std::rc::Weak;
+  use std::rc::Rc;
+
+  fn main() {
+      let strong = Rc::new(42);
+      let weak = Rc::downgrade(&strong);
+      
+      drop(strong);
+      
+      match weak.upgrade() {
+          Some(value) => println!("Value: {}", value),
+          None => println!("Gone"),
+      }
+  }
+  ```
+
+  What does this program print?
+answers:
+- 'Value: 42'
+- Gone
+- 'Compilation error: use after drop'
+- 'Runtime panic: weak reference error'
+correct_answer: 1
+expected_output:
+- Gone
+explanation: |-
+  This question tests understanding of weak references in Rust and the
+  relationship between `Rc` and `Weak`.
+
+  When `Rc::new(42)` is called, it creates a reference-counted pointer with a
+  strong count of 1. The `Rc::downgrade(&strong)` call creates a `Weak` reference,
+  which increments the weak count but does not affect the strong count. Weak
+  references do not keep the underlying data alive.
+
+  When `drop(strong)` is executed, the strong reference count drops to 0. Since
+  there are no more strong references, the data (the value 42) is deallocated,
+  even though a weak reference still exists.
+
+  The `weak.upgrade()` method attempts to convert the weak reference back into a
+  strong reference (`Rc`). However, since the data has already been deallocated,
+  `upgrade()` returns `None`. This causes the match statement to execute the
+  `None` arm, printing "Gone".
+
+  The key takeaway is that `Weak` references are non-owning references that don't
+  prevent deallocation. They are commonly used to break reference cycles in data
+  structures. The `upgrade()` method provides a safe way to check if the data is
+  still available before attempting to access it.

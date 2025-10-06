@@ -1,0 +1,66 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut counts = HashMap::new();
+      let words = vec!["hello", "world", "hello", "rust", "world", "hello"];
+      
+      for word in words {
+          *counts.entry(word).or_insert(0) += 1;
+      }
+      
+      println!("Counts: {:?}", counts);
+      
+      let entry = counts.entry("python");
+      println!("Python entry: {:?}", entry);
+      
+      let python_count = counts.entry("python").or_insert(10);
+      *python_count += 5;
+      
+      println!("Final counts: {:?}", counts);
+  }
+  ```
+
+  What will this code do?
+answers:
+- 'Compilation error: cannot modify HashMap while iterating over entry'
+- 'Prints word counts, then `Python entry: Entry(VacantEntry("python"))`, then counts with python: 15'
+- 'Prints word counts, then `Python entry: OccupiedEntry("python", 0)`, then counts with python: 5'
+- 'Runtime panic: entry API cannot be used with string keys'
+correct_answer: 1
+expected_output:
+- 'Counts:'
+- 'Python entry: Entry(VacantEntry("python"))'
+- 'Final counts:'
+- python
+- '15'
+explanation: |-
+  This question tests understanding of HashMap's Entry API, which provides an
+  efficient way to conditionally insert or modify values based on whether a key
+  exists.
+
+  The Entry API works through the `entry()` method, which returns an `Entry` enum
+  that can be either `Vacant` (key doesn't exist) or `Occupied` (key exists). This
+  allows for single-lookup operations instead of separate contains/insert checks.
+
+  In the word counting loop, `counts.entry(word).or_insert(0)` either returns a
+  mutable reference to the existing value or inserts 0 and returns a reference to
+  it. The dereference and increment operation `*... += 1` then updates the count.
+  This results in a HashMap with hello: 3, world: 2, and rust: 1 (though the order
+  is not guaranteed since HashMap doesn't maintain insertion order).
+
+  When `counts.entry("python")` is called, it returns a `VacantEntry` because
+  "python" doesn't exist in the map. The debug output shows this as
+  `Entry(VacantEntry("python"))`. Importantly, simply calling `entry()` doesn't
+  modify the map—it just returns the entry object.
+
+  The subsequent call to `counts.entry("python").or_insert(10)` inserts the value
+  10 (since the entry is vacant) and returns a mutable reference to it. The
+  operation `*python_count += 5` then modifies this value from 10 to 15.
+
+  The key takeaway is that the Entry API provides borrowing-friendly, efficient
+  patterns for operations like counters, caches, and conditional updates by
+  performing only a single hash lookup and returning mutable references to values
+  in the map. HashMap iteration order is not guaranteed, so the exact order of
+  key-value pairs in the debug output may vary.

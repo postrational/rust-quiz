@@ -1,0 +1,74 @@
+question: |-
+  ```rust
+  use std::marker::PhantomData;
+
+  struct Database<State> {
+      connection: String,
+      _state: PhantomData<State>,
+  }
+
+  struct Connected;
+  struct Disconnected;
+
+  impl Database<Disconnected> {
+      fn new() -> Self {
+          Database {
+              connection: String::new(),
+              _state: PhantomData,
+          }
+      }
+      
+      fn connect(self) -> Database<Connected> {
+          Database {
+              connection: "active".to_string(),
+              _state: PhantomData,
+          }
+      }
+  }
+
+  impl Database<Connected> {
+      fn query(&self) -> &str {
+          &self.connection
+      }
+  }
+
+  fn main() {
+      let db = Database::new();
+      println!("{}", db.query());
+  }
+  ```
+
+  What compilation error occurs?
+answers:
+- PhantomData requires the type parameter to implement a specific trait
+- Cannot call query() on a Database<Disconnected> - method only exists for Database<Connected>
+- Connected and Disconnected types are not defined properly
+- The connect() method has an invalid return type
+correct_answer: 1
+expected_output:
+- no method named `query` found for struct `Database<Disconnected>`
+explanation: |-
+  This question tests understanding of phantom types and the typestate pattern in
+  Rust. Phantom types use `PhantomData` to carry type information that affects
+  which methods are available, without storing actual data of that type.
+
+  In this code, `Database` is generic over a `State` type parameter, which is
+  tracked using `PhantomData<State>`. Two zero-sized types, `Connected` and
+  `Disconnected`, represent different states. The key insight is that different
+  methods are implemented for different states through separate `impl` blocks.
+
+  When `Database::new()` is called, it returns a `Database<Disconnected>`. The
+  code then attempts to call `db.query()` on this disconnected database. However,
+  the `query()` method is only implemented in the `impl Database<Connected>`
+  block, not for `Database<Disconnected>`. This results in a compilation error
+  because the method doesn't exist for the type at hand.
+
+  This pattern is called the "typestate pattern" - using the type system to
+  represent states and enforce valid state transitions at compile time. To fix the
+  code, you would need to call `connect()` first: `let db =
+  Database::new().connect();` which transforms the `Database<Disconnected>` into a
+  `Database<Connected>`, making the `query()` method available.
+
+  The key takeaway is that phantom types enable compile-time state machines where
+  certain operations are only available in certain states, providing strong safety
+  guarantees without runtime overhead.

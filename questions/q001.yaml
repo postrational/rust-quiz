@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut vec = vec![1, 2, 3, 4, 5];
+      let slice = &vec[1..4];
+      vec.push(6);
+      println!("{:?}", slice);
+  }
+  ```
+
+  What will this Rust code print?
+answers:
+- '[2, 3, 4]'
+- '[2, 3, 4, 5]'
+- Compilation error
+- Runtime panic
+correct_answer: 2
+expected_output:
+- 'error[E0502]: cannot borrow `vec` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and the interaction
+  between immutable and mutable borrows.
+
+  When `let slice = &vec[1..4];` executes, it creates an immutable borrow of the
+  vector. This borrow remains active as long as `slice` is used later in the code.
+  Then, `vec.push(6);` attempts to create a mutable borrow of the vector to modify
+  it by adding an element.
+
+  Rust's borrow checker enforces a fundamental rule: you cannot have a mutable
+  borrow and an immutable borrow of the same data active at the same time. This
+  prevents data races and ensures memory safety. Since `slice` (the immutable
+  borrow) is still in scope and will be used in the `println!` statement, the
+  compiler rejects the attempt to mutably borrow `vec` with `push(6)`.
+
+  The compiler produces an error message similar to: "cannot borrow `vec` as
+  mutable because it is also borrowed as immutable." This is a compile-time error,
+  so the code never runs.
+
+  The key takeaway is that Rust's borrow checker statically enforces exclusive
+  access for mutation: either multiple immutable borrows OR one mutable borrow,
+  but never both simultaneously. This is a core safety guarantee that prevents
+  many common bugs found in other languages.

@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+
+  fn main() {
+      let data = Rc::new(vec![1, 2, 3]);
+      let ref1 = Rc::clone(&data);
+      let ref2 = data.clone();
+      
+      println!("{}", Rc::strong_count(&data));
+  }
+  ```
+
+  What does this program print?
+answers:
+- '1'
+- '2'
+- '3'
+- '4'
+correct_answer: 2
+expected_output:
+- '3'
+explanation: |-
+  This question tests understanding of reference counting with `Rc` (Reference
+  Counted) smart pointers in Rust. The `Rc` type allows multiple ownership of the
+  same data by keeping track of how many references exist.
+
+  When the code executes:
+  1. `let data = Rc::new(vec![1, 2, 3])` creates the first `Rc` pointer, so the
+  strong count is 1
+  2. `let ref1 = Rc::clone(&data)` explicitly clones the `Rc`, incrementing the
+  strong count to 2
+  3. `let ref2 = data.clone()` also clones the `Rc`, incrementing the strong count
+  to 3
+
+  Both `Rc::clone(&data)` and `data.clone()` perform the same operation—they
+  increment the reference count and create a new pointer to the same underlying
+  data. The difference is stylistic: `Rc::clone(&data)` is the preferred idiom
+  because it makes it explicit that only the reference counter is being cloned,
+  not the underlying data. This is especially important for clarity when the inner
+  type `T` also implements `Clone`, as it clearly communicates the intent to clone
+  the smart pointer rather than perform a deep copy of the data.
+
+  The key takeaway is that `Rc` enables shared ownership through reference
+  counting, and each clone operation increments the count. The `Rc::strong_count`
+  function returns the current number of strong references to the data.

@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  use std::mem;
+
+  fn main() {
+      let mut x = vec![1, 2, 3];
+      let y = mem::replace(&mut x, vec![4, 5, 6]);
+      x.push(7);
+      println!("{:?} {:?}", x, y);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- '[4, 5, 6, 7] [1, 2, 3]'
+- 'Compilation error: cannot move out of borrowed content'
+- 'Runtime panic: use after replace'
+- '[1, 2, 3, 7] [4, 5, 6]'
+correct_answer: 0
+expected_output:
+- '[4, 5, 6, 7] [1, 2, 3]'
+explanation: |-
+  This question tests understanding of `mem::replace` and how it enables safe
+  value swapping in Rust. The `mem::replace` function takes a mutable reference to
+  a location and a new value, then swaps them: it places the new value into the
+  location and returns the old value that was there.
+
+  In this code, `mem::replace(&mut x, vec![4, 5, 6])` replaces the contents of `x`
+  (which was `[1, 2, 3]`) with a new vector `[4, 5, 6]`. The old value `[1, 2, 3]`
+  is returned and stored in `y`. This operation is safe because ownership of the
+  old value is transferred out while simultaneously placing a new value in its
+  location, maintaining Rust's invariants.
+
+  After the replacement, `x` contains `[4, 5, 6]`, and `y` contains `[1, 2, 3]`.
+  The subsequent `x.push(7)` modifies `x` to become `[4, 5, 6, 7]`. The final
+  `println!` outputs both vectors: `[4, 5, 6, 7]` for `x` and `[1, 2, 3]` for `y`.
+
+  The key takeaway is that `mem::replace` is a useful utility for extracting a
+  value from a mutable reference while simultaneously providing a replacement
+  value. This is particularly valuable when working with mutable borrows where you
+  need to take ownership of the current value but must leave something valid in
+  its place.

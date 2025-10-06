@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![vec![1, 2], vec![], vec![3, 4, 5]];
+      let result: Vec<_> = data
+          .into_iter()
+          .flatten()
+          .collect();
+          
+      println!("{}", result.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '3'
+- '5'
+- '0'
+- Compilation error
+correct_answer: 1
+expected_output:
+- '5'
+explanation: |-
+  This question tests understanding of the `flatten()` iterator adapter in Rust.
+  The `flatten()` method is used to flatten nested iterators by one level,
+  converting an iterator of iterables into a single flat iterator.
+
+  In this code, `data` is a `Vec` containing three inner vectors: `vec![1, 2]`,
+  `vec![]` (empty), and `vec![3, 4, 5]`. When `into_iter()` is called, it creates
+  an iterator over these three vectors. The `flatten()` method then flattens this
+  structure by iterating through each inner vector and yielding their elements one
+  by one.
+
+  The flattening process works as follows:
+  - `vec![1, 2]` yields elements 1 and 2
+  - `vec![]` yields nothing (it's empty)
+  - `vec![3, 4, 5]` yields elements 3, 4, and 5
+
+  After flattening, all elements are collected into a single vector: [1, 2, 3, 4,
+  5], which has a length of 5.
+
+  The key takeaway is that `flatten()` is useful for working with nested
+  collections, automatically handling empty collections by skipping them. It's
+  essentially equivalent to `flat_map(|x| x)` and is commonly used when you have
+  an iterator of iterators or collections and want to process all elements in a
+  single flat sequence.

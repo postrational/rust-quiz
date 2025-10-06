@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s1 = String::from("hello");
+      let s2 = &mut s1;
+      s1.push_str(" world");
+      println!("{}", s2);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "hello world"
+- 'Compilation error: cannot borrow `s1` as mutable because it is also borrowed as mutable'
+- 'Runtime panic: double mutable borrow'
+- Prints "hello"
+correct_answer: 1
+expected_output:
+- cannot borrow `s1` as mutable
+explanation: |-
+  This question tests understanding of Rust's mutable borrowing rules,
+  specifically the constraint that only one mutable reference to a value can exist
+  at a time within a given scope.
+
+  In this code, `s2` is created as a mutable reference to `s1`. Then, the code
+  attempts to call `s1.push_str(" world")`, which requires taking another mutable
+  borrow of `s1`. This violates Rust's borrowing rules because `s2` is still in
+  scope and will be used later in the `println!` statement.
+
+  Rust's borrow checker prevents this at compile time to ensure memory safety. The
+  compiler detects that there would be two active mutable references to the same
+  data, which could lead to data races or undefined behavior in other languages.
+  The error message indicates that `s1` cannot be borrowed as mutable because it
+  is already borrowed as mutable through `s2`.
+
+  The key takeaway is that Rust enforces exclusive access for mutable references:
+  when a mutable reference exists, no other references (mutable or immutable) to
+  that data can be used until the mutable reference goes out of scope. This is a
+  fundamental safety guarantee that prevents data races at compile time.

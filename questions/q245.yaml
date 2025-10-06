@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  fn function1<T>(x: T) { }
+
+  fn function2<T: ?Sized>(x: &T) { }
+
+  fn function3<T: Sized>(x: T) { }
+
+  fn main() {
+      let s: String = "hello".to_string();
+      let slice: &str = "world";
+      
+      function1(s);
+      function1(slice);
+      
+      function2(&String::from("test"));
+      function2(slice);
+      
+      function3(42i32);
+      function3(slice);
+  }
+  ```
+
+  Which function calls cause compilation errors?
+answers:
+- function1(slice) and function3(slice)
+- Only function1(slice)
+- Only function3(slice)
+- All function calls work correctly
+correct_answer: 3
+expected_output: []
+explanation: |-
+  This question tests understanding of the `Sized` trait and dynamically sized
+  types (DSTs) in Rust. The key concept is distinguishing between unsized types
+  and references to unsized types.
+
+  In Rust, type parameters have an implicit `Sized` bound by default. This means
+  `fn function1<T>(x: T)` is equivalent to `fn function1<T: Sized>(x: T)`. The
+  `?Sized` syntax in `function2` relaxes this requirement, allowing `T` to be an
+  unsized type.
+
+  However, the critical insight is that `slice` has type `&str`, which is a
+  reference to an unsized type (`str`). While `str` itself is unsized (its size is
+  not known at compile time), the reference `&str` is always sized—it's a fat
+  pointer containing both a pointer and a length, which has a known size at
+  compile time.
+
+  Therefore:
+  - `function1(slice)` works because `T = &str`, and `&str` is `Sized`
+  - `function2(slice)` works because when `T = str` (unsized), the parameter type
+  `&T = &str` is sized
+  - `function3(slice)` works because `T = &str`, and `&str` is `Sized`
+
+  All function calls compile successfully. The key takeaway is that references to
+  unsized types are themselves always sized, as they are implemented as fat
+  pointers with a known compile-time size.

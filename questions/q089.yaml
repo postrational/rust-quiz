@@ -1,0 +1,69 @@
+question: |-
+  ```rust
+  trait Process {
+      type Input;
+      type Output;
+      
+      fn process(&self, input: Self::Input) -> Self::Output;
+  }
+
+  struct Doubler;
+
+  impl Process for Doubler {
+      type Input = i32;
+      type Output = i32;
+      
+      fn process(&self, input: i32) -> i32 {
+          input * 2
+      }
+  }
+
+  fn apply_twice<P: Process>(processor: &P, value: P::Input) -> P::Output 
+  where
+      P::Output: Into<P::Input>
+  {
+      let first = processor.process(value);
+      processor.process(first.into())
+  }
+
+  fn main() {
+      let d = Doubler;
+      let result = apply_twice(&d, 5);
+      println!("{}", result);
+  }
+  ```
+
+  What happens?
+answers:
+- Prints `20`
+- 'Compiler error: the trait bound `i32: Into<i32>` is not satisfied'
+- Prints `10`
+- 'Compiler error: cyclic dependency in associated types'
+correct_answer: 0
+expected_output:
+- '20'
+explanation: |-
+  This question tests understanding of associated types, trait bounds, and the
+  `Into` trait in Rust.
+
+  The key to this question is recognizing that `i32: Into<i32>` is indeed
+  implemented in the standard library as an identity conversion. Every type `T`
+  implements `Into<T>`, allowing a value to be converted into itself.
+
+  The `apply_twice` function has a generic constraint `where P::Output:
+  Into<P::Input>`, which requires that the output type can be converted into the
+  input type. For the `Doubler` implementation, both `Input` and `Output` are
+  `i32`, so this constraint is satisfied by the identity implementation of
+  `Into<i32>` for `i32`.
+
+  The execution flow is:
+  1. `apply_twice(&d, 5)` is called
+  2. First call: `processor.process(5)` returns `5 * 2 = 10`
+  3. `first.into()` converts `10` to `10` (identity conversion)
+  4. Second call: `processor.process(10)` returns `10 * 2 = 20`
+  5. The result `20` is printed
+
+  The key takeaway is that Rust's standard library provides identity
+  implementations of conversion traits like `Into<T>` for all types `T`, which
+  allows for flexible generic code that can work with both same-type and
+  different-type conversions.

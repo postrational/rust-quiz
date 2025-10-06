@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map: HashMap<&str, i32> = HashMap::new();
+      let key = String::from("test");
+      map.insert(&key, 42);
+      drop(key);
+      println!("{:?}", map);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '{"{"test": 42"}'
+- 'Compilation error: `key` does not live long enough'
+- 'Runtime panic: dangling key reference'
+- 'Compilation error: cannot drop `key` while borrowed'
+correct_answer: 3
+expected_output:
+- cannot move out of `key` because it is borrowed
+explanation: |-
+  This question tests understanding of Rust's borrow checker and lifetime rules.
+  When a reference to a value is stored in a data structure, the original value is
+  considered borrowed for the lifetime of that reference.
+
+  In this code, a `HashMap<&str, i32>` is created that stores string slice
+  references as keys. When `map.insert(&key, 42)` is called, a reference to the
+  `String` stored in `key` is inserted into the HashMap. This creates a borrow of
+  `key` that must remain valid as long as the HashMap holds that reference.
+
+  The subsequent `drop(key)` call attempts to move and destroy the `key` variable.
+  However, Rust's borrow checker prevents this because the HashMap still holds a
+  borrowed reference to `key`. Allowing the drop would create a dangling reference
+  in the HashMap, violating Rust's memory safety guarantees.
+
+  The compiler produces an error indicating that `key` cannot be moved (dropped)
+  because it is borrowed. This demonstrates Rust's core principle of preventing
+  dangling references at compile time.
+
+  The key takeaway is that when you store a reference to a value in a data
+  structure, the original value must remain valid for at least as long as that
+  reference exists. You cannot move or drop the original value while references to
+  it are still in use.

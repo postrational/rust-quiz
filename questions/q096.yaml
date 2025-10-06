@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![vec![1, 2], vec![3], vec![4, 5, 6]];
+      
+      let result: Vec<_> = data
+          .iter()
+          .flat_map(|v| v.iter())
+          .filter(|&&x| x > 2)
+          .copied()
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[3, 4, 5, 6]'
+- '[&3, &4, &5, &6]'
+- 'Compiler error: `copied()` requires `Copy` trait'
+- '[[3], [4, 5, 6]]'
+correct_answer: 0
+expected_output:
+- '[3, 4, 5, 6]'
+explanation: |-
+  This question tests understanding of iterator combinators, specifically
+  `flat_map()` and `copied()`.
+
+  The code starts with a nested vector structure: `vec![vec![1, 2], vec![3],
+  vec![4, 5, 6]]`. The iterator chain processes this data through several
+  transformations:
+
+  1. `.iter()` on the outer vector yields an iterator of `&Vec<i32>`.
+
+  2. `.flat_map(|v| v.iter())` is the key operation. For each inner vector
+  reference, it calls `.iter()` to get an iterator over that vector's elements,
+  then flattens all these iterators into a single stream. This produces references
+  to all the individual integers: `&1, &2, &3, &4, &5, &6`.
+
+  3. `.filter(|&&x| x > 2)` keeps only values greater than 2. Note the double
+  reference pattern `&&x` because we have `&i32` items. This filters to: `&3, &4,
+  &5, &6`.
+
+  4. `.copied()` converts each `&i32` to `i32` by copying the value. This method
+  works because `i32` implements the `Copy` trait. It's similar to `.cloned()` but
+  more explicit about the copying operation and only available for `Copy` types.
+
+  5. `.collect()` gathers the results into a `Vec<i32>`: `[3, 4, 5, 6]`.
+
+  The key takeaway is that `flat_map()` combines mapping and flattening in one
+  step (equivalent to `.map(f).flatten()`), and `copied()` is an efficient way to
+  convert an iterator of references to an iterator of values when the type
+  implements `Copy`.

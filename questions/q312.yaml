@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert(1, vec![10]);
+      map.insert(2, vec![20, 30]);
+      
+      let total_elements: usize = map.values()
+          .map(|v| v.len())
+          .sum();
+          
+      println!("{}", total_elements);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '2'
+- '3'
+- '4'
+- '60'
+correct_answer: 1
+expected_output:
+- '3'
+explanation: |-
+  This question tests understanding of iterator chains and the `sum()` method in
+  Rust. The code creates a HashMap with two entries: key 1 maps to a vector with
+  one element [10], and key 2 maps to a vector with two elements [20, 30].
+
+  The iterator chain works as follows:
+  1. `map.values()` produces an iterator over references to the HashMap's values
+  (the vectors)
+  2. `.map(|v| v.len())` transforms each vector reference into its length: the
+  first vector has length 1, the second has length 2
+  3. `.sum()` adds up all the lengths: 1 + 2 = 3
+
+  The program prints 3 because we're counting the total number of elements across
+  all vectors stored in the HashMap, not the number of HashMap entries or the sum
+  of the actual values.
+
+  The key takeaway is understanding how iterator adapters like `map()` and
+  consumers like `sum()` work together to transform and aggregate data. This
+  pattern is commonly used in Rust for processing collections in a functional
+  style.

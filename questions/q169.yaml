@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  fn main() {
+      let text = "café naïve résumé";
+      
+      let ascii_only: String = text.chars()
+          .map(|c| if c.is_ascii() { c } else { '?' })
+          .collect();
+      
+      let decomposed: String = text.chars()
+          .flat_map(|c| c.to_lowercase())
+          .collect();
+      
+      println!("Original: {}", text);
+      println!("ASCII-only: {}", ascii_only);  
+      println!("Lowercase: {}", decomposed);
+  }
+  ```
+
+  What does this code output?
+answers:
+- 'Original: café naïve résumé, ASCII-only: caf? na?ve r?sum?, Lowercase: café naïve résumé'
+- 'Original: café naïve résumé, ASCII-only: caf? na?ve r?sum?, Lowercase: café naïve résumé'
+- 'Original: café naïve résumé, ASCII-only: caf? na?ve r?sum?, Lowercase: café naïve résumé'
+- 'Compilation error: `flat_map` cannot be used with `to_lowercase()`'
+correct_answer: 2
+expected_output:
+- 'Original: café naïve résumé'
+- 'ASCII-only: caf? na?ve r?sum?'
+- 'Lowercase: café naïve résumé'
+explanation: |-
+  This question tests understanding of Unicode handling in Rust, specifically
+  ASCII detection and case conversion.
+
+  The code performs two transformations on the string "café naïve résumé":
+
+  **ASCII-Only Transformation:**
+  The `is_ascii()` method checks if each character falls within the ASCII range
+  (0-127). The accented characters `é` and `ï` are not ASCII characters—they are
+  Unicode characters outside this range. Therefore, they are replaced with `?`,
+  producing: `caf? na?ve r?sum?`
+
+  **Lowercase Transformation:**
+  The `to_lowercase()` method returns an iterator of characters representing the
+  lowercase form of the input character. The key insight here is that all
+  characters in "café naïve résumé" are already lowercase. The accented characters
+  `é` and `ï` are lowercase Unicode characters, so `to_lowercase()` returns them
+  unchanged. The `flat_map` flattens the character iterators back into a single
+  string, but since no transformation occurs, the result is identical to the
+  original: `café naïve résumé`
+
+  The key takeaway is understanding that Unicode characters like `é` and `ï` are
+  not ASCII (they fall outside the 0-127 range), but they do have case properties.
+  Since they're already lowercase, calling `to_lowercase()` on them produces no
+  change.

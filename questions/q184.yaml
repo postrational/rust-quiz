@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  use std::collections::BTreeMap;
+
+  fn main() {
+      let mut scores = BTreeMap::new();
+      scores.insert("Alice", 100);
+      scores.insert("Charlie", 80);
+      scores.insert("Bob", 90);
+      
+      let range: Vec<_> = scores.range("B".."D").collect();
+      println!("Range result: {:?}", range);
+      
+      scores.remove("Bob");
+      let alice_to_charlie: Vec<_> = scores.range("Alice"..="Charlie").collect();
+      println!("Alice to Charlie: {:?}", alice_to_charlie);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Compilation error: string literals cannot be used as BTreeMap range bounds'
+- 'Prints `Range result: [("Bob", 90), ("Charlie", 80)]` then `Alice to Charlie: [("Alice", 100), ("Charlie", 80)]`'
+- 'Prints `Range result: [("Charlie", 80)]` then `Alice to Charlie: [("Alice", 100)]`'
+- 'Runtime panic: range bounds must exist as keys in the map'
+correct_answer: 1
+expected_output:
+- 'Range result: [("Bob", 90), ("Charlie", 80)]'
+- 'Alice to Charlie: [("Alice", 100), ("Charlie", 80)]'
+explanation: |-
+  This question tests understanding of BTreeMap range queries and how sorted maps
+  handle range operations with arbitrary boundary values.
+
+  BTreeMap maintains keys in sorted order according to their Ord implementation.
+  For string keys, this means lexicographic (alphabetical) ordering. When elements
+  are inserted, they are stored in sorted order regardless of insertion order. In
+  this code, the keys are stored as: "Alice" < "Bob" < "Charlie".
+
+  The range method allows querying a subset of the map using range syntax.
+  Importantly, the range bounds do not need to exist as actual keys in the
+  map—they are simply boundary values used for comparison. The range "B".."D" uses
+  exclusive end syntax, meaning it includes all keys k where "B" <= k < "D". This
+  includes "Bob" (starts with "B") and "Charlie" (starts with "C", which is less
+  than "D"), but excludes "Alice" (comes before "B" alphabetically).
+
+  After removing "Bob", the map contains only "Alice" and "Charlie". The range
+  "Alice"..="Charlie" uses inclusive end syntax (..=), meaning it includes all
+  keys k where "Alice" <= k <= "Charlie". Both "Alice" and "Charlie" match exactly
+  and are included in the result.
+
+  The key takeaway is that BTreeMap range queries work with any comparable
+  boundary values, not just existing keys, and use the key type's ordering to
+  determine which entries fall within the specified range. When collecting the
+  range results into a Vec, the Debug formatting shows the key-value pairs as
+  tuples without reference symbols, even though the range method internally
+  returns references.

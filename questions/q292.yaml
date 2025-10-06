@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert("key", vec![1, 2, 3]);
+      let value = map.get("key").unwrap();
+      value.push(4);
+      println!("{:?}", map);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: {"key": [1, 2, 3, 4]}'
+- 'Compilation error: cannot borrow as mutable'
+- Runtime panic on unwrap()
+- 'Prints: {"key": [1, 2, 3]}'
+correct_answer: 1
+expected_output:
+- 'error[E0596]: cannot borrow `*value` as mutable, as it is behind a `&` reference'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and the difference
+  between immutable and mutable references when working with HashMap.
+
+  The `get` method on HashMap returns an `Option<&V>`, which means it provides an
+  immutable reference to the value. In this code, `value` has type `&Vec<i32>` -
+  an immutable reference to the vector stored in the HashMap. The `push` method
+  requires a mutable reference (`&mut self`) to modify the vector by adding an
+  element.
+
+  Since `value` is an immutable reference, attempting to call `value.push(4)`
+  violates Rust's borrowing rules. The compiler will reject this code with an
+  error indicating that you cannot borrow as mutable through an immutable
+  reference.
+
+  To fix this code, you would need to use `get_mut()` instead of `get()` to obtain
+  a mutable reference: `let value = map.get_mut("key").unwrap();`. This would
+  allow you to modify the vector in place. Alternatively, you could remove the
+  value from the map, modify it, and reinsert it.
+
+  The key takeaway is understanding the distinction between `get()` and
+  `get_mut()` on collections, and recognizing that immutable references do not
+  allow mutation of the underlying data.

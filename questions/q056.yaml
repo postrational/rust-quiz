@@ -1,0 +1,66 @@
+question: |-
+  ```rust
+  use std::cell::Cell;
+
+  struct Counter {
+      count: Cell<i32>,
+  }
+
+  impl Counter {
+      fn increment(&self) {
+          let current = self.count.get();
+          self.count.set(current + 1);
+      }
+      
+      fn get(&self) -> i32 {
+          self.count.get()
+      }
+  }
+
+  fn main() {
+      let counter = Counter { count: Cell::new(0) };
+      
+      counter.increment();
+      counter.increment();
+      
+      let x = counter.get();
+      counter.increment();
+      let y = counter.get();
+      
+      println!("{} {}", x, y);
+  }
+  ```
+
+  What does this code output?
+answers:
+- 0 1
+- 2 3
+- 2 2
+- Compilation error - cannot mutate through shared reference
+correct_answer: 1
+expected_output:
+- 2 3
+explanation: |-
+  This question tests understanding of `Cell<T>` and interior mutability in Rust.
+  `Cell<T>` is a type that provides interior mutability for `Copy` types, allowing
+  mutation through shared references (`&self`).
+
+  The code demonstrates how `Cell` enables mutation even when methods take `&self`
+  instead of `&mut self`. Here's the execution flow:
+
+  1. Two calls to `counter.increment()` increase the count from 0 to 1, then from
+  1 to 2
+  2. `counter.get()` retrieves the current value of 2, which is stored in `x`
+  3. Another call to `counter.increment()` increases the count from 2 to 3
+  4. `counter.get()` retrieves the current value of 3, which is stored in `y`
+  5. The program prints "2 3"
+
+  The key concept is that `Cell<T>` works by never giving out references to the
+  inner value. Instead, it only provides copies via `get()` and accepts new values
+  via `set()`. This ensures memory safety while allowing mutation through shared
+  references. `Cell` is restricted to `Copy` types because it needs to be able to
+  move values in and out without invalidating any references.
+
+  This pattern is useful when you need simple interior mutability for primitive
+  types or small `Copy` types, without the runtime overhead of `RefCell`'s borrow
+  checking.

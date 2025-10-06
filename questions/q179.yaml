@@ -1,0 +1,66 @@
+question: |-
+  ```rust
+  use std::sync::atomic::{AtomicUsize, Ordering};
+  use std::sync::Arc;
+  use std::thread;
+
+  fn main() {
+      let counter = Arc::new(AtomicUsize::new(0));
+      let handles: Vec<_> = (0..2).map(|_| {
+          let counter = Arc::clone(&counter);
+          thread::spawn(move || {
+              for _ in 0..1000 {
+                  let old = counter.load(Ordering::SeqCst);
+                  counter.store(old + 1, Ordering::SeqCst);
+              }
+          })
+      }).collect();
+      
+      for handle in handles {
+          handle.join().unwrap();
+      }
+      
+      println!("Final value: {}", counter.load(Ordering::SeqCst));
+  }
+  ```
+
+  What will this code output?
+answers:
+- 'Always prints "Final value: 2000"'
+- 'Always prints "Final value: 1000"'
+- Prints a value between 1000 and 2000 (race condition)
+- 'Compilation error: cannot use SeqCst ordering with load and store'
+correct_answer: 2
+expected_output:
+- 'Final value: '
+explanation: |-
+  This question tests understanding of atomic operations and race conditions in
+  concurrent programming. While `AtomicUsize` provides atomic individual
+  operations, this code demonstrates that sequences of atomic operations can still
+  create race conditions.
+
+  The issue lies in the read-modify-write sequence: `load → calculate → store`.
+  Each operation is atomic, but the combination is not. When multiple threads
+  execute this sequence concurrently, they can interleave in problematic ways. For
+  example, Thread A might load value 5, then Thread B also loads 5 before Thread A
+  stores 6. When both threads store their calculated values (6), one increment is
+  lost.
+
+  The `SeqCst` (sequentially consistent) ordering ensures that individual load and
+  store operations are atomic and have a total global ordering, but it doesn't
+  make the entire read-modify-write sequence atomic. Other threads can still
+  observe and act on intermediate states between the load and store operations.
+
+  In practice, with 2 threads each incrementing 1000 times, the final value will
+  typically be between 1000 and 2000, depending on how many race conditions occur
+  during execution. The more conflicts, the lower the final count. The actual
+  output varies between runs due to thread scheduling non-determinism.
+
+  The correct solution is to use atomic read-modify-write operations like
+  `fetch_add`, which perform the entire operation atomically:
+  `counter.fetch_add(1, Ordering::SeqCst)`. This ensures no other thread can
+  interleave between reading and writing the value.
+
+  The key takeaway is that atomic types guarantee atomicity of individual
+  operations, but compound operations require either dedicated atomic methods or
+  additional synchronization mechanisms.

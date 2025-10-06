@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  fn main() {
+      let numbers = vec![1, 2, 3, 4, 5];
+      
+      let sum: i32 = numbers
+          .iter()
+          .filter(|&&x| x % 2 == 0)
+          .sum();
+      
+      println!("{}", sum);
+  }
+  ```
+
+  What does this print?
+answers:
+- '6'
+- '2'
+- 'Compiler error: cannot sum references'
+- '15'
+correct_answer: 0
+expected_output:
+- '6'
+explanation: |-
+  This question tests understanding of iterator methods, filtering, and the
+  `sum()` method in Rust.
+
+  The code creates a vector of integers and chains several iterator operations.
+  The `iter()` method creates an iterator that yields references to the elements
+  (`&i32`). The `filter()` method uses a closure that takes `|&&x|` - this double
+  reference pattern occurs because `filter` receives `&&i32` (a reference to the
+  iterator's item, which is already a reference). The pattern `&&x` dereferences
+  twice to get the actual `i32` value for the modulo check.
+
+  The filter predicate `x % 2 == 0` keeps only even numbers, so from `[1, 2, 3, 4,
+  5]`, only `2` and `4` pass through. The `sum()` method then adds these values
+  together: `2 + 4 = 6`.
+
+  An important detail is that `sum()` works seamlessly with iterators of
+  references. The `Sum` trait is implemented for references to numeric types, so
+  `sum()` automatically handles the dereferencing of `&i32` to `i32` when
+  computing the total.
+
+  The key takeaway is understanding how iterator adapters like `filter()` work
+  with references, how pattern matching can dereference values in closures, and
+  that `sum()` can work with both owned values and references to numeric types.

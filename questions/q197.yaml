@@ -1,0 +1,83 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+  use std::collections::hash_map::DefaultHasher;
+  use std::hash::{Hash, Hasher};
+
+  #[derive(Debug, PartialEq, Eq)]
+  struct BadHash {
+      value: i32,
+  }
+
+  impl Hash for BadHash {
+      fn hash<H: Hasher>(&self, state: &mut H) {
+          // Always hash to the same value - terrible hash function!
+          42.hash(state);
+      }
+  }
+
+  fn main() {
+      let mut map = HashMap::with_capacity(4);
+      
+      for i in 0..4 {
+          map.insert(BadHash { value: i }, format!("value_{}", i));
+      }
+      
+      println!("Map size: {}", map.len());
+      
+      let lookup_time = std::time::Instant::now();
+      let result = map.get(&BadHash { value: 2 });
+      let elapsed = lookup_time.elapsed();
+      
+      println!("Found value: {:?}", result);
+      println!("Lookup took: {:?}", elapsed);
+      
+      // Force rehashing by inserting many more elements
+      for i in 4..100 {
+          map.insert(BadHash { value: i }, format!("value_{}", i));
+      }
+      
+      println!("Final map size: {}", map.len());
+  }
+  ```
+
+  What will this code output?
+answers:
+- Map size 4, found Some("value_2"), then final size 100 with degraded performance
+- 'Compilation error: Hash implementation must produce unique values for different keys'
+- 'Runtime panic: hash collision limit exceeded in HashMap'
+- Map size 1, found None, final size 96 due to hash conflicts
+correct_answer: 0
+expected_output:
+- 'Map size: 4'
+- 'Found value: Some("value_2")'
+- 'Lookup took: '
+- 'Final map size: 100'
+explanation: |-
+  This question tests understanding of hash collisions and HashMap performance
+  characteristics in Rust. The code demonstrates what happens when a hash function
+  produces the same hash value for all keys.
+
+  The custom `Hash` implementation for `BadHash` always hashes to the same value
+  (42), regardless of the `value` field. This is a pathologically bad hash
+  function that causes all keys to collide in the HashMap.
+
+  Despite all keys hashing to the same value, the HashMap still functions
+  correctly because it uses equality (`PartialEq`) to distinguish between entries
+  that have the same hash. When a hash collision occurs, HashMap stores multiple
+  entries in the same bucket (typically as a chain or tree structure) and uses
+  equality checks to find the correct entry.
+
+  The code successfully inserts 4 distinct `BadHash` instances (with values 0-3),
+  so the map size is 4. The lookup for `BadHash { value: 2 }` succeeds and returns
+  `Some("value_2")` because even though all keys hash to the same value, the
+  HashMap can distinguish them by their `value` field through equality comparison.
+  After inserting 96 more elements (values 4-99), the final map size is 100.
+
+  The key performance issue is that all entries end up in the same bucket, turning
+  what should be O(1) average-case lookups into O(n) linear searches through the
+  collision chain. Each lookup must perform equality checks with potentially every
+  entry in the bucket until it finds a match. This demonstrates why good hash
+  distribution is critical for HashMap performance, and why hash-based DoS attacks
+  can exploit poor hash functions to degrade performance from constant time to
+  linear time.

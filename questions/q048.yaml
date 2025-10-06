@@ -1,0 +1,71 @@
+question: |-
+  ```rust
+  struct Buffer<T, const N: usize> {
+      data: [T; N],
+  }
+
+  impl<T: Default + Copy, const N: usize> Buffer<T, N> {
+      fn new() -> Self {
+          Buffer { data: [T::default(); N] }
+      }
+      
+      fn split_half(&self) -> (Buffer<T, {N / 2}>, Buffer<T, {N / 2}>) 
+      where
+          [(); N / 2]: // This is a const generic "proof"
+      {
+          let mut first = [T::default(); N / 2];
+          let mut second = [T::default(); N / 2];
+          
+          for i in 0..(N / 2) {
+              first[i] = self.data[i];
+              second[i] = self.data[i + N / 2];
+          }
+          
+          (Buffer { data: first }, Buffer { data: second })
+      }
+  }
+
+  fn main() {
+      let buffer: Buffer<i32, 8> = Buffer::new();
+      let (left, right) = buffer.split_half();
+      
+      println!("{}", left.data.len());
+      println!("{}", right.data.len());
+  }
+  ```
+
+  What does this code output?
+answers:
+- 4, 4
+- Compilation error - const generic arithmetic not allowed
+- Compilation error - `where [(); N / 2]:` syntax invalid
+- 8, 0
+correct_answer: 0
+expected_output:
+- '4'
+- '4'
+explanation: |-
+  This question tests understanding of const generic arithmetic and the `where
+  [(); EXPR]:` pattern used to prove const expressions are valid at compile time.
+
+  Rust allows arithmetic expressions with const generics. In the return type
+  `Buffer<T, {N / 2}>`, the expression `{N / 2}` performs division at compile
+  time. When `N = 8`, this becomes `Buffer<T, 4>`, creating buffers with a
+  compile-time size of 4.
+
+  The `where [(); N / 2]:` constraint is a technique used to help the compiler
+  verify that the const expression `N / 2` is valid. This pattern, which creates a
+  zero-sized array type with the computed size, forces the compiler to evaluate
+  and prove the const expression during type checking. Without this constraint,
+  the compiler might not be able to verify more complex const expressions.
+
+  In the execution, a `Buffer<i32, 8>` is created and split into two `Buffer<i32,
+  4>` instances. Each resulting buffer has a length of 4, which is computed as `8
+  / 2 = 4` at compile time. The first buffer contains elements from indices 0-3,
+  and the second contains elements from indices 4-7 of the original buffer.
+
+  The key takeaway is that Rust's const generics support compile-time arithmetic,
+  and the `where [(); EXPR]:` pattern is a common workaround for helping the
+  compiler validate complex const expressions. This enables powerful type-level
+  programming where array sizes and other compile-time values can be computed and
+  verified by the type system.

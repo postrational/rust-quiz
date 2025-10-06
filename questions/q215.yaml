@@ -1,0 +1,73 @@
+question: |-
+  What occurs with this trait object downcasting attempt?
+
+  ```rust
+  use std::any::Any;
+
+  trait Draw: Any {
+      fn draw(&self);
+      fn as_any(&self) -> &dyn Any;
+  }
+
+  struct Circle { radius: f64 }
+  struct Square { side: f64 }
+
+  impl Draw for Circle {
+      fn draw(&self) { println!("Circle: {}", self.radius); }
+      fn as_any(&self) -> &dyn Any { self }
+  }
+
+  impl Draw for Square {
+      fn draw(&self) { println!("Square: {}", self.side); }
+      fn as_any(&self) -> &dyn Any { self }
+  }
+
+  fn main() {
+      let shapes: Vec<Box<dyn Draw>> = vec![
+          Box::new(Circle { radius: 5.0 }),
+          Box::new(Square { side: 3.0 }),
+      ];
+      
+      for shape in shapes {
+          shape.draw();
+          if let Some(circle) = shape.as_any().downcast_ref::<Circle>() {
+              println!("Found circle with radius: {}", circle.radius);
+          }
+      }
+  }
+  ```
+answers:
+- 'Compilation error: trait objects cannot extend other traits'
+- Prints shapes and identifies circles successfully
+- 'Compilation error: `Any` trait is not object-safe'
+- 'Runtime panic: downcasting fails on trait objects'
+correct_answer: 1
+expected_output:
+- 'Circle: 5'
+- 'Found circle with radius: 5'
+- 'Square: 3'
+explanation: |-
+  This question tests understanding of trait object downcasting using the `Any`
+  trait in Rust. The code demonstrates a common pattern for runtime type
+  identification of trait objects.
+
+  The `Draw` trait extends `Any` (using `trait Draw: Any`), which means any type
+  implementing `Draw` must also implement `Any`. This is a valid trait bound and
+  does not affect object safety. Both the `Draw` and `Any` traits are object-safe
+  because their methods use `&self` receivers.
+
+  The `as_any` method is a standard pattern that enables downcasting. Each
+  implementation returns `self` as `&dyn Any`, which allows the concrete type
+  information to be preserved for runtime type checking.
+
+  During execution, the first shape is a `Circle`, so `shape.draw()` prints
+  "Circle: 5", and the downcast to `Circle` succeeds, printing "Found circle with
+  radius: 5". The second shape is a `Square`, so `shape.draw()` prints "Square:
+  3", but the downcast to `Circle` fails and returns `None`, so no additional
+  output is produced.
+
+  The key takeaway is that the `Any` trait combined with the `as_any` pattern
+  enables safe runtime type identification and downcasting of trait objects. This
+  is useful when you need to recover the concrete type from a trait object, though
+  it should be used judiciously as it somewhat defeats the purpose of
+  polymorphism.

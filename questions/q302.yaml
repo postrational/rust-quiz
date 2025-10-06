@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::cell::RefCell;
+
+  fn main() {
+      let data = Rc::new(RefCell::new(vec![1, 2]));
+      let clone1 = Rc::clone(&data);
+      let clone2 = Rc::clone(&data);
+      
+      clone1.borrow_mut().push(3);
+      clone2.borrow_mut().push(4);
+      
+      println!("{:?}", data.borrow());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '[1, 2, 3, 4]'
+- '[1, 2, 3]'
+- 'Runtime panic: already borrowed'
+- 'Compilation error: multiple mutable borrows'
+correct_answer: 0
+expected_output:
+- '[1, 2, 3, 4]'
+explanation: |-
+  This question tests understanding of `Rc`, `RefCell`, and the lifetime of borrow
+  guards in Rust. The combination of `Rc<RefCell<T>>` is a common pattern for
+  shared ownership with interior mutability.
+
+  The key concept is that `borrow_mut()` returns a `RefMut` guard that only lives
+  for the duration of the statement in which it's used. When
+  `clone1.borrow_mut().push(3)` executes, a mutable borrow is created, the value 3
+  is pushed to the vector (making it [1, 2, 3]), and then the `RefMut` guard is
+  dropped at the end of the statement, releasing the mutable borrow.
+
+  Similarly, when `clone2.borrow_mut().push(4)` executes on the next line, a new
+  mutable borrow is created (the previous one has already ended), the value 4 is
+  pushed (making it [1, 2, 3, 4]), and this borrow is also released at the end of
+  the statement.
+
+  Finally, `data.borrow()` creates an immutable borrow to print the final state of
+  the vector, which is [1, 2, 3, 4].
+
+  This code compiles successfully because the compiler doesn't track `RefCell`
+  borrows at compile time—they are checked at runtime. At runtime, no panic occurs
+  because each borrow is properly released before the next one begins, so there's
+  no overlap of mutable borrows.
+
+  The key takeaway is that borrow guards (`RefMut` and `Ref`) are temporary and
+  are automatically dropped at the end of the statement or expression where
+  they're created, unless explicitly bound to a variable. This allows sequential
+  mutable access through `RefCell` without conflicts.

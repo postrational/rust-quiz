@@ -1,0 +1,66 @@
+question: |-
+  ```rust
+  use std::borrow::Cow;
+
+  fn main() {
+      let mut cow1: Cow<str> = Cow::Borrowed("hello");
+      let mut cow2: Cow<str> = Cow::Borrowed("world");
+      
+      println!("Before: {:?} {:?}", cow1, cow2);
+      
+      // Make them mutable
+      cow1.to_mut().push_str(" there");
+      cow2.to_mut().push_str("!");
+      
+      println!("After: {:?} {:?}", cow1, cow2);
+      
+      // Check what they became
+      match (&cow1, &cow2) {
+          (Cow::Borrowed(_), Cow::Borrowed(_)) => println!("Both borrowed"),
+          (Cow::Owned(_), Cow::Owned(_)) => println!("Both owned"),
+          _ => println!("Mixed"),
+      }
+  }
+  ```
+
+  What does this code output?
+answers:
+- 'Before: "hello" "world", After: "hello there" "world!", Both borrowed'
+- 'Before: "hello" "world", After: "hello there" "world!", Both owned'
+- Compilation error - cannot mutate borrowed data
+- 'Before: "hello" "world", After: "hello there" "world!", Mixed'
+correct_answer: 1
+expected_output:
+- 'Before: "hello" "world"'
+- 'After: "hello there" "world!"'
+- Both owned
+explanation: |-
+  This question tests understanding of Rust's Clone-on-Write (Cow) type and its
+  behavior when mutation is required.
+
+  The `Cow` (Clone on Write) type is an enum that can hold either borrowed or
+  owned data. It's designed to optimize scenarios where you might need to mutate
+  data, but often don't. Initially, both `cow1` and `cow2` are created as
+  `Cow::Borrowed`, holding references to string literals "hello" and "world".
+
+  The key behavior occurs when `to_mut()` is called. This method checks the
+  current state of the `Cow`:
+  - If it's already `Cow::Owned`, it simply returns a mutable reference to the
+  owned data
+  - If it's `Cow::Borrowed`, it clones the borrowed data into an owned `String`
+  and converts the `Cow` to `Cow::Owned`, then returns a mutable reference
+
+  In this code, when `cow1.to_mut().push_str(" there")` is called, the
+  `Cow::Borrowed("hello")` is converted to `Cow::Owned(String::from("hello"))`,
+  and then " there" is appended. The same transformation happens with `cow2` when
+  it's mutated.
+
+  After both mutations, the match statement checks the variants of both `Cow`
+  instances. Since both have been converted from `Borrowed` to `Owned` through the
+  `to_mut()` calls, the pattern `(Cow::Owned(_), Cow::Owned(_))` matches, printing
+  "Both owned".
+
+  The key takeaway is that `Cow` provides efficient lazy cloning: data remains
+  borrowed until mutation is actually needed, at which point it's cloned once and
+  becomes owned. This pattern is useful for APIs that accept data which is usually
+  read-only but occasionally needs modification.

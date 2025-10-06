@@ -1,0 +1,45 @@
+question: |-
+  ```rust
+  fn main() {
+      let numbers = vec![1, 2, 3, 4, 5, 6];
+      
+      let result: Vec<_> = numbers.iter()
+          .skip(2)
+          .take(3)
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[3, 4, 5]'
+- '[1, 2, 3]'
+- '[2, 3, 4]'
+- '[3, 4, 5, 6]'
+correct_answer: 0
+expected_output:
+- '[3, 4, 5]'
+explanation: |-
+  This question tests understanding of iterator adapters, specifically `skip()`
+  and `take()`, and how they compose in sequence.
+
+  The `skip(n)` method discards the first `n` elements from an iterator, while
+  `take(n)` yields at most `n` elements and then stops. When chained together,
+  they work sequentially:
+
+  1. `numbers.iter()` creates an iterator over references: `&1, &2, &3, &4, &5,
+  &6`
+  2. `.skip(2)` skips the first 2 elements (`&1, &2`), leaving `&3, &4, &5, &6`
+  3. `.take(3)` takes the next 3 elements from what remains: `&3, &4, &5`
+  4. `.collect()` gathers these into a vector, dereferencing them: `[3, 4, 5]`
+
+  The key takeaway is that the order of iterator adapters matters.
+  `skip(2).take(3)` produces a different result than `take(3).skip(2)`. The former
+  skips 2 elements then takes 3, while the latter would take 3 elements then skip
+  2 of those, yielding only 1 element.
+
+  This pattern is commonly used for pagination (e.g., `skip(page *
+  page_size).take(page_size)`), processing data after headers, or implementing
+  sliding windows over collections.

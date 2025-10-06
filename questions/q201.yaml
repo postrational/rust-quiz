@@ -1,0 +1,69 @@
+question: |-
+  ```rust
+  trait Container<T> {
+      fn get(&self) -> &T;
+  }
+
+  struct Wrapper<T> {
+      value: T,
+  }
+
+  impl<T> Container<T> for Wrapper<T> {
+      fn get(&self) -> &T {
+          &self.value
+      }
+  }
+
+  fn process<T, C: Container<T>>(container: &C) -> &T {
+      container.get()
+  }
+
+  fn main() {
+      let w1 = Wrapper { value: 42 };
+      let w2 = Wrapper { value: "hello" };
+      
+      let r1 = process(&w1);
+      let r2 = process(&w2);
+      
+      println!("{}", r1);
+      println!("{}", r2);
+  }
+  ```
+
+  What will this code print?
+answers:
+- 42, hello
+- 'Compilation error: type mismatch'
+- 'Compilation error: cannot infer type for T'
+- '42, Wrapper { value: "hello" }'
+correct_answer: 0
+expected_output:
+- '42'
+- hello
+explanation: |-
+  This question tests understanding of generic traits, generic functions, and type
+  inference in Rust.
+
+  The code defines a generic trait `Container<T>` with a method that returns a
+  reference to the contained type. The `Wrapper<T>` struct implements this trait
+  for any type `T`, storing a value and providing access to it through the `get`
+  method.
+
+  The `process` function is generic over both the contained type `T` and the
+  container type `C`, where `C` must implement `Container<T>`. This function takes
+  a reference to any container and returns a reference to the contained value.
+
+  In `main`, two `Wrapper` instances are created: `w1` contains an `i32` (42) and
+  `w2` contains a `&str` ("hello"). When `process(&w1)` is called, Rust infers
+  that `T` is `i32` and `C` is `Wrapper<i32>`. Similarly, for `process(&w2)`, Rust
+  infers `T` is `&str` and `C` is `Wrapper<&str>`.
+
+  The type inference works seamlessly because each call to `process` is
+  independent, and Rust can determine the concrete types from the arguments
+  passed. The function returns references to the contained values, which are then
+  printed.
+
+  The key takeaway is that Rust's type inference can handle complex generic
+  scenarios where multiple type parameters need to be inferred simultaneously.
+  Generic traits and functions provide powerful abstraction capabilities while
+  maintaining type safety and zero-cost abstractions.

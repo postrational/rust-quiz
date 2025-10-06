@@ -1,0 +1,38 @@
+question: |-
+  ```rust
+  fn main() {
+      let x: Option<Result<i32, &str>> = Some(Ok(42));
+      let y: Result<Option<i32>, &str> = x.transpose();
+      
+      println!("{:?}", y);
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok(Some(42))
+- 'Compilation error: no method named `transpose`'
+- Some(Ok(42))
+- Type mismatch error
+correct_answer: 0
+expected_output:
+- Ok(Some(42))
+explanation: |-
+  This question tests understanding of the `transpose` method, which swaps the
+  nesting order between `Option<Result<T, E>>` and `Result<Option<T>, E>`.
+
+  The `transpose` method performs the following transformations:
+  - `Some(Ok(x))` becomes `Ok(Some(x))`
+  - `Some(Err(e))` becomes `Err(e)` (the error "bubbles out")
+  - `None` becomes `Ok(None)`
+
+  In this code, `x` contains `Some(Ok(42))`, which is of type `Option<Result<i32,
+  &str>>`. When `transpose()` is called, it converts this to `Result<Option<i32>,
+  &str>`, specifically `Ok(Some(42))`.
+
+  The key takeaway is that `transpose` is useful when you have an optional value
+  that might contain a fallible operation, and you want to propagate errors using
+  the `?` operator while treating `None` as a valid case. This pattern is common
+  in scenarios like parsing optional configuration fields, validating optional
+  database fields, or processing optional files where the absence of a value is
+  acceptable but malformed data should produce an error.

@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
+      let r1 = &s;
+      let r2 = &s;
+      drop(r1);
+      let r3 = &mut s;
+      println!("{} {}", r2, r3);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "hello hello"
+- 'Compilation error: cannot borrow `s` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: reference invalidated'
+- 'Compilation error: use of moved value `r1`'
+correct_answer: 1
+expected_output:
+- 'error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the interaction
+  between references and the `drop` function. The key concept is that calling
+  `drop()` on a reference doesn't actually end the borrow.
+
+  In Rust, references are Copy types that don't implement the Drop trait. When you
+  call `drop(r1)`, it consumes the reference variable itself but doesn't affect
+  the underlying borrow. The borrow checker determines the lifetime of borrows
+  based on where they are last used, not where variables go out of scope.
+
+  In this code, `r1` and `r2` are both immutable references to `s`. Even though
+  `drop(r1)` is called, the immutable borrow from `r2` is still active because
+  `r2` is used later in the `println!` statement. When the code attempts to create
+  a mutable reference `r3`, the compiler detects that an immutable reference
+  (`r2`) is still in use, violating Rust's borrowing rules: you cannot have a
+  mutable reference while any immutable references are active.
+
+  The key takeaway is that Rust's borrow checker uses lexical scoping and usage
+  analysis to determine borrow lifetimes. Calling `drop()` on a reference has no
+  effect on ending the borrow—the borrow lasts until the reference's last use.
+  This ensures memory safety by preventing data races and invalidated references
+  at compile time.

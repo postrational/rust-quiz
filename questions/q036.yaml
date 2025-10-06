@@ -1,0 +1,59 @@
+question: |-
+  Which trait can be made into a trait object (`dyn Trait`)?
+
+  ```rust
+  trait A {
+      fn method(&self);
+  }
+
+  trait B {
+      fn method(&self) -> Self;
+  }
+
+  trait C {
+      fn method<T>(&self, x: T);
+  }
+
+  trait D {
+      const VALUE: i32;
+      fn method(&self);
+  }
+  ```
+answers:
+- All of them
+- Only A
+- A and D
+- A and C
+correct_answer: 1
+expected_output: []
+explanation: |-
+  This question tests understanding of trait object safety in Rust. For a trait to
+  be object-safe and usable as a trait object (`dyn Trait`), it must follow
+  specific rules that ensure the trait can be used dynamically at runtime.
+
+  **Trait A** is object-safe because `fn method(&self)` takes a `&self` receiver,
+  returns a concrete type (unit `()`), and has no generic parameters. This
+  satisfies all object-safety requirements.
+
+  **Trait B** is not object-safe because `fn method(&self) -> Self` returns
+  `Self`. When using a trait object like `dyn Trait`, the concrete type is erased
+  at runtime, so the compiler cannot determine what `Self` should be in the return
+  position.
+
+  **Trait C** is not object-safe because `fn method<T>(&self, x: T)` is a generic
+  method. Generic methods require monomorphization at compile time, which is
+  incompatible with the dynamic dispatch mechanism used by trait objects.
+
+  **Trait D** is not object-safe because it contains an associated constant
+  (`const VALUE: i32`). Associated constants are not allowed in object-safe traits
+  because they would require knowledge of the concrete type at runtime.
+
+  The key object-safety rules are:
+  - Methods cannot return `Self` (except in receiver position like `self`,
+  `&self`, `&mut self`)
+  - Methods cannot have generic type parameters
+  - The trait cannot have associated constants
+  - Methods must have a receiver (some form of `self`)
+
+  Only trait A satisfies all these requirements, making it the only trait that can
+  be used as a trait object.

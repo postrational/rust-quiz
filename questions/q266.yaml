@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("hello");
+      let boxed = Box::new(s);
+      let moved = *boxed;
+      println!("{}", boxed);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "hello"
+- 'Compilation error: borrow of moved value `boxed`'
+- 'Runtime panic: use after move'
+- 'Compilation error: cannot move out of borrowed content'
+correct_answer: 1
+expected_output:
+- 'error[E0382]: borrow of moved value: `boxed`'
+explanation: |-
+  This question tests understanding of move semantics and dereferencing `Box` in
+  Rust. When you dereference a `Box<T>` with `*boxed`, the behavior depends on
+  whether `T` implements the `Copy` trait.
+
+  In this code, `boxed` is a `Box<String>`. When `let moved = *boxed;` executes,
+  the dereference operator moves the `String` out of the `Box` and into `moved`.
+  This is because `String` does not implement `Copy` - it only implements `Move`
+  (all types in Rust are movable by default).
+
+  After the move occurs, `boxed` becomes invalid and cannot be used anymore. The
+  subsequent attempt to use `boxed` in the `println!` macro results in a
+  compilation error: "borrow of moved value: `boxed`". The compiler tracks that
+  the value has been moved and prevents use-after-move errors at compile time.
+
+  The key takeaway is that dereferencing a `Box` containing a non-`Copy` type
+  moves the value out of the box, invalidating the box itself. If the type
+  implemented `Copy` (like `i32`), the value would be copied instead, and the box
+  would remain valid. This demonstrates Rust's ownership system preventing
+  potential use-after-move bugs at compile time.

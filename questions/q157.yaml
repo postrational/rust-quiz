@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  use std::sync::{Arc, Mutex};
+  use std::thread;
+
+  fn main() {
+      let data = Arc::new(Mutex::new(vec![1, 2, 3]));
+      let handles: Vec<_> = (0..3)
+          .map(|i| {
+              let data_clone = Arc::clone(&data);
+              thread::spawn(move || {
+                  let mut guard = data_clone.lock().unwrap();
+                  guard.push(i);
+                  thread::sleep(std::time::Duration::from_millis(100));
+                  println!("Thread {} finished", i);
+              })
+          })
+          .collect();
+      
+      for handle in handles {
+          handle.join().unwrap();
+      }
+      
+      println!("Final vec: {:?}", *data.lock().unwrap());
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Prints thread messages in random order, final vec contains [1,2,3] followed by 0,1,2 in some order
+- Prints "Thread 0 finished", "Thread 1 finished", "Thread 2 finished" sequentially, final vec is [1,2,3,0,1,2]
+- Deadlock occurs because multiple threads try to acquire the same mutex
+- 'Compilation error: cannot move `i` into closure while `data_clone` is also moved'
+correct_answer: 0
+expected_output:
+- Thread
+- finished
+- 'Final vec: [1, 2, 3,'
+explanation: |-
+  This question tests understanding of mutex lock scope and thread scheduling
+  behavior. The key concept is that a mutex guard holds the lock for its entire
+  lifetime, which extends until the guard is dropped at the end of its scope.
+
+  In this code, each thread acquires the mutex lock with
+  `data_clone.lock().unwrap()`, creating a guard that holds the lock. The critical
+  detail is that the guard is not dropped until the end of the thread's closure.
+  This means each thread holds the lock during the entire sequence: pushing to the
+  vector, sleeping for 100ms, and printing the message.
+
+  Because the lock is held throughout this entire process, only one thread can
+  execute at a time. However, the order in which threads acquire the lock is not
+  guaranteed and depends on thread scheduling by the operating system. While the
+  threads are spawned in order (0, 1, 2), they may acquire the mutex in any order.
+
+  Once a thread acquires the lock, it completes all its operations (push, sleep,
+  print) before releasing the lock. The next thread to acquire the lock then does
+  the same. This creates serialized execution where threads run one at a time, but
+  the serialization order is non-deterministic.
+
+  The final vector will always contain [1, 2, 3] followed by 0, 1, and 2, but the
+  order of the last three elements depends on which thread acquired the lock in
+  which order. Similarly, the print statements will appear in the same order as
+  the threads acquired the lock. For example, the output might show "Thread 0
+  finished", "Thread 2 finished", "Thread 1 finished" with a final vector of [1,
+  2, 3, 0, 2, 1].
+
+  The key takeaway is that mutex guards hold locks for their entire lifetime, and
+  the order of lock acquisition among competing threads is not deterministic.
+  Keeping a guard alive longer than necessary can inadvertently serialize
+  operations, and the execution order depends on thread scheduling.

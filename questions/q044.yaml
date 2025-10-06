@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  struct SelfRef<'a> {
+      data: String,
+      reference: &'a str,
+  }
+
+  impl<'a> SelfRef<'a> {
+      fn new(s: String) -> SelfRef<'a> {
+          SelfRef {
+              reference: &s,
+              data: s,
+          }
+      }
+  }
+
+  fn main() {
+      let sr = SelfRef::new("hello".to_string());
+      println!("{}", sr.reference);
+  }
+  ```
+
+  What happens with this code?
+answers:
+- Prints `hello`
+- Compilation error - cannot move `s` after borrowing
+- Compilation error - self-referential structs not allowed
+- Runtime error - dangling pointer
+correct_answer: 1
+expected_output:
+- 'error[E0505]: cannot move out of `s` because it is borrowed'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the order of
+  operations in struct initialization. The code attempts to create a
+  self-referential struct, but fails at the construction stage due to a
+  fundamental borrowing rule.
+
+  In the `new` function, the struct initialization attempts to:
+  1. First borrow `s` with `&s` for the `reference` field
+  2. Then move `s` into the `data` field
+
+  This violates Rust's borrowing rules: you cannot move a value after it has been
+  borrowed. The borrow checker detects this and produces a compilation error:
+  "cannot move out of `s` because it is borrowed."
+
+  This error occurs before any deeper issues with self-referential structs come
+  into play. Even if the order were reversed (moving first, then borrowing), the
+  code would still fail because the reference would point to a moved value,
+  creating a dangling pointer at compile time.
+
+  The key takeaway is that Rust's ownership system prevents self-referential
+  structs from being constructed in straightforward ways. Self-referential data
+  structures require special handling through:
+  - Smart pointers like `Rc<RefCell<T>>`
+  - Specialized libraries like `ouroboros` or `pin-project`
+  - The `Pin` API for advanced use cases
+  - Redesigning to use indices instead of direct references
+
+  This design choice in Rust ensures memory safety by preventing dangling pointers
+  that could arise when self-referential structs are moved in memory.

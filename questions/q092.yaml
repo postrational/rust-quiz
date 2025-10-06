@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![
+          Some(vec![1, 2]),
+          None,
+          Some(vec![3, 4, 5]),
+          Some(vec![]),
+          None,
+      ];
+      
+      let result: Vec<i32> = data
+          .into_iter()
+          .flatten()
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[1, 2, 3, 4, 5]'
+- 'Compiler error: `flatten()` requires `DoubleEndedIterator`'
+- '[Some([1, 2]), Some([3, 4, 5])]'
+- 'Compiler error: type mismatch - expected `Vec<Vec<i32>>`, found `Vec<Option<Vec<i32>>>`'
+correct_answer: 3
+expected_output:
+- error[E0277]
+- cannot be built from an iterator over elements of type `Vec<{integer}>`
+explanation: |-
+  This question tests understanding of how `flatten()` works with nested data
+  structures. The key concept is that `flatten()` only removes one level of
+  nesting at a time, not all levels recursively.
+
+  The data structure is `Vec<Option<Vec<i32>>>`, which has two levels of nesting
+  that need to be flattened to get to the individual `i32` values. When
+  `flatten()` is called once, it only removes the `Option` layer, transforming
+  `Iterator<Item = Option<Vec<i32>>>` into `Iterator<Item = Vec<i32>>`.
+
+  The compiler error occurs because we're trying to collect an iterator of
+  `Vec<i32>` items into a `Vec<i32>`. The `FromIterator<Vec<i32>>` trait is not
+  implemented for `Vec<i32>` - we would need `FromIterator<i32>` instead.
+
+  To fix this code and get `[1, 2, 3, 4, 5]`, you would need to call `flatten()`
+  twice: once to remove the `Option` wrapper and once to flatten the inner `Vec`.
+  Alternatively, you could use `flat_map` or other iterator combinators to achieve
+  the same result.
+
+  The key takeaway is that `flatten()` is not recursive - it only peels off one
+  layer of nesting per call, which is important to remember when working with
+  deeply nested data structures.

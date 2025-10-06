@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  fn main() {
+      let x: Result<i32, &str> = Ok(5);
+      
+      let result = x
+          .map(|n| n * 2)
+          .and_then(|n| if n > 15 { Ok(n) } else { Err("too small") })
+          .or_else(|_| Ok(100));
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- Ok(10)
+- Ok(100)
+- Err("too small")
+- 'Compilation error: type mismatch in `or_else`'
+correct_answer: 1
+expected_output:
+- Ok(100)
+explanation: |-
+  This question tests understanding of Result combinator chaining in Rust. Result
+  combinators allow transforming and handling Result values without explicit
+  pattern matching.
+
+  The execution proceeds through several steps:
+
+  1. Starting with `x = Ok(5)`
+  2. `.map(|n| n * 2)` transforms the Ok value: `Ok(5)` becomes `Ok(10)`. The map
+  method applies a function to the value inside Ok, leaving Err unchanged.
+  3. `.and_then(|n| if n > 15 { Ok(n) } else { Err("too small") })` chains another
+  operation. Since `10 > 15` is false, this returns `Err("too small")`. The
+  and_then method is used for operations that themselves return a Result.
+  4. `.or_else(|_| Ok(100))` handles the error case. Since we now have an Err, the
+  closure is called and returns `Ok(100)`. The or_else method provides error
+  recovery by transforming Err values while leaving Ok unchanged.
+
+  The final result is `Ok(100)`.
+
+  Key combinators to understand:
+  - `map`: transforms the success value (Ok), leaves errors unchanged
+  - `and_then`: chains operations that can fail, used when the closure returns a
+  Result
+  - `or_else`: provides error recovery, transforms Err values while leaving Ok
+  unchanged
+  - `map_err`: transforms the error type, leaves Ok unchanged
+
+  This demonstrates a common pattern of attempting an operation and falling back
+  to a default value when it fails.

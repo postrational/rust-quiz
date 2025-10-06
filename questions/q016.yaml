@@ -1,0 +1,58 @@
+question: |-
+  ```rust
+  #[derive(Debug)]
+  struct Counter(usize);
+
+  impl Iterator for Counter {
+      type Item = usize;
+      
+      fn next(&mut self) -> Option<Self::Item> {
+          self.0 += 1;
+          if self.0 <= 3 {
+              Some(self.0)
+          } else {
+              None
+          }
+      }
+  }
+
+  fn main() {
+      let counter = Counter(0);
+      let doubled: Vec<_> = counter.map(|x| x * 2).collect();
+      let tripled: Vec<_> = counter.map(|x| x * 3).collect();
+      
+      println!("{:?}", doubled);
+      println!("{:?}", tripled);
+  }
+  ```
+
+  What is the output of this code?
+answers:
+- '[2, 4, 6], [3, 6, 9]'
+- '[2, 4, 6], []'
+- Compilation error - `counter` moved
+- '[], []'
+correct_answer: 2
+expected_output:
+- 'error[E0382]: use of moved value: `counter`'
+explanation: |-
+  This question tests understanding of iterator consumption and move semantics in
+  Rust. When an iterator is used, it is consumed (moved) by methods that take
+  `self` by value.
+
+  In this code, a custom `Counter` iterator is created. The first line
+  `counter.map(|x| x * 2).collect()` calls `map` on `counter`. The `map` method
+  takes `self` by value, which means it takes ownership of the iterator and
+  consumes it. After this line executes, `counter` has been moved and is no longer
+  available.
+
+  The second line attempts to use `counter` again with `counter.map(|x| x * 3)`,
+  but this is not allowed because `counter` was already moved in the previous
+  line. Rust's ownership system prevents using a value after it has been moved,
+  resulting in a compilation error.
+
+  The key takeaway is that iterator adapters like `map`, `filter`, and `collect`
+  consume the iterator by taking ownership. If you need to use an iterator
+  multiple times, you must either clone it (if the iterator implements `Clone`) or
+  recreate it. In this case, you would need to create a new `Counter(0)` instance
+  for the second operation.

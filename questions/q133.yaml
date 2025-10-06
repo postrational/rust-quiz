@@ -1,0 +1,58 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel();
+      
+      let tx1 = tx.clone();
+      let tx2 = tx;
+      
+      thread::spawn(move || {
+          tx1.send(1).unwrap();
+      });
+      
+      thread::spawn(move || {
+          tx2.send(2).unwrap();
+      });
+      
+      drop(tx1);
+      
+      let mut sum = 0;
+      for received in rx {
+          sum += received;
+      }
+      
+      println!("{}", sum);
+  }
+  ```
+
+  What does this code do?
+answers:
+- Prints `3`
+- Prints `1` or `2` (non-deterministic)
+- 'Compilation error: `tx1` was moved'
+- Deadlock - the program hangs forever
+correct_answer: 2
+expected_output:
+- 'error[E0382]: use of moved value: `tx1`'
+explanation: |-
+  This question tests understanding of ownership and move semantics with channels
+  in Rust. The code attempts to use `tx1` after it has been moved into the first
+  thread's closure.
+
+  When `thread::spawn(move || { tx1.send(1).unwrap(); })` is called, the `move`
+  keyword causes the closure to take ownership of `tx1`. This means `tx1` is moved
+  into the thread and is no longer accessible in the main thread.
+
+  Later, the code attempts to `drop(tx1)`, but `tx1` has already been moved and is
+  no longer available in the main thread's scope. This results in a compilation
+  error indicating that a moved value is being used.
+
+  The key takeaway is that Rust's ownership system prevents use-after-move errors
+  at compile time. Once a value is moved (such as into a closure with the `move`
+  keyword), it cannot be used again in the original scope. This is a fundamental
+  safety guarantee that Rust provides to prevent data races and use-after-free
+  bugs. If the `drop(tx1)` line were removed, the code would compile successfully
+  and print `3` (the sum of both sent values).

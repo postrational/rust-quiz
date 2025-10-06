@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  fn main() {
+      let v = vec![Some(1), None, Some(2), Some(3)];
+      
+      let result: Option<Vec<_>> = v.iter()
+          .scan(0, |state, opt| {
+              match opt {
+                  Some(x) => {
+                      *state += x;
+                      Some(Some(*state))
+                  }
+                  None => Some(None)
+              }
+          })
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- Some([Some(1), None, Some(3), Some(6)])
+- None
+- Some([1, 3, 6])
+- Compilation error - cannot collect `Option<Option<_>>` into `Option<Vec<_>>`
+correct_answer: 1
+expected_output:
+- None
+explanation: |-
+  This question tests understanding of the interaction between `scan()`, nested
+  `Option` types, and `collect()` with `Option<Vec<T>>`.
+
+  The `scan()` iterator adapter maintains a running sum state. For each element in
+  the input vector:
+  - When it encounters `Some(x)`, it adds `x` to the state and yields
+  `Some(Some(*state))`
+  - When it encounters `None`, it yields `Some(None)`
+
+  The scan produces an iterator with items: `Some(Some(1))`, `Some(None)`,
+  `Some(Some(3))`, `Some(Some(6))`. The outer `Some` is part of scan's control
+  flow (returning `None` from scan would terminate the iteration early). The inner
+  `Option<i32>` is the actual data being iterated.
+
+  When collecting into `Option<Vec<T>>`, Rust uses the `FromIterator`
+  implementation for `Option`. This implementation has special short-circuit
+  behavior: it attempts to collect all `Some` values into a `Vec`, but if it
+  encounters any `None` value, it immediately stops and returns `None` for the
+  entire collection.
+
+  In this case, the iterator yields `Some(1)`, then `None`. As soon as the `None`
+  is encountered during collection, the entire result becomes `None`, and the
+  remaining elements are not processed.
+
+  The key takeaway is that `collect::<Option<Vec<T>>>()` implements an "all or
+  nothing" pattern - it only succeeds if all elements are `Some`, otherwise it
+  returns `None`. This is useful for operations where you want to fail fast if any
+  element is missing. To preserve the `None` values in the result, you would
+  collect into `Vec<Option<T>>` instead.

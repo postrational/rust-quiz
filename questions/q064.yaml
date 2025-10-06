@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+      if x.len() > y.len() { x } else { y }
+  }
+
+  fn main() {
+      let s1 = String::from("short");
+      let result;
+      {
+          let s2 = String::from("longer");
+          result = longest(&s1, &s2);
+      }
+      println!("{}", result);
+  }
+  ```
+
+  What happens?
+answers:
+- Prints "longer"
+- Prints "short"
+- "Compile error: `s2` doesn't live long enough"
+- 'Runtime error: use after free'
+correct_answer: 2
+expected_output:
+- 'error[E0597]: `s2` does not live long enough'
+explanation: |-
+  This question tests understanding of lifetime parameters and how Rust's borrow
+  checker enforces lifetime constraints at compile time.
+
+  The function signature `fn longest<'a>(x: &'a str, y: &'a str) -> &'a str`
+  declares that both input references must have the same lifetime `'a`, and the
+  returned reference will also have that lifetime. This means the returned
+  reference lives as long as the shorter of the two input lifetimes.
+
+  In the code, `s1` lives until the end of `main`, while `s2` only lives within
+  the inner block. When `longest(&s1, &s2)` is called, the lifetime `'a` is
+  constrained to the shorter lifetime, which is the lifetime of `s2`. The function
+  could return either `&s1` or `&s2` depending on the runtime comparison, so the
+  compiler must conservatively assume the result could be a reference to `s2`.
+
+  When the inner block ends, `s2` is dropped, but `result` (which the compiler
+  treats as potentially referencing `s2`) is still in scope and is used in the
+  `println!` statement. This violates the lifetime constraint, and Rust's borrow
+  checker catches this at compile time, producing an error that `s2` does not live
+  long enough.
+
+  The key takeaway is that Rust's lifetime system prevents dangling references at
+  compile time. When a function returns a reference with a lifetime tied to its
+  parameters, all those parameters must outlive any use of the returned reference.
+  This is a core safety guarantee that prevents use-after-free bugs without
+  runtime overhead.

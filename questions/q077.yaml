@@ -1,0 +1,80 @@
+question: |-
+  ```rust
+  trait Draw {
+      fn draw(&self);
+  }
+
+  struct Circle {
+      radius: f64,
+  }
+
+  struct Square {
+      side: f64,
+  }
+
+  impl Draw for Circle {
+      fn draw(&self) {
+          println!("Drawing circle with radius {}", self.radius);
+      }
+  }
+
+  impl Draw for Square {
+      fn draw(&self) {
+          println!("Drawing square with side {}", self.side);
+      }
+  }
+
+  fn draw_all<T: Draw>(items: &[T]) {
+      for item in items {
+          item.draw();
+      }
+  }
+
+  fn main() {
+      let shapes = vec![
+          Circle { radius: 5.0 },
+          Square { side: 10.0 },
+      ];
+      
+      draw_all(&shapes);
+  }
+  ```
+
+  What happens with this code?
+answers:
+- Compiles and draws both shapes - demonstrates static dispatch
+- Won't compile - cannot have `Circle` and `Square` in the same `Vec`
+- Compiles and draws both shapes - demonstrates dynamic dispatch with trait objects
+- Won't compile - `draw_all` needs a trait object parameter instead
+correct_answer: 1
+expected_output:
+- 'error[E0308]: mismatched types'
+- expected `Circle`, found `Square`
+explanation: |-
+  This question tests understanding of Rust's type system, specifically the
+  difference between static dispatch with generics and dynamic dispatch with trait
+  objects, and how collections handle type homogeneity.
+
+  The code fails to compile because `Vec<T>` in Rust can only hold values of a
+  single concrete type. When you write `vec![Circle { radius: 5.0 }, Square {
+  side: 10.0 }]`, Rust tries to infer a single type `T` for the vector, but
+  encounters two different types: `Circle` and `Square`. Even though both
+  implement the `Draw` trait, they are distinct types and cannot be mixed in the
+  same `Vec` without additional indirection.
+
+  The `draw_all` function uses a generic parameter `<T: Draw>`, which means it
+  accepts a slice of items where all elements must be the same concrete type `T`
+  that implements `Draw`. This is static dispatch - the compiler generates
+  specialized versions of the function for each concrete type used. While this
+  approach is efficient, it requires homogeneous collections.
+
+  To store different types that implement the same trait in a collection, you need
+  to use trait objects with dynamic dispatch. This can be done by changing the
+  vector to `Vec<Box<dyn Draw>>` and wrapping each shape in a `Box`.
+  Alternatively, you could define an enum that wraps both `Circle` and `Square`,
+  allowing the vector to store a single enum type while maintaining static
+  dispatch.
+
+  The key takeaway is that generic type parameters require all elements in a
+  collection to be the same concrete type, while trait objects (`dyn Trait`)
+  enable heterogeneous collections at the cost of dynamic dispatch overhead.

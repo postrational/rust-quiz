@@ -1,0 +1,81 @@
+question: |-
+  ```rust
+  trait Iterator1<T> {
+      fn next(&mut self) -> Option<T>;
+  }
+
+  trait Iterator2 {
+      type Item;
+      fn next(&mut self) -> Option<Self::Item>;
+  }
+
+  struct NumberGen {
+      current: i32,
+  }
+
+  impl Iterator1<i32> for NumberGen {
+      fn next(&mut self) -> Option<i32> {
+          self.current += 1;
+          Some(self.current)
+      }
+  }
+
+  impl Iterator2 for NumberGen {
+      type Item = i32;
+      fn next(&mut self) -> Option<Self::Item> {
+          self.current += 1;
+          Some(self.current)
+      }
+  }
+
+  fn use_iterator1<T, I: Iterator1<T>>(iter: &mut I) -> Option<T> {
+      iter.next()
+  }
+
+  fn use_iterator2<I: Iterator2>(iter: &mut I) -> Option<I::Item> {
+      iter.next()
+  }
+
+  fn main() {
+      let mut gen1 = NumberGen { current: 0 };
+      let mut gen2 = NumberGen { current: 0 };
+      
+      println!("{:?}", use_iterator1(&mut gen1));
+      println!("{:?}", use_iterator2(&mut gen2));
+  }
+  ```
+
+  What's the key difference between these two trait designs?
+answers:
+- Associated types perform better at runtime than generics
+- A type can implement Iterator1 multiple times with different T, but Iterator2 only once
+- Associated types are only for simple types, generics work with complex types
+- There's no practical difference between the two approaches
+correct_answer: 1
+expected_output:
+- Some(1)
+- Some(1)
+explanation: |-
+  This question tests understanding of the fundamental difference between generic
+  type parameters and associated types in Rust traits.
+
+  **Generic trait (Iterator1<T>)**: The type parameter `T` is part of the trait
+  itself, which means a single type can implement the trait multiple times with
+  different type parameters. For example, a type could implement both
+  `Iterator1<i32>` and `Iterator1<String>`. When using the trait, you must specify
+  which type parameter you're working with in the trait bound.
+
+  **Associated type trait (Iterator2)**: The `Item` type is an associated type,
+  which means it's determined by the implementation. A type can only implement
+  this trait once, establishing a one-to-one relationship between the implementing
+  type and the associated type. This makes the trait more ergonomic to use since
+  the type doesn't need to be specified in trait bounds.
+
+  The key takeaway is that generic type parameters allow multiple implementations
+  per type (one-to-many relationship), while associated types enforce a single
+  implementation per type (one-to-one relationship). The choice between them
+  depends on your design needs: use generics when you want flexibility for
+  multiple implementations, and use associated types when there should be exactly
+  one natural choice for the type. Rust's standard library uses associated types
+  for `Iterator` because each iterator type naturally produces one specific item
+  type.

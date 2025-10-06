@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  #[repr(C)]
+  struct Mixed {
+      a: u8,
+      b: u64, 
+      c: u8,
+  }
+
+  #[repr(packed)]
+  struct Packed {
+      a: u8,
+      b: u64,
+      c: u8,
+  }
+
+  fn main() {
+      println!("Mixed size: {}", std::mem::size_of::<Mixed>());
+      println!("Packed size: {}", std::mem::size_of::<Packed>());
+      println!("Mixed align: {}", std::mem::align_of::<Mixed>());
+      println!("Packed align: {}", std::mem::align_of::<Packed>());
+  }
+  ```
+
+  What does this program output (on a typical 64-bit system)?
+answers:
+- 'Mixed size: 24, Packed size: 10, Mixed align: 8, Packed align: 1'
+- 'Mixed size: 16, Packed size: 10, Mixed align: 8, Packed align: 1'
+- 'Mixed size: 10, Packed size: 10, Mixed align: 1, Packed align: 1'
+- 'Mixed size: 24, Packed size: 16, Mixed align: 1, Packed align: 8'
+correct_answer: 0
+expected_output:
+- 'Mixed size: 24'
+- 'Packed size: 10'
+- 'Mixed align: 8'
+- 'Packed align: 1'
+explanation: |-
+  This question tests understanding of memory layout, alignment, and the effects
+  of `#[repr(C)]` and `#[repr(packed)]` attributes in Rust.
+
+  For the `Mixed` struct with `#[repr(C)]`, Rust follows C's alignment rules. On a
+  64-bit system, the `u64` field requires 8-byte alignment. The layout becomes:
+  - `a: u8` (1 byte) at offset 0
+  - 7 bytes of padding to align `b` to an 8-byte boundary
+  - `b: u64` (8 bytes) at offset 8
+  - `c: u8` (1 byte) at offset 16
+  - 7 bytes of trailing padding to make the total size a multiple of the struct's
+  alignment (8 bytes)
+
+  This results in a total size of 24 bytes with 8-byte alignment.
+
+  For the `Packed` struct with `#[repr(packed)]`, all padding is removed. Fields
+  are placed consecutively without regard to alignment:
+  - `a: u8` (1 byte) at offset 0
+  - `b: u64` (8 bytes) at offset 1 (no padding)
+  - `c: u8` (1 byte) at offset 9
+
+  This results in a total size of 10 bytes with 1-byte alignment.
+
+  The key takeaway is that `#[repr(C)]` adds padding for proper alignment, which
+  can improve performance and is necessary for FFI compatibility with C code. In
+  contrast, `#[repr(packed)]` minimizes memory usage by removing all padding, but
+  this can lead to performance penalties due to misaligned memory accesses and may
+  even cause crashes on some architectures that don't support unaligned access.

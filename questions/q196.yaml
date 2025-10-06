@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  use std::collections::BTreeMap;
+
+  fn main() {
+      let mut map = BTreeMap::new();
+      map.insert(3, "three");
+      map.insert(1, "one");
+      map.insert(4, "four");
+      map.insert(2, "two");
+      
+      let split_result = map.split_off(&3);
+      
+      println!("Original: {:?}", map);
+      println!("Split off: {:?}", split_result);
+      
+      let mut iter = map.iter();
+      iter.next();
+      let remaining: BTreeMap<_, _> = iter.collect();
+      
+      println!("Remaining after first: {:?}", remaining);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Original {1:"one", 2:"two"}, Split off {3:"three", 4:"four"}, Remaining {2:"two"}
+- Original {3:"three", 4:"four"}, Split off {1:"one", 2:"two"}, Remaining {4:"four"}
+- 'Compilation error: cannot collect BTreeMap iterator back into BTreeMap'
+- 'Runtime panic: split_off requires key to exist in map'
+correct_answer: 0
+expected_output:
+- 'Original: {1: "one", 2: "two"}'
+- 'Split off: {3: "three", 4: "four"}'
+- 'Remaining after first: {2: "two"}'
+explanation: |-
+  This question tests understanding of BTreeMap's `split_off` method and iterator
+  collection behavior.
+
+  The `split_off(&key)` method splits a BTreeMap at the specified key. The
+  original map retains all entries with keys strictly less than the split key,
+  while the returned map contains all entries with keys greater than or equal to
+  the split key. The split key does not need to exist in the map.
+
+  In this code, the BTreeMap initially contains entries {1: "one", 2: "two", 3:
+  "three", 4: "four"} in sorted order. When `split_off(&3)` is called, the
+  original map keeps entries with keys less than 3 (keys 1 and 2), while the
+  returned `split_result` contains entries with keys greater than or equal to 3
+  (keys 3 and 4).
+
+  The iterator section demonstrates that a BTreeMap iterator can be collected back
+  into a BTreeMap. When `iter.next()` is called, it consumes the first entry (1,
+  "one"). The remaining iterator elements can be collected into a new BTreeMap,
+  which contains only {2: "two"}.
+
+  The key takeaway is understanding how `split_off` partitions a BTreeMap based on
+  key ordering, and that iterators over references can be collected into new
+  collections when the types implement the necessary traits (Copy or Clone for the
+  key-value pairs).

@@ -1,0 +1,68 @@
+question: |-
+  ```rust
+  use std::sync::atomic::{AtomicBool, Ordering};
+  use std::sync::Arc;
+  use std::thread;
+
+  fn main() {
+      let flag = Arc::new(AtomicBool::new(false));
+      let flag1 = Arc::clone(&flag);
+      let flag2 = Arc::clone(&flag);
+      
+      let handle1 = thread::spawn(move || {
+          while !flag1.load(Ordering::Acquire) {
+              thread::yield_now();
+          }
+          println!("Thread 1 sees true");
+      });
+      
+      let handle2 = thread::spawn(move || {
+          thread::sleep(std::time::Duration::from_millis(10));
+          flag2.store(true, Ordering::Relaxed);
+          println!("Thread 2 stored true");
+      });
+      
+      handle1.join().unwrap();
+      handle2.join().unwrap();
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Compilation error: mismatched memory ordering between Acquire and Relaxed'
+- 'Runtime panic: memory ordering violation detected'
+- Prints "Thread 2 stored true" then "Thread 1 sees true"
+- May print in either order, but both messages will always appear
+correct_answer: 2
+expected_output:
+- Thread 2 stored true
+- Thread 1 sees true
+explanation: |-
+  This question tests understanding of atomic operations and memory ordering in
+  concurrent Rust code. The code demonstrates how different memory orderings can
+  be mixed and how thread synchronization works with atomics.
+
+  The execution flow is as follows: Thread 1 starts spinning in a loop, repeatedly
+  checking the atomic flag with `Ordering::Acquire`. Thread 2 sleeps for 10
+  milliseconds, then stores `true` to the flag using `Ordering::Relaxed` and
+  immediately prints "Thread 2 stored true". After Thread 2 stores the value,
+  Thread 1's acquire load will eventually see the change, exit the loop, and print
+  "Thread 1 sees true".
+
+  The 10ms sleep in Thread 2 makes the ordering highly predictable. Thread 1
+  begins spinning first, and Thread 2 prints its message immediately after storing
+  the value. Thread 1 then sees the change shortly after and prints its message
+  second.
+
+  Regarding memory ordering, it is perfectly valid to mix different orderings in
+  atomic operations. `Ordering::Acquire` on a load can read from a
+  `Ordering::Relaxed` store. The Acquire ordering ensures that Thread 1 sees all
+  writes that happened-before the store operation, even though the store itself
+  uses Relaxed ordering. Relaxed ordering provides atomicity but no additional
+  synchronization guarantees beyond that.
+
+  The key takeaway is that mixing memory orderings is allowed and often useful in
+  Rust. The acquire-release pattern creates proper synchronization between
+  threads, and while the messages appear in a predictable order due to the sleep,
+  the visibility of the atomic change is guaranteed by the memory ordering
+  semantics.

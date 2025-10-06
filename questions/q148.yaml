@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  use std::pin::Pin;
+  use std::future::Future;
+
+  async fn create_data() -> Vec<i32> {
+      vec![1, 2, 3, 4, 5]
+  }
+
+  fn process_pinned_future(fut: Pin<Box<dyn Future<Output = Vec<i32>>>>) -> usize {
+      // Try to move the future
+      let moved_fut = *fut;
+      moved_fut.len()
+  }
+
+  #[tokio::main] 
+  async fn main() {
+      let boxed_fut = Box::pin(create_data());
+      let result = process_pinned_future(boxed_fut);
+      println!("Length: {}", result);
+  }
+  ```
+
+  What happens with this `Pin` and async function interaction?
+answers:
+- Compilation error - cannot move out of `Pin<Box<dyn Future>>`
+- Compilation error - `Vec<i32>` doesn't have a `len()` method
+- Compilation error - future has no `len()` method
+- 'Runs successfully, prints "Length: 5"'
+correct_answer: 2
+expected_output:
+- 'error[E0599]: no method named `len` found for trait object `dyn Future'
+explanation: |-
+  This question tests understanding of trait objects, the `Sized` trait, and what
+  happens when attempting to work with dynamically-sized types in Rust.
+
+  The code attempts to dereference a `Pin<Box<dyn Future<Output = Vec<i32>>>>`
+  with `*fut`. While one might expect this to fail due to `Pin`'s move
+  restrictions, the actual error occurs because `dyn Future<Output = Vec<i32>>` is
+  a trait object, which is a dynamically-sized type (DST). Trait objects don't
+  have a size known at compile time because they can represent any type that
+  implements the trait.
+
+  When you try to bind `*fut` to a local variable with `let moved_fut = *fut;`,
+  Rust requires that all local variables have a statically known size (implement
+  the `Sized` trait). Since `dyn Future` is not `Sized`, this operation fails with
+  error E0277: "the size for values of type `dyn Future<Output = Vec<i32>>` cannot
+  be known at compilation time".
+
+  Additionally, even if the sizing issue were resolved, the code calls
+  `moved_fut.len()` on a `Future` trait object. The `Future` trait doesn't have a
+  `len()` method - that method exists on `Vec<i32>`, which is the future's output
+  type, not the future itself. This results in error E0599: "no method named `len`
+  found for trait object".
+
+  The key takeaway is that trait objects are unsized types that must always be
+  used behind some form of indirection (like `&dyn Trait`, `Box<dyn Trait>`, or
+  `Pin<Box<dyn Trait>>`). You cannot move them into local variables directly.
+  Additionally, a `Future` is not the same as its output - you must poll the
+  future to completion to get the actual value it produces.

@@ -1,0 +1,82 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+
+  fn main() {
+      let (tx, rx) = mpsc::sync_channel(2);
+      
+      let handle = thread::spawn(move || {
+          println!("Sending 1");
+          tx.send(1).unwrap();
+          println!("Sending 2");  
+          tx.send(2).unwrap();
+          println!("Sending 3");
+          tx.send(3).unwrap();
+          println!("Sending 4");
+          tx.send(4).unwrap();
+          println!("Done sending");
+      });
+      
+      thread::sleep(std::time::Duration::from_millis(100));
+      
+      println!("Receiving: {}", rx.recv().unwrap());
+      println!("Receiving: {}", rx.recv().unwrap());
+      
+      handle.join().unwrap();
+      
+      println!("Receiving: {}", rx.recv().unwrap());
+      println!("Receiving: {}", rx.recv().unwrap());
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Sending 1, Sending 2, Sending 3, Receiving: 1, Receiving: 2, Sending 4, Done sending, Receiving: 3, Receiving: 4'
+- 'Sending 1, Sending 2, Receiving: 1, Receiving: 2, Sending 3, Sending 4, Done sending, Receiving: 3, Receiving: 4'
+- All sending messages first, then all receiving messages
+- Deadlock - blocks forever
+correct_answer: 1
+expected_output:
+- Sending 1
+- Sending 2
+- 'Receiving: 1'
+- 'Receiving: 2'
+- Sending 3
+- Sending 4
+- Done sending
+- 'Receiving: 3'
+- 'Receiving: 4'
+explanation: |-
+  This question tests understanding of bounded synchronous channels
+  (`sync_channel`) and backpressure in Rust's message passing concurrency model.
+
+  A `sync_channel` with capacity 2 creates a bounded channel that can hold at most
+  2 messages in its buffer. When the buffer is full, the sender thread blocks on
+  `send()` until space becomes available.
+
+  The execution timeline proceeds as follows:
+
+  1. The spawned thread starts sending messages. The first two sends (`send(1)`
+  and `send(2)`) succeed immediately because the buffer has capacity for 2 items.
+  After these sends, the buffer is full.
+
+  2. When the thread attempts `send(3)`, the buffer is full (containing 1 and 2),
+  so the sender thread blocks and waits for space to become available.
+
+  3. After 100ms, the main thread wakes up and calls `recv()` twice, removing
+  items 1 and 2 from the buffer. This frees up space in the channel.
+
+  4. Once space is available, the spawned thread unblocks and continues. It
+  successfully sends 3 and 4 (filling the buffer again), then prints "Done
+  sending" and exits.
+
+  5. The main thread calls `handle.join()` to wait for the spawned thread to
+  complete, then receives the remaining two messages (3 and 4).
+
+  The key takeaway is that bounded channels provide backpressure: when the buffer
+  is full, senders block until receivers consume messages and free up space. This
+  mechanism prevents fast producers from overwhelming slow consumers and provides
+  natural flow control for managing memory usage in concurrent systems. In
+  contrast, unbounded channels (`mpsc::channel()`) allow senders to continue
+  without blocking until system memory is exhausted.

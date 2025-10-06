@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  trait Draw {
+      fn draw(&self);
+  }
+
+  fn draw_all(items: Vec<Box<dyn Draw>>) {
+      for item in items {
+          item.draw();
+      }
+  }
+
+  fn main() {
+      let items: Vec<Box<dyn Draw>> = vec![
+          Box::new(42),
+          Box::new("hello"),
+      ];
+      draw_all(items);
+  }
+  ```
+
+  What's the problem?
+answers:
+- Trait objects require `Send + Sync` bounds
+- "`i32` and `&str` don't implement `Draw` trait"
+- Can't mix different types in same `Vec` even with trait objects
+- Missing lifetime annotation on trait object
+correct_answer: 1
+expected_output:
+- the trait `Draw` is not implemented for `{integer}`
+- the trait `Draw` is not implemented for `&str`
+explanation: |-
+  This question tests understanding of trait objects and trait implementation
+  requirements in Rust. When using trait objects like `Box<dyn Draw>`, any type
+  stored in the box must implement the specified trait.
+
+  In this code, the vector is declared to hold `Box<dyn Draw>` trait objects,
+  which means each boxed value must implement the `Draw` trait. However, the code
+  attempts to box `42` (an integer) and `"hello"` (a `&str`), neither of which
+  implement the `Draw` trait. The compiler will reject this code with errors
+  indicating that the `Draw` trait is not implemented for these types.
+
+  To fix this code, you would need to create types that implement the `Draw`
+  trait. For example, you could define structs like `Circle` and `Square` and
+  implement `Draw` for them. Then you could create a heterogeneous collection
+  containing different types that all implement the same trait.
+
+  The key takeaway is that trait objects enable heterogeneous collections (mixing
+  different types in the same vector), but all types must implement the specified
+  trait. Trait objects don't automatically require `Send + Sync` bounds, don't
+  need lifetime annotations unless the trait itself involves borrowed data, and
+  specifically exist to allow mixing different types in collections.

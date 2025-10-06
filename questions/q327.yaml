@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![vec![1, 2], vec![3], vec![4, 5, 6]];
+      let result = data
+          .into_iter()
+          .flat_map(|v| v.into_iter().rev())
+          .skip(2)
+          .take(3)
+          .fold(0, |acc, x| acc + x * x);
+      
+      println!("{}", result);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '14'
+- '29'
+- '38'
+- '50'
+correct_answer: 2
+expected_output:
+- '70'
+explanation: |-
+  This question tests understanding of iterator combinators in Rust, specifically
+  `flat_map`, `rev`, `skip`, `take`, and `fold`.
+
+  The code processes a nested vector through a chain of iterator operations:
+
+  1. `flat_map(|v| v.into_iter().rev())` - This flattens the nested structure
+  while reversing each inner vector. The original data `[[1, 2], [3], [4, 5, 6]]`
+  becomes a flat sequence: `[2, 1, 3, 6, 5, 4]` (each inner vector is reversed
+  before being flattened).
+
+  2. `skip(2)` - Skips the first 2 elements (2 and 1), leaving: `[3, 6, 5, 4]`.
+
+  3. `take(3)` - Takes only the next 3 elements: `[3, 6, 5]`.
+
+  4. `fold(0, |acc, x| acc + x * x)` - Computes the sum of squares: 0 + 3² + 6² +
+  5² = 0 + 9 + 36 + 25 = 70.
+
+  The key takeaway is understanding how iterator combinators compose: `flat_map`
+  flattens and transforms simultaneously, `skip` and `take` control which elements
+  are processed, and `fold` performs accumulation with a custom operation. Each
+  combinator is lazy and only processes elements as needed, making iterator chains
+  efficient in Rust.

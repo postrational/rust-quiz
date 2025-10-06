@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      
+      let result: Option<Vec<_>> = data
+          .iter()
+          .map(|&x| if x % 2 == 0 { Some(x * 10) } else { None })
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- Some([20, 40])
+- None
+- Some([Some(20), None, Some(40)])
+- 'Compiler error: cannot infer type'
+correct_answer: 1
+expected_output:
+- None
+explanation: |-
+  This question tests understanding of how `collect()` works when collecting an
+  iterator of `Option` values into an `Option<Vec<T>>`.
+
+  When collecting `Iterator<Item = Option<T>>` into `Option<Vec<T>>`, Rust uses an
+  "all or nothing" pattern. If all items in the iterator are `Some`, the result is
+  `Some(Vec<T>)` containing all the unwrapped values. However, if any item is
+  `None`, the entire collection short-circuits and returns `None`.
+
+  In this code, the iterator maps over `[1, 2, 3, 4, 5]`. For even numbers, it
+  produces `Some(x * 10)`, and for odd numbers, it produces `None`. The first
+  element (1) is odd, so it produces `None`. This causes the entire `collect()`
+  operation to immediately return `None`, without processing the remaining
+  elements.
+
+  The key takeaway is that `collect::<Option<Vec<_>>>()` implements a validation
+  pattern where all elements must be `Some` for the collection to succeed. This is
+  similar to how `collect::<Result<Vec<_>, _>>()` requires all elements to be
+  `Ok`. If you want to keep only the `Some` values and discard `None` values, use
+  `filter_map()` instead, which combines filtering and mapping to extract only the
+  successful values.

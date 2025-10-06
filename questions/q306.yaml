@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  use std::collections::BTreeSet;
+
+  fn main() {
+      let mut set = BTreeSet::new();
+      set.insert(5);
+      set.insert(2);
+      set.insert(8);
+      set.insert(2);
+      set.insert(1);
+      
+      let range: Vec<_> = set.range(2..=6).collect();
+      println!("{}", range.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '1'
+- '2'
+- '3'
+- '5'
+correct_answer: 1
+expected_output:
+- '2'
+explanation: |-
+  This question tests understanding of BTreeSet properties and the range method. A
+  BTreeSet is an ordered set collection that automatically maintains elements in
+  sorted order and does not allow duplicates.
+
+  When elements are inserted into the BTreeSet (5, 2, 8, 2, 1), the duplicate
+  insertion of 2 is ignored since sets only store unique values. The resulting set
+  contains {1, 2, 5, 8} in sorted order.
+
+  The `range(2..=6)` method returns an iterator over elements within the specified
+  range. The range `2..=6` is inclusive on both ends, meaning it includes all
+  elements where 2 ≤ element ≤ 6. From the set {1, 2, 5, 8}, only two elements
+  fall within this range: 2 and 5. The element 1 is below the range, and 8 is
+  above it.
+
+  The iterator is collected into a Vec, which contains references to these 2
+  elements, so `range.len()` returns 2.
+
+  The key takeaways are that BTreeSet automatically deduplicates elements and
+  maintains sorted order, and the range method allows efficient querying of
+  elements within a specified range using the tree structure.

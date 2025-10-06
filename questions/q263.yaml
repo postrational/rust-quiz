@@ -1,0 +1,40 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![vec![1, 2], vec![3, 4]];
+      let first = &data[0];
+      let second = data[1].clone();
+      drop(data);
+      println!("{:?} {:?}", first, second);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '[1, 2] [3, 4]'
+- 'Compilation error: `data` does not live long enough'
+- 'Compilation error: cannot move out of `data` because it is borrowed'
+- 'Runtime panic: use after free'
+correct_answer: 2
+expected_output:
+- cannot move out of `data` because it is borrowed
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the interaction
+  between borrows and moves. The key concept is that when a value is borrowed, it
+  cannot be moved or mutably accessed until all borrows end.
+
+  In this code, `first` creates an immutable reference to `data[0]`, which borrows
+  `data`. While this borrow is active, any attempt to move or mutably access
+  `data` will fail. The line `let second = data[1].clone()` requires accessing
+  `data` to reach `data[1]`, but this access conflicts with the existing borrow
+  held by `first`. Even though `.clone()` only reads the data, the borrow checker
+  prevents this access because `data` is already borrowed.
+
+  The `drop(data)` call would also be invalid because it attempts to move `data`
+  while it's still borrowed by `first`. A value cannot be moved (consumed) while
+  references to it exist.
+
+  The correct answer is a compilation error stating that `data` cannot be moved
+  because it is borrowed. This demonstrates Rust's core safety guarantee: the
+  borrow checker prevents operations that could invalidate existing references,
+  ensuring memory safety at compile time.

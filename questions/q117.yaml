@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  fn main() {
+      let nums = vec![1, -1, 2, -2, 3];
+      
+      let result: Vec<_> = nums.iter()
+          .scan(0, |sum, &x| {
+              *sum += x;
+              if *sum < 0 {
+                  None
+              } else {
+                  Some(*sum)
+              }
+          })
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[1, 0, 2, 0, 3]'
+- '[1, 0, 2]'
+- '[1]'
+- '[1, 0]'
+correct_answer: 0
+expected_output:
+- '[1, 0, 2, 0, 3]'
+explanation: |-
+  This question tests understanding of the `scan` iterator adapter and how it
+  maintains state across iterations. The `scan` method is similar to `fold`, but
+  instead of producing a single final value, it yields intermediate values at each
+  step.
+
+  The `scan` closure takes a mutable state (`sum`) and each element from the
+  iterator. For each element, it updates the running sum and decides whether to
+  continue the iteration. If the closure returns `None`, the iterator terminates
+  immediately. If it returns `Some(value)`, that value is yielded and iteration
+  continues.
+
+  Tracing through the execution with input `[1, -1, 2, -2, 3]`:
+
+  1. `x = 1`: sum becomes `0 + 1 = 1`. Since `1 >= 0`, yields `Some(1)` → output
+  `1`
+  2. `x = -1`: sum becomes `1 + (-1) = 0`. Since `0 >= 0`, yields `Some(0)` →
+  output `0`
+  3. `x = 2`: sum becomes `0 + 2 = 2`. Since `2 >= 0`, yields `Some(2)` → output
+  `2`
+  4. `x = -2`: sum becomes `2 + (-2) = 0`. Since `0 >= 0`, yields `Some(0)` →
+  output `0`
+  5. `x = 3`: sum becomes `0 + 3 = 3`. Since `3 >= 0`, yields `Some(3)` → output
+  `3`
+
+  The running sum never becomes negative with this input sequence, so the iterator
+  never returns `None` and processes all elements. The key takeaway is that `scan`
+  maintains stateful iteration and can terminate early when the closure returns
+  `None`, making it useful for operations like running sums with conditional
+  termination.

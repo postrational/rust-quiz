@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  use std::cell::RefCell;
+
+  fn main() {
+      let data = RefCell::new(vec![1, 2, 3]);
+      let borrow1 = data.borrow();
+      let borrow2 = data.borrow_mut();
+      println!("{:?} {:?}", borrow1, borrow2);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- '[1, 2, 3] [1, 2, 3]'
+- 'Compilation error: cannot borrow as mutable and immutable simultaneously'
+- 'Runtime panic: already borrowed'
+- 'Compilation error: RefCell borrow conflict detected'
+correct_answer: 2
+expected_output:
+- already borrowed
+explanation: |-
+  This question tests understanding of `RefCell` and Rust's interior mutability
+  pattern. `RefCell` is a type that provides interior mutability by enforcing
+  Rust's borrowing rules at runtime rather than compile time.
+
+  The code compiles successfully because `RefCell` uses runtime checks instead of
+  compile-time borrow checking. However, when the code executes, it panics with a
+  message containing "already borrowed".
+
+  Here's what happens: `data.borrow()` creates an immutable borrow that remains
+  active while `borrow1` is in scope. Then `data.borrow_mut()` attempts to create
+  a mutable borrow. At this point, `RefCell` detects that there's already an
+  active immutable borrow and that Rust's borrowing rules (you cannot have both
+  immutable and mutable borrows active simultaneously) are being violated. Since
+  `RefCell` enforces these rules at runtime, it panics rather than producing a
+  compilation error.
+
+  The key takeaway is that `RefCell` moves borrow checking from compile time to
+  runtime, allowing for more flexible patterns but requiring careful handling to
+  avoid runtime panics. It's particularly useful when you need interior mutability
+  in situations where the compiler cannot verify that borrowing rules are
+  followed, but you as the programmer know they will be respected.

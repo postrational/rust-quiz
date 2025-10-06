@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  struct Container {
+      data: Vec<i32>,
+  }
+
+  impl Container {
+      fn get_ref(&self) -> &Vec<i32> {
+          &self.data
+      }
+      
+      fn modify(&mut self) {
+          self.data.push(42);
+      }
+  }
+
+  fn main() {
+      let mut container = Container { data: vec![1, 2, 3] };
+      let data_ref = container.get_ref();
+      container.modify();
+      println!("{:?}", data_ref);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "[1, 2, 3]"
+- Prints "[1, 2, 3, 42]"
+- 'Compilation error: cannot borrow `container` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: reference invalidated'
+correct_answer: 2
+expected_output:
+- 'error[E0502]: cannot borrow `container` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and the interaction
+  between immutable and mutable references. Rust enforces that you cannot have a
+  mutable reference to a value while an immutable reference to that same value
+  exists.
+
+  In this code, `container.get_ref()` creates an immutable borrow of `container`
+  and returns a reference to its internal data. This immutable reference is stored
+  in `data_ref` and remains active (alive) until the end of its scope. When
+  `container.modify()` is called, it attempts to create a mutable borrow of
+  `container`. However, since the immutable reference `data_ref` is still in scope
+  and will be used later in the `println!` statement, Rust's borrow checker
+  detects a conflict and produces a compilation error.
+
+  The key principle here is that Rust's borrow checker prevents data races at
+  compile time by ensuring that either multiple immutable references OR one
+  mutable reference can exist at any given time, but not both simultaneously. This
+  guarantees memory safety without runtime overhead. The immutable reference could
+  be invalidated if the mutable reference were allowed to modify the underlying
+  data structure (for example, if the Vec reallocates), which is why Rust prevents
+  this scenario at compile time.

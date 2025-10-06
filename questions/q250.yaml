@@ -1,0 +1,71 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::sync::Arc;
+  use std::cell::RefCell;
+  use std::sync::Mutex;
+
+  struct Container<T> {
+      data: T,
+  }
+
+  fn requires_send<T: Send>(_: T) {}
+  fn requires_sync<T: Sync>(_: T) {}
+
+  fn main() {
+      let rc_data = Container { data: Rc::new(42) };
+      let arc_data = Container { data: Arc::new(42) };
+      let refcell_data = Container { data: RefCell::new(42) };
+      let mutex_data = Container { data: Mutex::new(42) };
+      
+      requires_send(arc_data);
+      requires_send(mutex_data);
+      requires_sync(refcell_data);
+  }
+  ```
+
+  Which lines cause compilation errors?
+answers:
+- Only the `requires_sync(refcell_data)` line
+- Only the `requires_send(rc_data)` line
+- Both `requires_send(rc_data)` and `requires_sync(refcell_data)` lines
+- All function calls work without errors
+correct_answer: 0
+expected_output:
+- error[E0277]
+- cannot be shared between threads safely
+- the trait `Sync` is not implemented for `RefCell<
+explanation: |-
+  This question tests understanding of Rust's `Send` and `Sync` marker traits,
+  which are fundamental to Rust's thread safety guarantees.
+
+  The `Send` trait indicates that a type can be safely transferred between threads
+  (ownership can move across thread boundaries). The `Sync` trait indicates that a
+  type can be safely shared between threads (it's safe for multiple threads to
+  have references to it concurrently). A type `T` is `Sync` if `&T` is `Send`.
+
+  Let's analyze each type:
+
+  - `Rc<T>` is neither `Send` nor `Sync` because it uses non-atomic reference
+  counting, making it unsafe for concurrent access or transfer between threads.
+
+  - `Arc<T>` is both `Send` and `Sync` (when `T: Send + Sync`) because it uses
+  atomic reference counting, making it safe for concurrent use across threads.
+
+  - `RefCell<T>` is `Send` (when `T: Send`) because it can be moved between
+  threads, but it is NOT `Sync` because its runtime borrow checking is not
+  thread-safe for concurrent access.
+
+  - `Mutex<T>` is both `Send` and `Sync` (when `T: Send`) because it provides
+  thread-safe interior mutability through locking.
+
+  In the code, `rc_data` is created but never used in a function call, so it
+  doesn't cause an error. The calls `requires_send(arc_data)` and
+  `requires_send(mutex_data)` both succeed because `Arc` and `Mutex` implement
+  `Send`. However, `requires_sync(refcell_data)` fails to compile because
+  `RefCell` does not implement `Sync`.
+
+  The key takeaway is that `RefCell` provides interior mutability for
+  single-threaded scenarios, while `Mutex` provides thread-safe interior
+  mutability. Understanding which types are `Send` and `Sync` is crucial for
+  writing safe concurrent Rust code.

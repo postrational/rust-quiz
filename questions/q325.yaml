@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      let result: Vec<_> = data
+          .iter()
+          .enumerate()
+          .filter_map(|(i, &x)| if i % 2 == 0 { Some(x * 2) } else { None })
+          .collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this program print?
+answers:
+- '[2, 6, 10]'
+- '[1, 3, 5]'
+- '[2, 4, 6, 8, 10]'
+- '[0, 2, 4]'
+correct_answer: 0
+expected_output:
+- '[2, 6, 10]'
+explanation: |-
+  This question tests understanding of iterator combinators, specifically
+  `enumerate()` and `filter_map()`.
+
+  The `enumerate()` method pairs each element with its index, creating tuples: (0,
+  1), (1, 2), (2, 3), (3, 4), (4, 5).
+
+  The `filter_map()` combinator applies a closure that both filters and maps in a
+  single operation. It returns `Option<T>`, where `Some(value)` keeps the
+  transformed value and `None` filters it out.
+
+  In this code, the closure checks if the index `i` is even (`i % 2 == 0`). For
+  even indices, it returns `Some(x * 2)`, doubling the value. For odd indices, it
+  returns `None`, filtering those elements out.
+
+  Tracing through the execution:
+  - Index 0 (value 1): even index → Some(1 * 2) = Some(2)
+  - Index 1 (value 2): odd index → None (filtered out)
+  - Index 2 (value 3): even index → Some(3 * 2) = Some(6)
+  - Index 3 (value 4): odd index → None (filtered out)
+  - Index 4 (value 5): even index → Some(5 * 2) = Some(10)
+
+  The result is [2, 6, 10].
+
+  The key takeaway is that `filter_map()` is an efficient way to combine filtering
+  and mapping operations. It's more concise and performant than chaining separate
+  `filter()` and `map()` calls when you need both conditional inclusion and
+  transformation.

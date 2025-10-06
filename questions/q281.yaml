@@ -1,0 +1,41 @@
+question: |-
+  ```rust
+  fn main() {
+      let s1 = String::from("hello");
+      let s2 = String::from("world");
+      let result = format!("{} {}", s1, s2);
+      println!("{} {} {}", s1, s2, result);
+  }
+  ```
+
+  What does this code output?
+answers:
+- hello world hello world
+- 'Compilation error: borrow of moved value'
+- 'Runtime panic: use after move'
+- 'Compilation error: cannot use moved values'
+correct_answer: 0
+expected_output:
+- hello world hello world
+explanation: |-
+  This question tests understanding of how Rust's `format!` macro handles
+  ownership and borrowing. A common misconception is that macros like `format!`
+  take ownership of their arguments, but this is not the case.
+
+  The `format!` macro borrows its arguments rather than taking ownership. When you
+  call `format!("{} {}", s1, s2)`, the macro uses the `Display` trait
+  implementation, which only requires a reference (`&self`). Through deref
+  coercion, `String` values are automatically borrowed as `&str` when passed to
+  `format!`.
+
+  Since `s1` and `s2` are only borrowed (not moved) by the `format!` call, they
+  remain valid and can be used again in the subsequent `println!` statement. The
+  code successfully prints "hello world hello world" - the first "hello world"
+  comes from `s1` and `s2`, and the second "hello world" comes from the `result`
+  variable.
+
+  The key takeaway is that formatting macros in Rust (`format!`, `println!`, etc.)
+  are designed to borrow their arguments, making them convenient to use without
+  worrying about ownership transfer. This is different from functions that
+  explicitly take ownership by accepting parameters of type `String` rather than
+  `&str`.

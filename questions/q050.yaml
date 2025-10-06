@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  const fn fibonacci(n: usize) -> usize {
+      match n {
+          0 => 0,
+          1 => 1,
+          _ => fibonacci(n - 1) + fibonacci(n - 2),
+      }
+  }
+
+  fn main() {
+      let small = [0; fibonacci(5)];
+      println!("{}", small.len());
+      
+      let large = [0; fibonacci(50)];
+      println!("{}", large.len());
+  }
+  ```
+
+  What happens with this code?
+answers:
+- Prints fibonacci(5) and fibonacci(50)
+- Compilation error - const fn too complex
+- Compilation error - const evaluation limit exceeded
+- Compiles but takes forever
+correct_answer: 2
+expected_output:
+- 'error: constant evaluation is taking a long time'
+explanation: |-
+  This question tests understanding of Rust's const evaluation limits and
+  compile-time computation constraints. While Rust allows const functions to be
+  evaluated at compile time, the compiler imposes limits to prevent excessive
+  compilation times and resource usage.
+
+  The fibonacci function is a valid const fn that can be evaluated at compile
+  time. For small values like fibonacci(5), which equals 5, the computation
+  completes successfully within the const evaluation limits. The array size is
+  determined at compile time, and the code would work fine for this small case in
+  isolation.
+
+  However, fibonacci(50) requires an exponential number of recursive calls due to
+  the naive recursive implementation. Computing this at compile time would require
+  approximately 2^50 function calls, which far exceeds Rust's const evaluation
+  step limit. The compiler will detect this long-running const evaluation and
+  produce an error with the message "constant evaluation is taking a long time",
+  which is controlled by the `long_running_const_eval` lint that is denied by
+  default.
+
+  The key takeaway is that while const functions enable powerful compile-time
+  computation, the compiler enforces limits to ensure reasonable compilation
+  times. For complex computations like large Fibonacci numbers, either the
+  algorithm needs to be optimized (e.g., using iteration instead of naive
+  recursion) or the computation should be moved to runtime. The const evaluation
+  limit protects against accidentally creating extremely long compilation times or
+  infinite loops during compilation.

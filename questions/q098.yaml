@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5, 6];
+      
+      let chunks: Vec<Vec<_>> = data
+          .chunks(2)
+          .map(|chunk| chunk.to_vec())
+          .collect();
+      
+      println!("{:?}", chunks);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[[1, 2], [3, 4], [5, 6]]'
+- 'Compiler error: `chunks` is not a method of `Vec`'
+- '[[1, 3, 5], [2, 4, 6]]'
+- '[1, 2, 3, 4, 5, 6]'
+correct_answer: 0
+expected_output:
+- '[[1, 2], [3, 4], [5, 6]]'
+explanation: |-
+  This question tests understanding of the `chunks()` method available on slices
+  in Rust. The `chunks()` method splits a slice into consecutive, non-overlapping
+  chunks of a specified size.
+
+  In this code, `data.chunks(2)` creates an iterator that yields slices of size 2
+  from the vector. The iterator produces three slices: `&[1, 2]`, `&[3, 4]`, and
+  `&[5, 6]`. Each slice is then converted to an owned `Vec` using `to_vec()`, and
+  all the vectors are collected into a `Vec<Vec<i32>>`.
+
+  The key characteristics of `chunks()` are:
+  - It divides the slice into fixed-size chunks from left to right
+  - If the slice length is not evenly divisible by the chunk size, the last chunk
+  will be smaller
+  - It returns an iterator over borrowed slices (`&[T]`), which is why `to_vec()`
+  is needed to create owned vectors
+
+  Related methods include `chunks_exact()` (which requires even division),
+  `rchunks()` (chunks from the right), and `windows()` (which creates overlapping
+  slices). Understanding these slice methods is important for efficient data
+  processing in Rust without unnecessary allocations.

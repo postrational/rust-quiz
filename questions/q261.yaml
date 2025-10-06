@@ -1,0 +1,50 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut vec = vec![1, 2, 3, 4, 5];
+      for item in &vec {
+          if *item == 3 {
+              vec.push(6);
+          }
+      }
+      println!("{:?}", vec);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '[1, 2, 3, 4, 5, 6]'
+- 'Compilation error: cannot borrow `vec` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: collection modified during iteration'
+- '[1, 2, 3, 4, 5]'
+correct_answer: 1
+expected_output:
+- 'error[E0502]: cannot borrow `vec` as mutable because it is also borrowed as immutable'
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and how they
+  interact with iterators. The key concept is that Rust enforces that you cannot
+  have both mutable and immutable references to the same data active
+  simultaneously.
+
+  In this code, the `for item in &vec` loop creates an immutable borrow of `vec`
+  through the iterator. This immutable borrow remains active for the entire
+  duration of the loop. Inside the loop body, when the condition `*item == 3` is
+  true, the code attempts to call `vec.push(6)`, which requires a mutable borrow
+  of `vec`.
+
+  Rust's borrow checker detects this conflict: the immutable borrow from the
+  iterator is still active when we try to create a mutable borrow for the `push`
+  operation. This violates Rust's borrowing rules, which state that while an
+  immutable borrow exists, no mutable borrows can be created.
+
+  The compiler produces a compilation error indicating that `vec` cannot be
+  borrowed as mutable because it is already borrowed as immutable. This is a
+  compile-time safety feature that prevents potential issues like iterator
+  invalidation, which could occur in languages that allow modifying a collection
+  while iterating over it.
+
+  The key takeaway is that Rust's borrow checker prevents data races and iterator
+  invalidation at compile time by enforcing strict borrowing rules. If you need to
+  modify a collection while iterating, you must use different patterns, such as
+  collecting indices first, using `retain`, or iterating over a clone of the
+  collection.

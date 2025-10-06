@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  fn process_string(s: &str) -> String {
+      s.chars()
+       .map(|c| if c.is_ascii() { c.to_uppercase().collect::<String>() } else { c.to_string() })
+       .collect()
+  }
+
+  fn main() {
+      let input = "Hello 世界";
+      let result = process_string(input);
+      println!("{}", result);
+  }
+  ```
+
+  What is the result of this code?
+answers:
+- 'Prints: `HELLO 世界`'
+- 'Prints: `HELLO世界` (space removed because space is ASCII)'
+- 'Compilation error: `to_uppercase()` returns an iterator, not a char'
+- 'Runtime panic: cannot collect chars into String directly'
+correct_answer: 0
+expected_output:
+- HELLO 世界
+explanation: |-
+  This question tests understanding of Rust's character case conversion methods
+  and how iterators can be collected into strings.
+
+  The code successfully compiles and runs, producing the output `HELLO 世界`. The
+  key to understanding this is recognizing how the types work in the `map`
+  closure.
+
+  When `c.to_uppercase()` is called on a `char`, it returns a `ToUppercase`
+  iterator because some Unicode characters can map to multiple uppercase
+  characters. The code then calls `.collect::<String>()` on this iterator, which
+  produces a `String`. The `else` branch also returns a `String` via
+  `c.to_string()`.
+
+  Both branches of the `if` expression return `String`, which makes the types
+  consistent. The outer `.collect()` then collects these `String` values into a
+  final `String`. While this approach involves creating intermediate `String`
+  objects for each character (which is inefficient), it is valid Rust code.
+
+  For ASCII characters (including the space), `to_uppercase()` converts them to
+  uppercase. For non-ASCII characters like '世' and '界', they are simply converted
+  to strings unchanged since they don't have ASCII uppercase equivalents.
+
+  A more efficient approach would use `c.to_ascii_uppercase()` for ASCII
+  characters (which returns a `char` directly) or use `flat_map` to avoid creating
+  intermediate strings. The key takeaway is that `to_uppercase()` returns an
+  iterator that can be collected into a `String`, and Rust's type system allows
+  collecting `String` values into another `String` through the `FromIterator`
+  trait.

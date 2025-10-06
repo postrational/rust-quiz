@@ -1,0 +1,61 @@
+question: |-
+  ```rust
+  use std::sync::Arc;
+  use std::thread;
+
+  fn main() {
+      let data = Arc::new(vec![1, 2, 3]);
+      let data_clone = Arc::clone(&data);
+      
+      let handle = thread::spawn(move || {
+          println!("Thread: {:?}", data_clone);
+          data_clone.len()
+      });
+      
+      println!("Main: {:?}", data);
+      let len = handle.join().unwrap();
+      println!("Length: {}", len);
+  }
+  ```
+
+  What will this code print?
+answers:
+- Compilation error - cannot share data between threads
+- '`Main: [1, 2, 3]`, `Thread: [1, 2, 3]`, `Length: 3` (order may vary)'
+- '`Thread: [1, 2, 3]`, `Main: [1, 2, 3]`, `Length: 3`'
+- Runtime panic due to data race
+correct_answer: 1
+expected_output:
+- 'Main: [1, 2, 3]'
+- 'Thread: [1, 2, 3]'
+- 'Length: 3'
+explanation: |-
+  This question tests understanding of `Arc` (Atomically Reference Counted) and
+  safe multi-threaded data sharing in Rust.
+
+  `Arc` is a thread-safe reference-counting pointer that allows multiple threads
+  to share ownership of immutable data. When `Arc::new(vec![1, 2, 3])` is called,
+  it wraps the vector in an atomically reference-counted container. The
+  `Arc::clone(&data)` operation doesn't clone the underlying data—it only
+  increments the reference count, creating another pointer to the same shared
+  data.
+
+  The spawned thread takes ownership of `data_clone` via the `move` closure, while
+  the main thread retains ownership of the original `data` reference. Both threads
+  can safely read the shared vector because `Arc` ensures thread-safe access to
+  immutable data.
+
+  The main thread prints "Main: [1, 2, 3]" first, then calls `handle.join()` to
+  wait for the spawned thread to complete. The spawned thread prints "Thread: [1,
+  2, 3]" and returns the length of the vector (3). Finally, the main thread prints
+  "Length: 3".
+
+  While the order of the first two print statements may vary due to thread
+  scheduling, the "Length: 3" will always appear last because `join()` blocks the
+  main thread until the spawned thread completes. Since both threads only read the
+  data without mutation, there's no data race. The `Arc` ensures the data remains
+  valid until all references are dropped.
+
+  The key takeaway is that `Arc` enables safe sharing of immutable data across
+  threads by providing atomic reference counting, preventing data races while
+  allowing concurrent read access.

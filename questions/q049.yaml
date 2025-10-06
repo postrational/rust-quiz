@@ -1,0 +1,86 @@
+question: |-
+  ```rust
+  trait IsEven {
+      const VALUE: bool;
+  }
+
+  struct Even;
+  struct Odd;
+
+  impl IsEven for Even {
+      const VALUE: bool = true;
+  }
+
+  impl IsEven for Odd {
+      const VALUE: bool = false;
+  }
+
+  struct Array<T, const N: usize, P> 
+  where 
+      P: IsEven,
+      [(); N]:
+  {
+      data: [T; N],
+      _parity: std::marker::PhantomData<P>,
+  }
+
+  impl<T: Default + Copy, const N: usize> Array<T, N, Even> {
+      fn new_even() -> Self 
+      where 
+          [(); N % 2]: { todo!() }
+  }
+
+  fn main() {
+      // Which of these would compile if implemented correctly?
+      let arr1: Array<i32, 4, Even> = Array::new_even(); // A
+      let arr2: Array<i32, 5, Even> = Array::new_even(); // B  
+      let arr3: Array<i32, 4, Odd> = Array::new_odd();   // C
+      
+      println!("Compilation analysis complete");
+  }
+  ```
+
+  Which of these would compile if implemented correctly?
+answers:
+- Only A compiles
+- A and C compile
+- This is too complex - const generics can't do this
+- All would compile with correct implementations
+correct_answer: 0
+expected_output:
+- error
+- new_odd
+explanation: |-
+  This question tests understanding of const generics combined with trait bounds
+  to enforce compile-time constraints on type parameters.
+
+  The `Array` struct uses three type parameters: `T` for the element type, `N` for
+  the array size (const generic), and `P` for a parity marker type that implements
+  `IsEven`. This design allows encoding compile-time properties about the array
+  size in the type system.
+
+  The `new_even()` method is implemented only for `Array<T, N, Even>`, meaning
+  it's specifically for arrays that are marked as having even size. The key
+  insight is that the type parameter `P` (Even or Odd) should logically match the
+  actual parity of `N`.
+
+  Analyzing each case:
+  - **A) `Array<i32, 4, Even>`**: Size 4 is even, and the type parameter is
+  `Even`. This is logically consistent and would compile with a correct
+  implementation.
+  - **B) `Array<i32, 5, Even>`**: Size 5 is odd, but the type parameter claims
+  it's `Even`. This is a logical inconsistency. With proper implementation, this
+  should not compile.
+  - **C) `Array<i32, 4, Odd>`**: Size 4 is even, but the type parameter claims
+  it's `Odd`. This is also logically inconsistent and should not compile.
+  Additionally, there's no `new_odd()` method defined.
+
+  The constraint `where [(); N % 2]:` in the code is intentionally incomplete and
+  doesn't actually enforce evenness correctly. In practice, enforcing such
+  constraints at compile time with const generics requires more sophisticated
+  techniques or different approaches.
+
+  The key takeaway is that const generics can be combined with trait bounds to
+  create type-level constraints that catch logical errors at compile time, making
+  APIs safer and more expressive. This pattern is useful in scenarios like
+  cryptographic key validation, SIMD operations, and matrix dimension checking.

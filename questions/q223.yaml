@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  mod outer {
+      pub mod inner {
+          pub fn target() { println!("found it!"); }
+      }
+      
+      pub fn call_target() {
+          // Which import statement allows this to compile?
+          target();
+      }
+  }
+
+  fn main() {
+      outer::call_target();
+  }
+  ```
+
+  Which `use` statement should go at the top of `call_target()` to make it
+  compile?
+answers:
+- use self::inner::target;
+- use super::inner::target;
+- use crate::outer::inner::target;
+- use inner::target;
+correct_answer: 3
+expected_output:
+- cannot find function `target` in this scope
+explanation: |-
+  This question tests understanding of module path resolution in Rust. When
+  writing code inside a module, you need to understand how to reference items in
+  sibling or child modules.
+
+  From within the `outer` module, `inner` is a direct child module. This means it
+  can be accessed directly by its name without any path qualifiers. Therefore,
+  `use inner::target;` is the most concise and idiomatic way to bring `target`
+  into scope.
+
+  Let's examine each option:
+  - `use inner::target;` - This is correct. Since `inner` is a child module of
+  `outer`, it can be accessed directly from within `outer`.
+  - `use self::inner::target;` - This would also work. `self` explicitly refers to
+  the current module (`outer`), so `self::inner` is equivalent to just `inner`.
+  However, it's unnecessarily verbose.
+  - `use crate::outer::inner::target;` - This absolute path from the crate root
+  would also work, but it's unnecessarily long and less maintainable if the module
+  structure changes.
+  - `use super::inner::target;` - This is incorrect. `super` refers to the parent
+  module of `outer` (the crate root in this case), and `inner` is not a child of
+  the crate root—it's a child of `outer`.
+
+  The key takeaway is that child modules are directly accessible from their parent
+  module without needing `self::`, `super::`, or `crate::` prefixes, making simple
+  relative paths the most idiomatic choice.

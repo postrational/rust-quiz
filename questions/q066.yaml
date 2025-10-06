@@ -1,0 +1,52 @@
+question: |-
+  ```rust
+  trait Animal {
+      fn make_sound(&self) -> &str;
+  }
+
+  struct Dog;
+  impl Animal for Dog {
+      fn make_sound(&self) -> &str { "Woof!" }
+  }
+
+  fn main() {
+      let animals: Vec<dyn Animal> = vec![Dog, Dog];
+  }
+  ```
+
+  What happens when you try to compile this code?
+answers:
+- dyn Animal cannot be used without Box or & - needs known size
+- Missing 'static lifetime on trait object
+- Animal trait needs Sized bound
+- This compiles fine
+correct_answer: 0
+expected_output:
+- the size for values of type `dyn Animal` cannot be known
+explanation: |-
+  This question tests understanding of trait objects and dynamically sized types
+  (DSTs) in Rust. The code attempts to create a `Vec<dyn Animal>`, which fails
+  because `dyn Animal` is a trait object with an unknown size at compile time.
+
+  Trait objects like `dyn Animal` are dynamically sized because different types
+  implementing the `Animal` trait can have different sizes. For example, `Dog`
+  might be a zero-sized type while another implementation could contain fields
+  that take up memory. The `Vec<T>` type requires `T` to have a known size at
+  compile time so it can allocate contiguous memory for its elements.
+
+  To use trait objects, you must add indirection through a pointer type with a
+  known size. The two common approaches are:
+
+  1. `Box<dyn Animal>` for owned trait objects - stores the data on the heap with
+  a pointer
+  2. `&dyn Animal` for borrowed trait objects - stores a reference to existing
+  data
+
+  Both `Box<dyn Animal>` and `&dyn Animal` are "fat pointers" consisting of two
+  pointer-sized values: one pointing to the actual data and one pointing to the
+  vtable (virtual method table) containing the trait's method implementations.
+  This fat pointer has a known size (two words), making it compatible with `Vec`.
+
+  The key takeaway is that trait objects are dynamically sized and require
+  indirection through pointers or references to be stored in collections or other
+  contexts requiring compile-time known sizes.

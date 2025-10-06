@@ -1,0 +1,72 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+  use std::time::Duration;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel();
+      
+      thread::spawn(move || {
+          for i in 0..5 {
+              tx.send(i).unwrap();
+              if i == 2 {
+                  thread::sleep(Duration::from_millis(100));
+              }
+          }
+          drop(tx);
+      });
+      
+      thread::sleep(Duration::from_millis(50));
+      
+      // Try to get what's available now
+      let immediate: Vec<_> = rx.try_iter().collect();
+      println!("Immediate: {:?}", immediate);
+      
+      // Wait a bit more
+      thread::sleep(Duration::from_millis(100));
+      
+      let remaining: Vec<_> = rx.iter().collect();
+      println!("Remaining: {:?}", remaining);
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Immediate: [0, 1, 2], Remaining: [3, 4]'
+- 'Immediate: [0, 1, 2, 3, 4], Remaining: []'
+- 'Immediate: [0, 1], Remaining: [2, 3, 4]'
+- 'Immediate: [], Remaining: [0, 1, 2, 3, 4]'
+correct_answer: 0
+expected_output:
+- 'Immediate: [0, 1, 2]'
+- 'Remaining: [3, 4]'
+explanation: |-
+  This question tests understanding of Rust's multi-producer, single-consumer
+  (mpsc) channels and the difference between blocking and non-blocking iteration
+  methods.
+
+  The spawned thread sends values 0 through 4, but introduces a 100ms sleep after
+  sending value 2. The main thread sleeps for 50ms before attempting to read from
+  the channel.
+
+  When `rx.try_iter()` is called after the 50ms sleep, it uses a non-blocking
+  iterator that only collects messages currently available in the channel without
+  waiting. At this point, the spawned thread has had 50ms to execute, which is
+  enough time to send values 0, 1, and 2 (the sleep happens *after* sending 2).
+  Therefore, `try_iter()` collects `[0, 1, 2]`.
+
+  After collecting the immediate values, the main thread sleeps for another 100ms.
+  During this time, the spawned thread completes its 100ms sleep and sends the
+  remaining values 3 and 4, then drops the sender.
+
+  When `rx.iter()` is called, it uses a blocking iterator that waits for messages
+  until the channel is closed. Since values 3 and 4 have already been sent and the
+  sender has been dropped, `iter()` collects `[3, 4]` and then terminates because
+  the channel is closed.
+
+  The key takeaway is understanding the difference between `try_iter()`
+  (non-blocking, only gets what's immediately available) and `iter()` (blocking,
+  waits for messages until the channel closes). This distinction is crucial for
+  implementing responsive concurrent systems where you may want to check for
+  messages without blocking the current thread.

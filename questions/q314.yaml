@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  use std::collections::HashSet;
+
+  fn main() {
+      let set1: HashSet<i32> = [1, 2, 3, 4].into();
+      let set2: HashSet<i32> = [3, 4, 5, 6].into();
+      
+      let diff: HashSet<_> = set1.difference(&set2).cloned().collect();
+      let sym_diff: HashSet<_> = set1.symmetric_difference(&set2).cloned().collect();
+      
+      println!("{} {}", diff.len(), sym_diff.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- 2 4
+- 4 2
+- 2 6
+- 6 2
+correct_answer: 0
+expected_output:
+- 2 4
+explanation: |-
+  This question tests understanding of set operations in Rust's `HashSet`
+  collection type, specifically the `difference` and `symmetric_difference`
+  methods.
+
+  Given `set1` = {1, 2, 3, 4} and `set2` = {3, 4, 5, 6}:
+
+  **Difference operation (`set1.difference(&set2)`)**: Returns elements that are
+  in `set1` but not in `set2`. The elements 1 and 2 are in `set1` but not in
+  `set2`, so the difference is {1, 2}, which has a length of 2.
+
+  **Symmetric difference operation (`set1.symmetric_difference(&set2)`)**: Returns
+  elements that are in either set but not in both (the "exclusive or" of the
+  sets). Elements in `set1` only: {1, 2}. Elements in `set2` only: {5, 6}.
+  Combined: {1, 2, 5, 6}, which has a length of 4.
+
+  Both methods return iterators over references, so `.cloned()` is used to create
+  owned values that can be collected into a new `HashSet`.
+
+  The key takeaway is understanding how set operations work: `difference` finds
+  elements unique to the first set, while `symmetric_difference` finds elements
+  that appear in exactly one of the two sets.

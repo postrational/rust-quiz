@@ -1,0 +1,80 @@
+question: |-
+  ```rust
+  trait Animal {
+      fn make_sound(&self) -> &str;
+  }
+
+  struct Dog;
+  impl Animal for Dog {
+      fn make_sound(&self) -> &str { "woof" }
+  }
+
+  struct Cat;
+  impl Animal for Cat {
+      fn make_sound(&self) -> &str { "meow" }
+  }
+
+  fn get_animal(choice: bool) -> Box<dyn Animal> {
+      if choice {
+          Box::new(Dog)
+      } else {
+          Box::new(Cat)
+      }
+  }
+
+  fn main() {
+      let animals: Vec<Box<dyn Animal>> = vec![
+          get_animal(true),
+          get_animal(false),
+          get_animal(true),
+      ];
+      
+      let first_sound = animals[0].make_sound();
+      let cloned_animals = animals.clone();
+      
+      println!("{}", first_sound);
+  }
+  ```
+
+  What happens?
+answers:
+- Prints "woof" successfully
+- 'Compiler error: trait `Animal` cannot be made into an object'
+- 'Compiler error: the trait `Clone` is not implemented for `Box<dyn Animal>`'
+- 'Compiler error: cannot move out of indexed content'
+correct_answer: 2
+expected_output:
+- error[E0599]
+- 'Box<dyn Animal>: Clone'
+explanation: |-
+  This question tests understanding of trait objects and the `Clone` trait's
+  interaction with dynamic dispatch.
+
+  The code compiles successfully up until the line `let cloned_animals =
+  animals.clone();`. The issue is that `Vec::clone()` requires that the element
+  type implements `Clone`. Since we have `Vec<Box<dyn Animal>>`, we need `Box<dyn
+  Animal>` to implement `Clone`.
+
+  While `Box<T>` implements `Clone` when `T: Clone`, the problem is that `dyn
+  Animal` does not implement `Clone`. Even though the concrete types `Dog` and
+  `Cat` might be cloneable, once they're behind a trait object (`dyn Animal`),
+  that type information is erased. The trait object only knows about the methods
+  defined in the `Animal` trait itself.
+
+  There are several ways to address this limitation:
+
+  1. **Add `Clone` as a supertrait**: `trait Animal: Clone { ... }` - However,
+  this makes `Animal` not object-safe because `Clone::clone()` returns `Self`,
+  which is not allowed in object-safe traits.
+
+  2. **Implement a custom clone method**: Add a `clone_box(&self) -> Box<dyn
+  Animal>` method to the trait and manually implement `Clone` for `Box<dyn
+  Animal>` using this method. This is the standard workaround for cloning trait
+  objects.
+
+  3. **Avoid cloning**: Use references or restructure the code to not require
+  cloning the vector of trait objects.
+
+  The key takeaway is that trait objects have limitations compared to concrete
+  types, and `Clone` is one of the traits that doesn't work automatically with
+  trait objects due to object safety rules.

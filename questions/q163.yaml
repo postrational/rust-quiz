@@ -1,0 +1,51 @@
+question: |-
+  ```rust
+  fn main() {
+      let s1 = "café";
+      let s2 = String::from("cafe\u{0301}"); // e + combining acute accent
+      
+      println!("s1 == s2: {}", s1 == s2);
+      println!("s1 bytes: {:?}", s1.as_bytes());
+      println!("s2 bytes: {:?}", s2.as_bytes()); 
+      println!("s1 chars: {}", s1.chars().count());
+      println!("s2 chars: {}", s2.chars().count());
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 's1 == s2: true, both have identical byte representations'
+- 's1 == s2: false, but both have same byte length and same visual appearance'
+- 's1 == s2: true, Rust normalizes Unicode strings automatically'
+- 's1 == s2: false, both have different byte representations but same visual appearance, s1 has 4 chars, s2 has 5 chars'
+correct_answer: 3
+expected_output:
+- 's1 == s2: false'
+- 's1 bytes: [99, 97, 102, 195, 169]'
+- 's2 bytes: [99, 97, 102, 101, 204, 129]'
+- 's1 chars: 4'
+- 's2 chars: 5'
+explanation: |-
+  This question tests understanding of Unicode normalization and how Rust handles
+  string comparison at the byte level.
+
+  The two strings "café" represent the same visual text but use different Unicode
+  encodings. The string `s1` uses a precomposed character é (U+00E9), which is a
+  single Unicode code point. The string `s2` uses a decomposed form: the letter
+  'e' (U+0065) followed by a combining acute accent (U+0301).
+
+  When Rust compares strings using `==`, it performs a byte-by-byte comparison
+  without any Unicode normalization. Since the byte representations differ, the
+  comparison returns `false` even though the strings look identical when
+  displayed.
+
+  The byte arrays show this difference: `s1` contains the UTF-8 encoding of the
+  precomposed é (bytes 195, 169), while `s2` contains the UTF-8 encoding of 'e'
+  followed by the combining accent (bytes 101, 204, 129). This also affects the
+  character count: `s1` has 4 Unicode scalar values (c, a, f, é), while `s2` has 5
+  (c, a, f, e, combining-accent).
+
+  The key takeaway is that Rust does not perform Unicode normalization
+  automatically. If your application needs to compare strings that may use
+  different Unicode representations, you should use a Unicode normalization
+  library to convert strings to a canonical form before comparison.

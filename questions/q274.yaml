@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut vec = vec![1, 2, 3];
+      let iter = vec.iter();
+      vec.clear();
+      for item in iter {
+          println!("{}", item);
+      }
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints nothing (empty output)
+- 'Compilation error: cannot borrow `vec` as mutable because it is also borrowed as immutable'
+- 'Runtime panic: iterator invalidated'
+- Prints "1 2 3"
+correct_answer: 1
+expected_output:
+- cannot borrow `vec` as mutable because it is also borrowed as immutable
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and how they
+  interact with iterators. When `vec.iter()` is called, it creates an immutable
+  borrow of the vector that lasts for the lifetime of the iterator. This immutable
+  borrow remains active because the iterator `iter` is used later in the `for`
+  loop.
+
+  When `vec.clear()` is called, it attempts to mutably borrow the vector to modify
+  it. However, Rust's borrowing rules prohibit having both an immutable borrow and
+  a mutable borrow active at the same time for the same data. Since the immutable
+  borrow from `iter` is still in scope and will be used later, the compiler
+  rejects the mutable borrow attempt.
+
+  This is a key safety feature of Rust that prevents iterator invalidation bugs
+  common in other languages. In languages like C++, modifying a container while
+  iterating over it can lead to undefined behavior or crashes. Rust's borrow
+  checker catches this at compile time, ensuring memory safety.
+
+  The key takeaway is that iterators hold borrows to the data they iterate over,
+  and these borrows must follow Rust's borrowing rules. You cannot modify a
+  collection while an iterator that borrows it is still in scope and being used.

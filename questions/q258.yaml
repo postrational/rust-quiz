@@ -1,0 +1,40 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
+      let r1 = &mut s;
+      let r2 = &mut s;
+      r1.push_str(" world");
+      println!("{}", r2);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "hello world"
+- 'Compilation error: cannot borrow `s` as mutable more than once at a time'
+- 'Runtime panic: double mutable borrow'
+- Prints "hello"
+correct_answer: 1
+expected_output:
+- 'error[E0499]: cannot borrow `s` as mutable more than once at a time'
+explanation: |-
+  This question tests understanding of Rust's mutable borrowing rules, which are
+  fundamental to Rust's memory safety guarantees. Rust enforces that at any given
+  time, you can have either one mutable reference or any number of immutable
+  references to a value, but not both simultaneously.
+
+  In this code, two mutable references to the same `String` are created: `r1` and
+  `r2`. When `r2` is created on the third line, `r1` is still in scope and will be
+  used later (on line 5 when calling `r1.push_str`). This violates Rust's
+  exclusive mutable access rule.
+
+  The compiler detects this violation at compile time and produces an error
+  indicating that `s` cannot be borrowed as mutable more than once at a time. This
+  is not a runtime error—Rust's borrow checker prevents the code from compiling at
+  all.
+
+  The key takeaway is that Rust's borrow checker enforces exclusive mutable access
+  to prevent data races and ensure memory safety. This compile-time check is one
+  of Rust's core features that eliminates entire classes of bugs that would be
+  runtime errors or undefined behavior in other languages.

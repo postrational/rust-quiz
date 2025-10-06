@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn main() {
+      let x = Box::new(42);
+      let y = *x;
+      let z = *x;
+      println!("{} {} {}", x, y, z);
+  }
+  ```
+
+  What does this code output?
+answers:
+- 42 42 42
+- 'Compilation error: use of moved value `*x`'
+- 'Runtime panic: double dereference'
+- 'Compilation error: cannot dereference moved value'
+correct_answer: 0
+expected_output:
+- 42 42 42
+explanation: |-
+  This question tests understanding of the `Copy` trait and how dereferencing
+  works with `Box` in Rust. The key concept is distinguishing between moving the
+  Box itself versus copying the value it contains.
+
+  When `Box::new(42)` is called, it creates a heap-allocated integer. The type
+  `i32` implements the `Copy` trait, which means values of this type are copied
+  rather than moved during assignment.
+
+  When `let y = *x;` is executed, the `*` operator dereferences the Box to access
+  the `i32` value inside. Since `i32` is `Copy`, this value is copied into `y`.
+  Importantly, the Box `x` itself is not moved or consumed—only the value inside
+  is copied. The same happens with `let z = *x;`, creating another copy of the
+  value.
+
+  At the `println!` statement, all three variables are valid: `x` still owns the
+  Box (which can be dereferenced and printed), `y` and `z` each hold copied values
+  of 42. The output is "42 42 42".
+
+  The key takeaway is that dereferencing a Box to access a `Copy` type creates a
+  copy of the value without consuming the Box. If the contained type did not
+  implement `Copy` (like `String`), the first dereference assignment would move
+  the value out of the Box, making subsequent uses invalid.

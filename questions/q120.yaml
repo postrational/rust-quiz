@@ -1,0 +1,53 @@
+question: |-
+  ```rust
+  fn parse_all(inputs: &[&str]) -> Result<Vec<i32>, std::num::ParseIntError> {
+      inputs.iter()
+          .map(|s| s.parse::<i32>())
+          .collect()
+  }
+
+  fn sum_inputs(inputs: &[&str]) -> Result<i32, std::num::ParseIntError> {
+      let nums = parse_all(inputs)?;
+      Ok(nums.iter().sum())
+  }
+
+  fn main() {
+      println!("{:?}", sum_inputs(&["5", "10", "15"]));
+      println!("{:?}", sum_inputs(&["5", "bad", "15"]));
+  }
+  ```
+
+  What does this print?
+answers:
+- '`Ok(30)` and `Ok(20)`'
+- '`Ok(30)` and `Err(ParseIntError { ... })`'
+- Two errors
+- '`Ok(30)` and `Ok(5)` (skips bad values)'
+correct_answer: 1
+expected_output:
+- Ok(30)
+- 'Err(ParseIntError { kind: InvalidDigit })'
+explanation: |-
+  This question tests understanding of how the `?` operator works with iterators
+  and the `collect()` method when dealing with `Result` types.
+
+  The `parse_all` function uses `collect()` on an iterator of `Result<i32,
+  ParseIntError>` values. When collecting into a `Result<Vec<T>, E>`, Rust's
+  standard library provides a special implementation that short-circuits on the
+  first error. If all results are `Ok`, it collects them into `Ok(Vec<T>)`. If any
+  result is `Err`, it immediately returns that error.
+
+  In the first call, `sum_inputs(&["5", "10", "15"])`, all strings parse
+  successfully. The `parse_all` function returns `Ok(vec![5, 10, 15])`, and the
+  sum is 30, resulting in `Ok(30)`.
+
+  In the second call, `sum_inputs(&["5", "bad", "15"])`, the string "bad" cannot
+  be parsed as an integer. When `collect()` encounters this parse error, it
+  short-circuits and returns the error immediately. The `?` operator in
+  `sum_inputs` then propagates this error up, so the function returns
+  `Err(ParseIntError { ... })`.
+
+  The key takeaway is that `collect()` has special behavior for `Result` types
+  that enables error propagation in iterator chains. This pattern is idiomatic in
+  Rust for handling operations that may fail on collections, allowing clean error
+  handling without explicit loops or manual error checking.

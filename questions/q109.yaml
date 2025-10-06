@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  fn read_first_line(path: &str) -> Result<String, std::io::Error> {
+      let content = std::fs::read_to_string(path)?;
+      Ok(content.lines().next().unwrap_or("").to_string())
+  }
+
+  fn parse_config(path: &str) -> Result<i32, Box<dyn std::error::Error>> {
+      let line = read_first_line(path)?;
+      let num = line.trim().parse()?;
+      Ok(num)
+  }
+
+  fn main() {
+      // Assume "config.txt" doesn't exist
+      match parse_config("config.txt") {
+          Ok(n) => println!("Config value: {}", n),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  Given that "config.txt" doesn't exist, what happens?
+answers:
+- 'Prints `Error: No such file or directory` (or similar OS error)'
+- 'Prints `Error: invalid digit found in string`'
+- Panic from `unwrap_or("")`
+- 'Compilation error: cannot propagate `std::io::Error` through `Box<dyn Error>`'
+correct_answer: 0
+expected_output:
+- 'Error: No such file or directory (os error 2)'
+explanation: |-
+  This question tests understanding of error propagation through multiple layers
+  with different error types in Rust.
+
+  When `parse_config("config.txt")` is called, it invokes
+  `read_first_line("config.txt")`. Inside `read_first_line`, the call to
+  `std::fs::read_to_string("config.txt")` attempts to read a non-existent file,
+  which returns an `Err(std::io::Error)` containing a "No such file or directory"
+  message. The `?` operator immediately returns this error from `read_first_line`,
+  meaning the subsequent code involving `.lines().next()` is never executed.
+
+  Back in `parse_config`, the `?` operator on `read_first_line(path)?` receives
+  the `Err(std::io::Error)` and automatically converts it to `Box<dyn
+  std::error::Error>` (since `std::io::Error` implements the `Error` trait). This
+  error is immediately returned from `parse_config`, so the parsing code is never
+  reached.
+
+  Finally, in `main`, the error is caught by the `Err(e)` branch of the match
+  statement and printed, displaying the original I/O error message.
+
+  The key takeaway is that the `?` operator propagates errors immediately upon
+  encountering them, stopping execution at each level and bubbling the error up
+  through the call stack. Type conversions happen automatically when the error
+  types are compatible (through trait implementations), allowing `std::io::Error`
+  to be seamlessly converted to `Box<dyn std::error::Error>`.

@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut v = vec![1, 2, 3];
+      let r = &mut v[1];
+      
+      match v.get_mut(0) {
+          Some(x) => *x += 10,
+          None => {}
+      }
+      
+      *r += 100;
+      println!("{:?}", v);
+  }
+  ```
+
+  What will this code output?
+answers:
+- '[11, 102, 3]'
+- '[1, 102, 3]'
+- '[11, 2, 3]'
+- Compilation error
+correct_answer: 3
+expected_output:
+- 'error[E0499]: cannot borrow `v` as mutable more than once at a time'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the rules around
+  mutable borrows. The key concept is that Rust enforces that there can only be
+  one mutable borrow of a value at any given time, even when accessing different
+  elements of a collection.
+
+  In this code, `let r = &mut v[1];` creates a mutable borrow of the vector `v` to
+  access the element at index 1. This mutable borrow remains active until `r` is
+  last used (at `*r += 100;`). When the code attempts `v.get_mut(0)`, it tries to
+  create a second mutable borrow of `v` to access the element at index 0. This
+  violates Rust's borrowing rules, which prohibit multiple simultaneous mutable
+  borrows of the same value.
+
+  Even though the code is accessing different indices of the vector, the borrow
+  checker treats this as borrowing the entire vector `v` mutably twice. The
+  compiler cannot guarantee at compile time that the two borrows won't interfere
+  with each other, so it rejects the code.
+
+  The key takeaway is that Rust's borrow checker operates at the level of the
+  entire data structure, not individual elements. While this may seem overly
+  restrictive, it ensures memory safety. To work around this limitation, Rust
+  provides methods like `split_at_mut()` that allow safe access to multiple
+  disjoint parts of a collection, or you can restructure the code to avoid
+  overlapping mutable borrows.

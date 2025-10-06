@@ -1,0 +1,78 @@
+question: |-
+  ```rust
+  use std::fmt::Debug;
+
+  trait Container {
+      type Item: Debug;
+      
+      fn get(&self) -> &Self::Item;
+  }
+
+  struct BoxedInt(Box<i32>);
+  struct BoxedString(Box<String>);
+
+  impl Container for BoxedInt {
+      type Item = i32;
+      
+      fn get(&self) -> &Self::Item {
+          &self.0
+      }
+  }
+
+  impl Container for BoxedString {
+      type Item = String;
+      
+      fn get(&self) -> &Self::Item {
+          &self.0
+      }
+  }
+
+  fn print_container(c: &dyn Container) {
+      println!("{:?}", c.get());
+  }
+
+  fn main() {
+      let bi = BoxedInt(Box::new(42));
+      let bs = BoxedString(Box::new("hello".to_string()));
+      
+      print_container(&bi);
+      print_container(&bs);
+  }
+  ```
+
+  What happens when you try to compile this?
+answers:
+- Compiles successfully and prints `42` and `"hello"`
+- 'Error: `Container` is not object-safe because it has an associated type'
+- 'Error: `Container` is not object-safe because `Item` has a trait bound'
+- 'Error: cannot create trait object for `Container` - associated type `Item` must be specified'
+correct_answer: 3
+expected_output:
+- 'error[E0191]: the value of the associated type `Item` in `Container` must be specified'
+explanation: |-
+  This question tests understanding of associated types and trait objects in Rust.
+
+  When attempting to use `&dyn Container` as a trait object, the compiler produces
+  an error because the associated type `Item` must be specified, but there's no
+  way to specify it in this context. The `Container` trait has an associated type
+  `Item` that can be different for each implementation (`i32` for `BoxedInt`,
+  `String` for `BoxedString`).
+
+  Unlike generic trait parameters where you can write `&dyn Trait<ConcreteType>`,
+  Rust doesn't provide syntax to specify associated types in trait objects like
+  `&dyn Container<Item = i32>`. The compiler error E0191 indicates that the value
+  of the associated type must be specified, but the current trait object syntax
+  doesn't allow this.
+
+  While the compiler suggests using syntax like `Container<Item = Type>`, this
+  doesn't actually work for trait objects in this scenario because you're trying
+  to use the trait object to handle multiple different concrete types (`i32` and
+  `String`) dynamically.
+
+  To fix this issue, you have several options: use generics instead of trait
+  objects (`fn print_container<C: Container>(c: &C)`), convert the associated type
+  to a generic parameter on the trait itself (`trait Container<T: Debug>`), or use
+  an enum to handle the specific types you need. The key takeaway is that traits
+  with associated types have limitations when used as trait objects, particularly
+  when you need to work with multiple different concrete types for the associated
+  type.

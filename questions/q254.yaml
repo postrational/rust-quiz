@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn process(data: &String) -> usize {
+      data.len()
+  }
+
+  fn main() {
+      let text = String::from("hello");
+      let result = process(&text);
+      println!("{}: {}", text, result);
+  }
+  ```
+
+  What does this code output?
+answers:
+- 'hello: 5'
+- 'Compilation error: cannot borrow `text` after partial move'
+- 'Runtime panic: double borrow'
+- 'Compilation error: `text` does not live long enough'
+correct_answer: 0
+expected_output:
+- 'hello: 5'
+explanation: |-
+  This question tests understanding of Rust's borrowing system and immutable
+  references. The `process` function takes an immutable reference to a `String`
+  (`&String`), which allows it to read the data without taking ownership of the
+  value.
+
+  When `process(&text)` is called, an immutable borrow of `text` is created. This
+  borrow is temporary and ends when the function returns. Since the function only
+  borrows the data and doesn't move it, `text` remains valid and accessible in
+  `main()` after the function call completes.
+
+  The `println!` macro can then use `text` without any issues because the previous
+  borrow has ended, and `println!` itself only needs to borrow `text` immutably to
+  display it. The program successfully prints "hello: 5", where "hello" is the
+  content of the string and 5 is its length.
+
+  The key takeaway is that immutable references allow multiple parts of code to
+  read data without transferring ownership, and these borrows can occur
+  sequentially without conflict. This is a fundamental aspect of Rust's ownership
+  system that enables safe, efficient code without runtime overhead.

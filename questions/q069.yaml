@@ -1,0 +1,50 @@
+question: |-
+  ```rust
+  fn process<T: std::fmt::Display>(value: T) {
+      println!("{}", value);
+  }
+
+  fn process_dyn(value: Box<dyn std::fmt::Display>) {
+      println!("{}", value);
+  }
+
+  fn main() {
+      process(42);
+      process_dyn(Box::new(42));
+  }
+  ```
+
+  Which statement is true about monomorphization and performance?
+answers:
+- process generates code for each type at compile time; process_dyn uses dynamic dispatch with vtable lookup at runtime
+- Both use dynamic dispatch because they're generic
+- process_dyn is faster because it avoids code bloat
+- They generate identical machine code
+correct_answer: 0
+expected_output:
+- '42'
+- '42'
+explanation: |-
+  This question tests understanding of the fundamental difference between static
+  dispatch (generics) and dynamic dispatch (trait objects) in Rust.
+
+  When using generic type parameters like `process<T: std::fmt::Display>`, Rust
+  performs monomorphization at compile time. This means the compiler generates a
+  separate, specialized version of the function for each concrete type used. For
+  example, calling `process(42)` generates a version specifically for `i32`, and
+  calling `process("hello")` would generate a separate version for `&str`. This
+  results in zero runtime overhead because the exact function to call is known at
+  compile time, but it can increase binary size when many types are used.
+
+  In contrast, `process_dyn` uses a trait object (`Box<dyn std::fmt::Display>`),
+  which employs dynamic dispatch. At runtime, the program uses a vtable (virtual
+  method table) to look up which implementation of the trait methods to call. This
+  adds a small runtime cost (one pointer indirection) but results in a smaller
+  binary since only one version of the function exists that can handle any type
+  implementing the trait.
+
+  The key trade-offs are: generics provide maximum performance with potential code
+  bloat, while trait objects provide flexibility and smaller binaries with a small
+  runtime cost. Neither approach is universally better—the choice depends on
+  whether you need to know types at compile time versus needing runtime
+  polymorphism.

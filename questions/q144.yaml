@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  async fn process_data(data: &str) -> usize {
+      println!("Processing: {}", data);
+      data.len()
+  }
+
+  #[tokio::main]
+  async fn main() {
+      let text = String::from("Hello");
+      let future = process_data(&text);
+      drop(text);
+      let result = future.await;
+      println!("Length: {}", result);
+  }
+  ```
+
+  What happens with this async borrowing scenario?
+answers:
+- 'Prints "Processing: Hello" then "Length: 5"'
+- Compilation error - borrow checker prevents dropping `text`
+- Runtime panic - use after free
+- 'Prints "Processing: Hello" but garbage length value'
+correct_answer: 1
+expected_output:
+- cannot move out of `text` because it is borrowed
+explanation: |-
+  This question tests understanding of how Rust's borrow checker interacts with
+  async functions and futures. When an async function takes a reference parameter,
+  the resulting future captures that reference and holds it until the future is
+  awaited to completion.
+
+  In this code, `process_data(&text)` creates a future that borrows `text`. The
+  key point is that creating the future establishes a borrow, but the borrow
+  remains active until the future is fully awaited. When `drop(text)` is called,
+  it attempts to move and deallocate `text` while the future still holds a
+  reference to it. The borrow checker detects this violation at compile time and
+  prevents the code from compiling with an error indicating that `text` cannot be
+  moved because it is borrowed.
+
+  This demonstrates Rust's memory safety guarantees extending to async code. The
+  borrow checker ensures that references captured by futures remain valid for the
+  entire lifetime of the future, preventing use-after-free errors at compile time
+  rather than allowing them to become runtime issues.
+
+  The correct approach would be to await the future before dropping `text`, or to
+  restructure the code so that `text` lives long enough for the future to
+  complete. This is a fundamental principle of async Rust: futures that capture
+  references must be awaited while those references are still valid.

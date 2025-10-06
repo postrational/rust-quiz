@@ -1,0 +1,62 @@
+question: |-
+  ```rust
+  use std::ffi::CString;
+
+  fn main() {
+      let data = vec!["hello", "wor\0ld", "rust"];
+      
+      for s in data {
+          match CString::new(s) {
+              Ok(cstring) => println!("Created: {:?}", cstring),
+              Err(e) => println!("Failed: {}", e),
+          }
+      }
+      
+      let valid = CString::new("test").unwrap();
+      let bytes = valid.as_bytes_with_nul();
+      println!("Bytes: {:?}", bytes);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Compilation error: `CString::new` requires mutable string'
+- Runtime panic on the second string due to interior null byte
+- 'Prints "Failed: ..." for the second string, others succeed, final bytes show `[116, 101, 115, 116, 0]`'
+- All strings convert successfully, interior null bytes are escaped
+correct_answer: 2
+expected_output:
+- 'Created: "hello"'
+- 'Failed: nul byte found in provided data at position: 3'
+- 'Created: "rust"'
+- 'Bytes: [116, 101, 115, 116, 0]'
+explanation: |-
+  This question tests understanding of `CString::new()` and how Rust handles
+  C-compatible strings with null byte validation.
+
+  `CString::new()` returns a `Result` type because it needs to validate that the
+  input string doesn't contain interior null bytes. C strings use null bytes
+  (`\0`) as terminators, so any interior null bytes would break the C string
+  contract and cause undefined behavior when passed to C code.
+
+  In this code, three strings are processed:
+  1. `"hello"` - Contains no interior null bytes, so `CString::new()` returns
+  `Ok(CString)` and prints "Created: \"hello\""
+  2. `"wor\0ld"` - Contains an interior null byte at position 3, so
+  `CString::new()` returns `Err(NulError)` and prints "Failed: nul byte found in
+  provided data at position: 3"
+  3. `"rust"` - Contains no interior null bytes, so `CString::new()` returns
+  `Ok(CString)` and prints "Created: \"rust\""
+
+  The code uses a `match` statement to handle both the `Ok` and `Err` cases, which
+  means errors are caught gracefully rather than causing a panic. If `.unwrap()`
+  had been used instead of `match`, the program would panic on the second string.
+
+  Finally, a valid `CString` is created from "test" and `as_bytes_with_nul()` is
+  called to get the byte representation including the null terminator. This
+  returns `[116, 101, 115, 116, 0]`, which represents the ASCII values for 't',
+  'e', 's', 't', and the null terminator.
+
+  The key takeaway is that `CString::new()` provides safe error handling for
+  invalid C string data, protecting against undefined behavior when interfacing
+  with C code.

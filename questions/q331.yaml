@@ -1,0 +1,40 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![Some(1), None, Some(2), Some(3), None];
+      let sum: Option<i32> = data.into_iter().sum();
+      
+      println!("{:?}", sum);
+  }
+  ```
+
+  What does this program print?
+answers:
+- Some(6)
+- None
+- 'Compilation error: cannot sum Option values'
+- Some(3)
+correct_answer: 1
+expected_output:
+- None
+explanation: |-
+  This question tests understanding of the `Iterator::sum()` method's special
+  implementation for `Option<T>` types. When summing an iterator of `Option<T>`
+  values where `T` is summable, the operation follows an "all or nothing"
+  semantic.
+
+  The `sum()` method for `Option<T>` returns `Some(total)` only if all elements in
+  the iterator are `Some` variants. If any element is `None`, the entire sum
+  operation short-circuits and returns `None`. This behavior is consistent with
+  Option's role in representing potential absence of values.
+
+  In this code, the vector contains `[Some(1), None, Some(2), Some(3), None]`.
+  Since there are `None` values present in the iterator, the sum operation returns
+  `None` rather than attempting to sum only the `Some` values or producing a
+  partial result.
+
+  The key takeaway is that this behavior is useful for calculations where you want
+  the entire operation to fail if any individual piece is missing, ensuring that
+  you only get a result when all required data is present. This is different from
+  filtering out `None` values first and then summing, which would give a different
+  result.

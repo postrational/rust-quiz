@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  trait Display {
+      fn show(&self) {
+          println!("Default display");
+      }
+  }
+
+  struct A;
+  struct B;
+
+  impl Display for A {}
+
+  impl Display for B {
+      fn show(&self) {
+          println!("Custom B display");
+      }
+  }
+
+  fn main() {
+      let a = A;
+      let b = B;
+      a.show();
+      b.show();
+  }
+  ```
+
+  What will this code print?
+answers:
+- Default display, Default display
+- Custom B display, Custom B display
+- Default display, Custom B display
+- Compilation error - must implement all trait methods
+correct_answer: 2
+expected_output:
+- Default display
+- Custom B display
+explanation: |-
+  This question tests understanding of default trait implementations in Rust.
+  Traits can provide default implementations for their methods, which implementing
+  types can either use as-is or override with custom behavior.
+
+  In this code, the `Display` trait defines a `show` method with a default
+  implementation that prints "Default display". When `A` implements the trait with
+  an empty implementation block (`impl Display for A {}`), it accepts the default
+  behavior without modification. Therefore, calling `a.show()` executes the
+  default implementation and prints "Default display".
+
+  In contrast, `B` provides its own implementation of the `show` method,
+  overriding the default. When `b.show()` is called, it executes the custom
+  implementation and prints "Custom B display".
+
+  The key takeaway is that default trait implementations provide flexibility: they
+  allow types to opt into common behavior without boilerplate code, while still
+  permitting customization when needed. This pattern is widely used in Rust's
+  standard library and is a powerful tool for API design.

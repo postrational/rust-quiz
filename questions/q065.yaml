@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  struct Container<'a, T> {
+      value: &'a T,
+  }
+
+  impl<'a, T> Container<'a, T> {
+      fn get_value(&self) -> &T {
+          self.value
+      }
+  }
+
+  fn main() {
+      let x = 42;
+      let container = Container { value: &x };
+      let val = container.get_value();
+      println!("{}", val);
+  }
+  ```
+
+  What is the lifetime of the returned reference from `get_value`?
+answers:
+- "'a - same as the field's lifetime"
+- "'self - tied to &self"
+- "'static - it's a reference to a reference"
+- 'Compile error: missing lifetime annotation'
+correct_answer: 0
+expected_output:
+- '42'
+explanation: |-
+  This question tests understanding of lifetime elision and how lifetimes are
+  determined when returning references to fields.
+
+  When the `get_value` method returns `self.value`, it returns a reference with
+  type `&'a T`, not a reference tied to the `&self` borrow. The lifetime comes
+  from the field itself, which was declared as `&'a T` in the struct definition.
+
+  Although the return type is written as `&T`, the compiler determines the actual
+  lifetime through the following reasoning:
+  - The method returns `self.value`
+  - `self.value` has type `&'a T` (as declared in the struct)
+  - Therefore, the returned reference has lifetime `'a`
+
+  The fully desugared version would be:
+  ```rust
+  fn get_value<'b>(&'b self) -> &'a T 
+  where 'a: 'b
+  {
+      self.value
+  }
+  ```
+
+  This shows that while `self` is borrowed with some lifetime `'b`, the returned
+  reference has lifetime `'a`, which must outlive `'b` for the code to be valid.
+
+  The key distinction is between:
+  1. Returning a reference to a field (lifetime comes from the field's type)
+  2. Returning a reference to the struct itself (lifetime would be tied to
+  `&self`)
+
+  In this case, we're returning the field's value directly, so the lifetime is
+  `'a` from the struct's generic parameter, not the lifetime of the `&self`
+  borrow.

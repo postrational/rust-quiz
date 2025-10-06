@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert("key", vec![1, 2, 3]);
+      
+      if let Some(vec) = map.get_mut("key") {
+          vec.clear();
+      }
+      
+      println!("{}", map["key"].len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- '0'
+- '3'
+- Compilation error
+- Runtime panic
+correct_answer: 0
+expected_output:
+- '0'
+explanation: |-
+  This question tests understanding of mutable references and how mutations
+  through `get_mut` affect the underlying data in a HashMap.
+
+  The code creates a HashMap and inserts a vector `[1, 2, 3]` with the key "key".
+  The `get_mut` method returns an `Option<&mut Vec<i32>>`, which provides a
+  mutable reference to the value stored in the map. When `vec.clear()` is called,
+  it modifies the actual vector stored in the HashMap, removing all its elements.
+
+  After the `if let` block ends, the mutable reference is dropped, but the
+  modification persists. When `map["key"].len()` is evaluated, it accesses the
+  same vector that was cleared, which now has a length of 0.
+
+  The key takeaway is that `get_mut` provides direct mutable access to the values
+  stored in a HashMap. Any modifications made through this mutable reference
+  affect the actual data in the collection, and these changes persist after the
+  reference goes out of scope. This is different from getting an owned value,
+  which would be a copy or move of the data.

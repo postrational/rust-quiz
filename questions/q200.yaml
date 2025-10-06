@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  use std::collections::VecDeque;
+
+  fn main() {
+      let mut deque: VecDeque<i32> = (1..=5).collect();
+      println!("Initial: {:?}", deque);
+      
+      // Drain the middle elements
+      let middle: Vec<_> = deque.drain(1..4).collect();
+      println!("Drained middle: {:?}", middle);
+      println!("After drain: {:?}", deque);
+      
+      // Try to access elements by index
+      if let Some(val) = deque.get(1) {
+          println!("Index 1: {}", val);
+      } else {
+          println!("Index 1: None");
+      }
+      
+      deque.reserve(10);
+      println!("Capacity after reserve: {}", deque.capacity());
+      
+      deque.shrink_to_fit();
+      println!("Capacity after shrink: {}", deque.capacity());
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Initial [1,2,3,4,5], drained [2,3,4], remaining [1,5], index 1: 5, then capacity changes'
+- 'Initial [1,2,3,4,5], drained [2,3,4], remaining [1,5], index 1: None, then capacity changes'
+- 'Compilation error: VecDeque does not support drain operations with ranges'
+- 'Runtime panic: drain range out of bounds for VecDeque'
+correct_answer: 0
+expected_output:
+- 'Initial: [1, 2, 3, 4, 5]'
+- 'Drained middle: [2, 3, 4]'
+- 'After drain: [1, 5]'
+- 'Index 1: 5'
+explanation: |-
+  This question tests understanding of VecDeque's drain operation and how it
+  affects indexing.
+
+  When the code executes, it creates a VecDeque containing [1, 2, 3, 4, 5]. The
+  drain(1..4) operation removes elements at indices 1, 2, and 3 (values 2, 3, and
+  4), returning them as an iterator that gets collected into a Vec. After
+  draining, the remaining elements [1, 5] are compacted, so element 5 moves from
+  index 4 to index 1.
+
+  When accessing deque.get(1) after the drain, it successfully retrieves the value
+  5, which is now at index 1. The deque has only two elements remaining: 1 at
+  index 0 and 5 at index 1.
+
+  The reserve(10) operation ensures the deque has capacity for at least 10
+  additional elements beyond its current length, increasing the capacity. The
+  subsequent shrink_to_fit() operation reduces the capacity to be close to the
+  current length of 2 elements, though the exact capacity values may vary based on
+  the allocator's behavior.
+
+  The key takeaway is that VecDeque supports efficient drain operations with
+  ranges, and after draining, the remaining elements are reindexed starting from
+  0. The drain operation removes elements and shifts the remaining ones, making
+  previously higher indices accessible at lower positions.

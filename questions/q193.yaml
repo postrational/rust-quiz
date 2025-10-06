@@ -1,0 +1,72 @@
+question: |-
+  ```rust
+  use std::collections::BTreeMap;
+  use std::ops::Bound;
+
+  fn main() {
+      let mut scores = BTreeMap::new();
+      for (name, score) in [("Alice", 85), ("Bob", 92), ("Charlie", 78), ("David", 96), ("Eve", 88)] {
+          scores.insert(name, score);
+      }
+      
+      let high_scorers: Vec<_> = scores
+          .range::<str, _>((Bound::Excluded("Bob"), Bound::Included("Eve")))
+          .filter(|(_, &score)| score >= 90)
+          .collect();
+      
+      println!("High scorers: {:?}", high_scorers);
+      
+      let first_key = scores.first_key_value();
+      let last_key = scores.last_key_value();
+      println!("Range: {:?} to {:?}", first_key, last_key);
+      
+      scores.retain(|_, &mut score| score >= 85);
+      println!("After filtering: {:?}", scores);
+  }
+  ```
+
+  What will this code do?
+answers:
+- Prints high scorers with Charlie and David, range Alice to Eve, then filtered map
+- Prints high scorers with David only, range Alice to Eve, then map with Alice, Bob, David, Eve
+- 'Compilation error: Bound enum cannot be used with string keys'
+- 'Runtime panic: range bounds must be valid BTreeMap keys'
+correct_answer: 1
+expected_output:
+- 'High scorers: [("David", 96)]'
+- 'Range: Some(("Alice", 85)) to Some(("Eve", 88))'
+- 'After filtering: {"Alice": 85, "Bob": 92, "David": 96, "Eve": 88}'
+explanation: |-
+  This question tests understanding of BTreeMap range queries using the Bound enum
+  and various BTreeMap operations.
+
+  The code demonstrates several key BTreeMap features:
+
+  1. **Range queries with Bound enum and type annotations**: The `range::<str,
+  _>()` method requires a type annotation to specify the type being compared. The
+  turbofish syntax `::<str, _>` tells the compiler that we're ranging over `str`
+  types. The range uses `Bound::Excluded("Bob")` (starts after "Bob", not
+  including it) and `Bound::Included("Eve")` (ends at "Eve", including it). Since
+  BTreeMap maintains sorted order by keys, the range covers "Charlie", "David",
+  and "Eve".
+
+  2. **Filtering within a range**: The `.filter(|(_, &score)| score >= 90)`
+  further narrows down the results to only entries with scores of 90 or higher.
+  Within the range ("Charlie", "David", "Eve"), only "David" with a score of 96
+  meets this criterion, so `high_scorers` contains `[("David", 96)]`.
+
+  3. **First and last key operations**: `first_key_value()` and `last_key_value()`
+  return the first and last entries in the sorted map. These operate on the entire
+  map, not the filtered range, so they return `Some(("Alice", 85))` and
+  `Some(("Eve", 88))` respectively.
+
+  4. **Retain operation**: The `retain()` method modifies the map in-place,
+  keeping only entries where the closure returns true. With the condition `score
+  >= 85`, "Charlie" (78) is removed, while "Alice" (85), "Bob" (92), "David" (96),
+  and "Eve" (88) remain.
+
+  The key takeaway is that BTreeMap provides powerful range query capabilities
+  with fine-grained control over boundary inclusion/exclusion through the Bound
+  enum. When using range queries with string slices, type annotations may be
+  needed to help the compiler infer the correct types for the comparison
+  operations.

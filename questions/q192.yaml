@@ -1,0 +1,72 @@
+question: |-
+  ```rust
+  use std::collections::VecDeque;
+
+  fn main() {
+      let mut buffer = VecDeque::with_capacity(4);
+      
+      for i in 0..6 {
+          if buffer.len() == 4 {
+              buffer.pop_front();
+          }
+          buffer.push_back(i);
+          println!("Step {}: {:?}", i, buffer);
+      }
+      
+      buffer.make_contiguous();
+      let slice = buffer.as_slices();
+      println!("Slices: {:?}", slice);
+      
+      buffer.rotate_left(2);
+      println!("After rotate_left(2): {:?}", buffer);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- Prints sliding window of size 4, then single contiguous slice, then rotated buffer
+- 'Runtime panic: cannot pop from empty VecDeque'
+- 'Compilation error: as_slices() method not available on VecDeque'
+- Prints all elements, then two separate slices due to ring buffer, then rotated result
+correct_answer: 0
+expected_output:
+- 'Step 0: [0]'
+- 'Step 1: [0, 1]'
+- 'Step 2: [0, 1, 2]'
+- 'Step 3: [0, 1, 2, 3]'
+- 'Step 4: [1, 2, 3, 4]'
+- 'Step 5: [2, 3, 4, 5]'
+- 'Slices: ([2, 3, 4, 5], [])'
+- 'After rotate_left(2): [4, 5, 2, 3]'
+explanation: |-
+  This question tests understanding of VecDeque's ring buffer behavior and
+  advanced operations.
+
+  VecDeque is implemented as a circular buffer internally, which allows efficient
+  operations at both ends. In this code, the loop creates a sliding window effect
+  by maintaining a maximum size of 4 elements. When the buffer reaches capacity,
+  it removes the front element before adding a new one at the back.
+
+  The key operations demonstrated are:
+
+  1. **Sliding window pattern**: The loop prints each step showing how elements
+  [0,1,2,3] eventually become [2,3,4,5] as older elements are removed from the
+  front.
+
+  2. **make_contiguous()**: VecDeque's internal ring buffer can become fragmented
+  when elements wrap around the circular buffer. The `make_contiguous()` method
+  reorganizes the internal storage so all elements are stored contiguously in
+  memory. This is useful when you need efficient slice access.
+
+  3. **as_slices()**: This method returns a tuple of two slices `(&[T], &[T])`.
+  After calling `make_contiguous()`, all data is in one contiguous block, so it
+  returns `([2, 3, 4, 5], [])` - the first slice contains all elements and the
+  second is empty.
+
+  4. **rotate_left(2)**: This efficiently rotates elements to the left by 2
+  positions, transforming [2, 3, 4, 5] into [4, 5, 2, 3].
+
+  The correct answer is that the code prints a sliding window of size 4, then a
+  single contiguous slice (with an empty second slice), then the rotated buffer.
+  The code does not panic because the condition checks the length before popping,
+  and all methods used are valid for VecDeque.

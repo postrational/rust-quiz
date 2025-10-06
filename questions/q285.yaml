@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  use std::mem;
+
+  fn main() {
+      let mut x = String::from("hello");
+      let y = mem::take(&mut x);
+      println!("{} {}", x.len(), y.len());
+  }
+  ```
+
+  What does this code output?
+answers:
+- 5 5
+- 0 5
+- 'Compilation error: use after move'
+- 'Runtime panic: empty string access'
+correct_answer: 1
+expected_output:
+- 0 5
+explanation: |-
+  This question tests understanding of `mem::take` and Rust's default values. The
+  `mem::take` function takes a mutable reference to a value, moves the value out,
+  and replaces it with the default value for that type.
+
+  In this code, `mem::take(&mut x)` extracts the `String` "hello" from `x` and
+  returns it, which is then assigned to `y`. Simultaneously, `x` is replaced with
+  `String::default()`, which is an empty string. This operation is safe because
+  `x` remains valid—it just contains a different value.
+
+  After the operation, `y` contains "hello" with length 5, and `x` contains an
+  empty string with length 0. Both variables are valid and can be used normally.
+  The code prints "0 5" without any compilation errors or runtime panics.
+
+  The key takeaway is that `mem::take` provides a safe way to extract a value from
+  a mutable reference while ensuring the original location remains valid by
+  inserting a default value. This is particularly useful when you need to move a
+  value out of a struct field or other location that must always contain a valid
+  value.

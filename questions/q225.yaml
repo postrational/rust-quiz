@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  mod inner {
+      pub fn secret() -> &'static str { "hidden" }
+      fn private() -> &'static str { "inaccessible" }
+  }
+
+  pub use inner::secret;
+  pub use inner::private as exposed;
+
+  fn main() {
+      println!("{}", secret());
+      println!("{}", exposed());
+  }
+  ```
+
+  What happens when this code compiles?
+answers:
+- Both function calls work, printing "hidden" then "inaccessible"
+- Only the first call works, second fails because `private` cannot be re-exported
+- Only the second call works, first fails because `secret` is not in scope
+- Both calls fail because re-exports cannot change visibility
+correct_answer: 1
+expected_output:
+- function `private` is private
+explanation: |-
+  This question tests understanding of Rust's re-export visibility rules and
+  module privacy boundaries.
+
+  In Rust, you can only re-export items that are visible to the module performing
+  the re-export. The visibility of an item in its original location determines
+  whether it can be re-exported, regardless of what visibility modifier you use in
+  the re-export statement.
+
+  In this code, `inner::secret` is marked as `pub`, making it accessible from
+  outside the `inner` module. The re-export `pub use inner::secret;` succeeds
+  because the root module can access this public function.
+
+  However, `inner::private` has no visibility modifier, making it private to the
+  `inner` module. The attempted re-export `pub use inner::private as exposed;`
+  fails at compile time because the root module cannot access `private` in the
+  first place. You cannot re-export something that isn't visible to you, even if
+  you try to rename it or give it a different visibility level.
+
+  The key takeaway is that re-exports respect the original item's visibility
+  constraints. A `pub use` statement cannot elevate the visibility of a private
+  item—it can only make already-accessible items available through a different
+  path. This maintains Rust's encapsulation guarantees and prevents modules from
+  exposing implementation details they don't have access to.

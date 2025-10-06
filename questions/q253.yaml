@@ -1,0 +1,42 @@
+question: |-
+  ```rust
+  fn take_ownership(s: String) {
+      println!("Got: {}", s);
+  }
+
+  fn main() {
+      let s = String::from("test");
+      take_ownership(s);
+      println!("Original: {}", s);
+  }
+  ```
+
+  What does this code print?
+answers:
+- 'Got: test, Original: test'
+- 'Compilation error: borrow of moved value `s`'
+- 'Got: test, Original: (empty string)'
+- 'Runtime panic: use after free'
+correct_answer: 1
+expected_output:
+- 'error[E0382]: borrow of moved value: `s`'
+explanation: |-
+  This question tests understanding of Rust's ownership system and move semantics.
+  When a value of a non-Copy type like `String` is passed to a function by value,
+  ownership of that value is transferred (moved) to the function parameter.
+
+  In this code, when `take_ownership(s)` is called, ownership of the `String`
+  moves from the variable `s` in `main()` to the parameter `s` in the function.
+  After the function returns, the moved-from variable `s` in `main()` is no longer
+  valid and cannot be used.
+
+  The subsequent attempt to use `s` in `println!("Original: {}", s)` results in a
+  compilation error because Rust's borrow checker detects that `s` has been moved
+  and is no longer accessible. The error message will indicate "borrow of moved
+  value: `s`" or similar.
+
+  The key takeaway is that Rust enforces ownership rules at compile time,
+  preventing use-after-move errors. Once a value is moved, the original binding
+  can no longer be used unless ownership is returned or the type implements the
+  `Copy` trait. This is a fundamental safety feature that prevents many common
+  bugs found in other languages.

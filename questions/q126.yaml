@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  fn main() {
+      let numbers = vec![1, 2, 3, 4, 5];
+      
+      let mut iter = numbers.iter().peekable();
+      
+      let result: Vec<_> = iter
+          .by_ref()
+          .take_while(|&&x| x < 3)
+          .collect();
+      
+      println!("Result: {:?}", result);
+      println!("Next: {:?}", iter.next());
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Result: [1, 2], Next: Some(3)'
+- 'Result: [1, 2], Next: None'
+- 'Result: [1, 2, 3], Next: Some(4)'
+- 'Result: [1, 2], Next: Some(4)'
+correct_answer: 3
+expected_output:
+- 'Result: [1, 2]'
+- 'Next: Some(4)'
+explanation: |-
+  This question tests understanding of how `take_while()` consumes elements from
+  an iterator and how `by_ref()` allows continued use of the original iterator.
+
+  The key behavior to understand is that `take_while()` must consume the element
+  that fails the predicate in order to determine when to stop. Here's what happens
+  step by step:
+
+  1. `iter.by_ref()` creates a mutable reference to the iterator, allowing the
+  original `iter` to be used after the `collect()` operation.
+
+  2. `take_while(|&&x| x < 3)` processes elements:
+     - Checks `1 < 3` → true, yields `&1`
+     - Checks `2 < 3` → true, yields `&2`
+     - Checks `3 < 3` → false, stops iteration BUT the element `3` is consumed in
+  the process
+
+  3. `collect()` gathers the yielded elements into `[1, 2]`
+
+  4. When `iter.next()` is called, the iterator has already moved past `3` (which
+  was consumed by `take_while()` to determine the stopping condition), so it
+  returns `Some(&4)`
+
+  The critical insight is that `take_while()` must consume the element that fails
+  the predicate to know when to stop. That element is neither yielded to the
+  result nor available for subsequent operations on the iterator. This is
+  different from `peek()`, which would allow checking an element without consuming
+  it.
+
+  The `by_ref()` pattern is useful when you want to use part of an iterator for
+  one operation and continue using the same iterator for subsequent operations,
+  but you must be aware that adapters like `take_while()` will consume elements
+  beyond what they yield."

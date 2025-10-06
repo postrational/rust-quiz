@@ -1,0 +1,57 @@
+question: |-
+  ```rust
+  use std::rc::Rc;
+  use std::cell::RefCell;
+
+  struct Node {
+      value: i32,
+      next: Option<Rc<RefCell<Node>>>,
+  }
+
+  fn main() {
+      let a = Rc::new(RefCell::new(Node { value: 1, next: None }));
+      let b = Rc::new(RefCell::new(Node { value: 2, next: Some(Rc::clone(&a)) }));
+      
+      a.borrow_mut().next = Some(Rc::clone(&b));
+      
+      println!("a strong count: {}", Rc::strong_count(&a));
+      println!("b strong count: {}", Rc::strong_count(&b));
+  }
+  ```
+
+  What happens when `main` exits?
+answers:
+- Both nodes are properly deallocated, no memory leak
+- 'Memory leak: both nodes survive because strong_count never reaches 0'
+- 'Panic: RefCell detects the cycle and aborts'
+- 'Compile error: the borrow checker prevents cycles'
+correct_answer: 1
+expected_output:
+- 'a strong count: 2'
+- 'b strong count: 2'
+explanation: |-
+  This question tests understanding of reference cycles and memory leaks in Rust
+  when using `Rc<RefCell<T>>`.
+
+  The code creates a reference cycle between two nodes. Initially, `a` is created
+  with no next node, and `b` is created with `a` as its next node. Then, `a`'s
+  next field is mutated to point to `b`, creating a cycle: `a → b → a`.
+
+  At the end of `main`, the strong reference counts are both 2:
+  - `a` has strong_count = 2 (one from the stack variable `a`, one from `b.next`)
+  - `b` has strong_count = 2 (one from the stack variable `b`, one from `a.next`)
+
+  When `main` exits, the stack variables `a` and `b` are dropped, which decrements
+  their strong counts from 2 to 1. However, neither reaches 0 because each node
+  still holds a strong reference to the other through their `next` fields. Since
+  the strong count never reaches 0, the destructors never run and the memory is
+  never deallocated, resulting in a memory leak.
+
+  The borrow checker cannot prevent this at compile time because `Rc<RefCell<T>>`
+  is specifically designed to allow shared ownership with interior mutability.
+  `RefCell` only checks borrowing rules at runtime (ensuring no simultaneous
+  mutable and immutable borrows), not reference cycles.
+
+  The solution to prevent such cycles is to use `Weak<T>` for one direction of the
+  relationship. `Weak<T>` references don't contribute to the strong reference
+  count, allowing the cycle to be broken when the strong references are dropped.

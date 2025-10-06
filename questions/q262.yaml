@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn create_ref() -> &String {
+      let s = String::from("temporary");
+      &s
+  }
+
+  fn main() {
+      let reference = create_ref();
+      println!("{}", reference);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "temporary"
+- 'Compilation error: `s` does not live long enough'
+- 'Runtime panic: dangling pointer'
+- 'Compilation error: missing lifetime specifier'
+correct_answer: 3
+expected_output:
+- 'error[E0106]: missing lifetime specifier'
+explanation: |-
+  This question tests understanding of Rust's lifetime system and how the compiler
+  enforces memory safety through lifetime annotations.
+
+  The function `create_ref()` attempts to return a reference to a String, but the
+  compiler cannot determine what lifetime that reference should have. The error
+  message "missing lifetime specifier" occurs because the function signature `fn
+  create_ref() -> &String` doesn't specify where the returned reference is
+  borrowing from. Since there are no input parameters with lifetimes, the compiler
+  has no way to infer an appropriate lifetime for the return value.
+
+  While the underlying issue is that the function tries to return a reference to a
+  local variable `s` (which would be a dangling reference), the compiler catches
+  this problem at an earlier stage during lifetime analysis. Before it can even
+  check whether `s` lives long enough, it needs a lifetime annotation to
+  understand the borrowing relationship.
+
+  If a lifetime parameter were added (e.g., `fn create_ref<'a>() -> &'a String`),
+  the code would still fail to compile, but with a different error about `s` not
+  living long enough. The missing lifetime specifier error occurs first because
+  lifetime elision rules cannot be applied when there are no input references to
+  infer from.
+
+  The key takeaway is that Rust requires explicit lifetime annotations when the
+  compiler cannot infer them, particularly for functions returning references
+  without input parameters. This is part of Rust's compile-time safety guarantees
+  that prevent dangling references.

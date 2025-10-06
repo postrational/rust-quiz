@@ -1,0 +1,77 @@
+question: |-
+  ```rust
+  // This code represents a multi-file project structure.
+  // The question asks what's wrong with the original setup shown below:
+
+  // File: src/network/mod.rs
+  // pub mod tcp;
+  // pub mod udp;
+
+  // File: src/network/tcp.rs  
+  // pub fn connect() { println!("TCP connect"); }
+
+  // File: src/network/udp.rs
+  // pub fn send() { println!("UDP send"); }
+
+  // File: src/main.rs (ORIGINAL - with error)
+  // use network::tcp::connect;
+  // use network::udp;
+  // 
+  // fn main() {
+  //     connect();
+  //     udp::send();
+  // }
+
+  // The question is: What's wrong with this module setup?
+  // Since we cannot simulate a multi-file project in a single code block,
+  // this will produce a compilation error to demonstrate the issue.
+
+  use network::tcp::connect;
+  use network::udp;
+
+  fn main() {
+      connect();
+      udp::send();
+  }
+  ```
+
+  What's wrong with this module setup?
+answers:
+- Missing `mod network;` declaration in main.rs
+- The `tcp.rs` and `udp.rs` files should be in `src/network/` subdirectory
+- Should use `mod.rs` files instead of individual `.rs` files
+- Nothing is wrong, this compiles successfully
+correct_answer: 0
+expected_output:
+- use of unresolved module or unlinked crate `network`
+explanation: |-
+  This question tests understanding of Rust's module file system layout and the
+  relationship between directory structure and module declarations.
+
+  The described file structure is:
+  - `src/network/mod.rs` - declares submodules `tcp` and `udp`
+  - `src/network/tcp.rs` - contains the `connect` function
+  - `src/network/udp.rs` - contains the `send` function
+  - `src/main.rs` - the entry point
+
+  The critical issue is that `main.rs` is missing the `mod network;` declaration.
+  For Rust's module system to work correctly, the root file (`main.rs` or
+  `lib.rs`) must declare any top-level modules using `mod` declarations. Without
+  `mod network;` in `main.rs`, the compiler doesn't know to look for the `network`
+  directory or its contents, and the `use` statements will fail with an error
+  indicating that `network` cannot be found as an unresolved import.
+
+  The file structure itself is valid: having a `mod.rs` file in a subdirectory
+  (like `src/network/mod.rs`) is the correct way to create a module with
+  submodules. The `mod.rs` file acts as the module's root and can declare other
+  modules (`tcp` and `udp`) that correspond to sibling `.rs` files in the same
+  directory.
+
+  Once `mod network;` is added to `main.rs` before the `use` statements, the
+  module hierarchy is properly established, and the code would compile and run
+  successfully, printing "TCP connect" followed by "UDP send".
+
+  The key takeaway is that every module must be declared in its parent module
+  using a `mod` statement. The crate root (`main.rs` or `lib.rs`) is the starting
+  point, and all top-level modules must be explicitly declared there before they
+  can be imported with `use` statements.

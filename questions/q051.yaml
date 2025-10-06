@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  use std::borrow::Cow;
+
+  fn process_data(input: Cow<str>) -> Cow<str> {
+      if input.contains("hello") {
+          input  // Return as-is
+      } else {
+          Cow::Owned(format!("{} world", input))  // Modify it
+      }
+  }
+
+  fn main() {
+      let borrowed = "hello there";
+      let owned = String::from("goodbye");
+      
+      let result1 = process_data(Cow::Borrowed(borrowed));
+      let result2 = process_data(Cow::Owned(owned));
+      
+      match result1 {
+          Cow::Borrowed(s) => println!("Borrowed: {}", s),
+          Cow::Owned(s) => println!("Owned: {}", s),
+      }
+      
+      match result2 {
+          Cow::Borrowed(s) => println!("Borrowed: {}", s),
+          Cow::Owned(s) => println!("Owned: {}", s),
+      }
+  }
+  ```
+
+  What does this code output?
+answers:
+- 'Borrowed: hello there, Borrowed: goodbye'
+- 'Borrowed: hello there, Owned: goodbye world'
+- 'Owned: hello there, Owned: goodbye world'
+- Compilation error - cannot match on Cow variants
+correct_answer: 1
+expected_output:
+- 'Borrowed: hello there'
+- 'Owned: goodbye world'
+explanation: |-
+  This question tests understanding of `Cow` (Clone on Write), a smart pointer
+  that can hold either borrowed or owned data and only clones when necessary.
+
+  The `process_data` function accepts a `Cow<str>` and returns a `Cow<str>`. It
+  checks if the input contains "hello":
+  - If it does, it returns the input unchanged (no cloning occurs)
+  - If it doesn't, it creates a new owned String by formatting the input with "
+  world" appended
+
+  In `main`, two calls are made:
+
+  1. `result1 = process_data(Cow::Borrowed(borrowed))` where `borrowed` is "hello
+  there"
+     - The input contains "hello", so the function returns the input as-is
+     - Since it was originally `Cow::Borrowed`, it remains `Cow::Borrowed`
+     - The match prints "Borrowed: hello there"
+
+  2. `result2 = process_data(Cow::Owned(owned))` where `owned` is "goodbye"
+     - The input does NOT contain "hello", so the function creates a new String:
+  "goodbye world"
+     - This is wrapped in `Cow::Owned`
+     - The match prints "Owned: goodbye world"
+
+  The key takeaway is that `Cow` allows functions to work with data efficiently by
+  avoiding unnecessary clones. When data doesn't need modification, it can remain
+  borrowed. When modification is needed, it becomes owned. This pattern is
+  particularly useful in APIs where you want to accept both borrowed and owned
+  data and only clone when necessary.

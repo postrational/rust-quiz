@@ -1,0 +1,48 @@
+question: |-
+  ```rust
+  fn main() {
+      let s1 = String::from("café");
+      let s2 = "café";
+      
+      println!("s1 len: {}, bytes: {}", s1.len(), s1.as_bytes().len());
+      println!("s2 len: {}, bytes: {}", s2.len(), s2.as_bytes().len());
+      println!("chars s1: {}, chars s2: {}", 
+               s1.chars().count(), 
+               s2.chars().count());
+  }
+  ```
+
+  What is the output of this code?
+answers:
+- All lengths are 4 for both strings
+- '`len()` and `as_bytes().len()` are 5, `chars().count()` is 4'
+- '`len()` is 4, `as_bytes().len()` is 5, `chars().count()` is 4'
+- 'Compilation error: cannot compare String and &str lengths'
+correct_answer: 1
+expected_output:
+- 's1 len: 5, bytes: 5'
+- 's2 len: 5, bytes: 5'
+- 'chars s1: 4, chars s2: 4'
+explanation: |-
+  This question tests understanding of string length measurements in Rust and
+  UTF-8 encoding. Rust strings are UTF-8 encoded, which means that some characters
+  may occupy more than one byte.
+
+  The string "café" contains four characters, but the accented 'é' character
+  requires 2 bytes in UTF-8 encoding (encoded as 0xC3 0xA9). The other three
+  characters ('c', 'a', 'f') each occupy 1 byte. This gives a total of 5 bytes for
+  the entire string.
+
+  In Rust, the `len()` method on both `String` and `&str` returns the byte length,
+  not the character count. This is an important distinction. The
+  `as_bytes().len()` method returns the same value as `len()` since it's also
+  counting bytes. To get the actual character count (Unicode scalar values), you
+  must use `chars().count()`, which iterates through the string and counts the
+  Unicode characters.
+
+  Both `s1` (a `String`) and `s2` (a `&str` string slice) contain identical UTF-8
+  data, so all their measurements are the same: 5 bytes and 4 characters.
+
+  The key takeaway is that `len()` always returns the byte count in Rust strings,
+  not the character count. When you need to count characters for display or
+  user-facing purposes, use `chars().count()` instead.

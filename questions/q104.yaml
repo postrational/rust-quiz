@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  fn find_value(v: &[i32], target: i32) -> Option<usize> {
+      v.iter().position(|&x| x == target)
+  }
+
+  fn get_element(v: &[i32], index: usize) -> Option<i32> {
+      v.get(index).copied()
+  }
+
+  fn process(v: &[i32]) -> Option<i32> {
+      let idx = find_value(v, 5)?;
+      let val = get_element(v, idx + 1)?;
+      Some(val * 2)
+  }
+
+  fn main() {
+      let nums = vec![1, 3, 5, 7, 9];
+      println!("{:?}", process(&nums));
+  }
+  ```
+
+  What does this print?
+answers:
+- Some(14)
+- Some(10)
+- None
+- 'Compilation error: cannot use `?` with `Option`'
+correct_answer: 0
+expected_output:
+- Some(14)
+explanation: |-
+  This question tests understanding of the `?` operator with `Option` types and
+  how it enables early returns for error propagation.
+
+  The `?` operator works with both `Option` and `Result` types. When used with
+  `Option`, it unwraps a `Some` value or returns `None` early from the function if
+  the value is `None`.
+
+  Execution flow:
+  1. `find_value(v, 5)?` searches for the value `5` in the slice `[1, 3, 5, 7,
+  9]`. It finds it at index `2`, so `idx = 2`.
+  2. `get_element(v, idx + 1)?` retrieves the element at index `3` (which is `2 +
+  1`). The element at index `3` is `7`, so `val = 7`.
+  3. `Some(val * 2)` returns `Some(7 * 2)`, which is `Some(14)`.
+
+  The `?` operator is syntactic sugar that makes error handling more concise. For
+  `Option`, `let x = expr?;` is equivalent to:
+  ```rust
+  let x = match expr {
+      Some(val) => val,
+      None => return None,
+  };
+  ```
+
+  The key takeaway is that the `?` operator provides a clean way to chain
+  operations that might fail, automatically propagating `None` values up the call
+  stack without explicit match statements. However, it can only be used in
+  functions that return compatible types (`Option` in `Option`-returning
+  functions, `Result` in `Result`-returning functions).

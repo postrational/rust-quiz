@@ -1,0 +1,74 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+
+  fn main() {
+      let (tx, rx) = mpsc::sync_channel(1);
+      
+      let handle = thread::spawn(move || {
+          println!("Thread: Sending 1");
+          tx.send(1).unwrap();
+          
+          println!("Thread: Sending 2");
+          tx.send(2).unwrap();
+          
+          println!("Thread: Done");
+      });
+      
+      println!("Main: Sleeping");
+      thread::sleep(std::time::Duration::from_millis(50));
+      
+      println!("Main: Receiving");
+      println!("Main: Got {}", rx.recv().unwrap());
+      
+      thread::sleep(std::time::Duration::from_millis(50));
+      
+      println!("Main: Receiving again");
+      println!("Main: Got {}", rx.recv().unwrap());
+      
+      handle.join().unwrap();
+      println!("Main: Done");
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Thread: Sending 1, Thread: Sending 2, Main: Sleeping, Main: Receiving, Main: Got 1, Main: Receiving again, Main: Got 2, Thread: Done, Main: Done'
+- 'Thread: Sending 1, Thread: Sending 2, Thread: Done, Main: Sleeping, Main: Receiving, Main: Got 1, Main: Receiving again, Main: Got 2, Main: Done'
+- 'Thread: Sending 1, Main: Sleeping, Main: Receiving, Main: Got 1, Thread: Sending 2, Thread: Done, Main: Receiving again, Main: Got 2, Main: Done'
+- 'Main: Sleeping, Thread: Sending 1, Thread: Sending 2, Thread: Done, Main: Receiving, Main: Got 1, Main: Receiving again, Main: Got 2, Main: Done'
+correct_answer: 2
+expected_output:
+- 'Thread: Sending 1'
+- 'Main: Sleeping'
+- 'Main: Receiving'
+- 'Main: Got 1'
+- 'Thread: Sending 2'
+- 'Thread: Done'
+- 'Main: Receiving again'
+- 'Main: Got 2'
+- 'Main: Done'
+explanation: |-
+  This question tests understanding of synchronous channels and blocking behavior
+  in Rust's message passing concurrency model. A synchronous channel created with
+  `mpsc::sync_channel(1)` has a bounded capacity of 1, meaning it can buffer only
+  one message before the sender blocks.
+
+  When the spawned thread starts, it successfully sends the first value (1) to the
+  channel, filling the buffer. When it attempts to send the second value (2), the
+  buffer is full, so the thread blocks and waits for space to become available.
+  This blocking occurs between printing "Thread: Sending 1" and "Thread: Sending
+  2".
+
+  Meanwhile, the main thread prints "Main: Sleeping" and sleeps for 50ms. After
+  waking, it receives the first value from the channel, which frees up space in
+  the buffer. This immediately unblocks the spawned thread, allowing it to
+  complete sending the second value and print "Thread: Sending 2" followed by
+  "Thread: Done".
+
+  The main thread then sleeps again, receives the second value, and completes
+  execution. The key insight is that synchronous channels with bounded capacity
+  provide backpressure: senders block when the buffer is full, creating a natural
+  coordination mechanism between producer and consumer threads. This is useful for
+  preventing producers from overwhelming consumers or consuming too much memory.

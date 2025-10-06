@@ -1,0 +1,70 @@
+question: |-
+  ```rust
+  trait Handler {
+      fn handle(&mut self, value: i32);
+  }
+
+  struct Printer;
+  impl Handler for Printer {
+      fn handle(&mut self, value: i32) {
+          println!("Value: {}", value);
+      }
+  }
+
+  struct Doubler {
+      next: Box<dyn Handler>,
+  }
+
+  impl Handler for Doubler {
+      fn handle(&mut self, value: i32) {
+          self.next.handle(value * 2);
+      }
+  }
+
+  fn main() {
+      let printer = Printer;
+      let mut chain = Doubler {
+          next: Box::new(Doubler {
+              next: Box::new(printer),
+          }),
+      };
+      
+      chain.handle(5);
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Value: 5'
+- 'Value: 10'
+- 'Value: 20'
+- This won't compile - cannot move `printer` into `Box`
+correct_answer: 2
+expected_output:
+- 'Value: 20'
+explanation: |-
+  This question tests understanding of the Chain of Responsibility pattern using
+  trait objects and dynamic dispatch in Rust.
+
+  The code creates a chain of handlers where each `Doubler` doubles the value and
+  passes it to the next handler in the chain. The execution flow is:
+
+  1. `chain.handle(5)` is called on the outer `Doubler`, which receives the value
+  5
+  2. The outer `Doubler` doubles it (5 * 2 = 10) and calls `self.next.handle(10)`
+  3. The inner `Doubler` receives 10, doubles it (10 * 2 = 20), and calls
+  `self.next.handle(20)`
+  4. The `Printer` receives 20 and prints "Value: 20"
+
+  The key concepts demonstrated are:
+
+  - **Trait objects with `Box<dyn Handler>`**: This allows storing different types
+  that implement the `Handler` trait, enabling runtime polymorphism
+  - **Chain of Responsibility pattern**: Each handler processes the value and
+  delegates to the next handler in the chain
+  - **Move semantics**: The `printer` value is moved into the `Box`, which is
+  valid because `Printer` is a zero-sized type and implements the `Handler` trait
+
+  The pattern is commonly used in middleware systems, event processing pipelines,
+  and request/response transformation chains where multiple handlers need to
+  process data sequentially.

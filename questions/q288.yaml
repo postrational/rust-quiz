@@ -1,0 +1,40 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      let (left, right) = data.split_at(2);
+      drop(data);
+      println!("{:?} {:?}", left, right);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- '[1, 2] [3, 4, 5]'
+- 'Compilation error: `data` does not live long enough'
+- 'Runtime panic: use after drop'
+- 'Compilation error: cannot move `data` while borrowed'
+correct_answer: 3
+expected_output:
+- error[E0505]
+- cannot move out of `data` because it is borrowed
+explanation: |-
+  This question tests understanding of Rust's borrowing rules and move semantics.
+  The `split_at` method on a vector returns two slices (`&[T]`) that borrow from
+  the original vector. These slices are references that point to the data owned by
+  the vector.
+
+  When `drop(data)` is called, the code attempts to move `data` (to transfer
+  ownership to the `drop` function) while it is still borrowed by `left` and
+  `right`. This violates Rust's borrowing rules: you cannot move a value while it
+  has active borrows. The compiler produces error E0505: "cannot move out of
+  `data` because it is borrowed."
+
+  The borrows from `left` and `right` extend until they are last used in the
+  `println!` statement, so `data` must remain valid and cannot be moved until
+  after that point. This would create dangling references if allowed—pointers to
+  memory that has been freed.
+
+  The key takeaway is that Rust's ownership and borrowing system prevents
+  use-after-free errors at compile time. You cannot move or drop a value while it
+  has active borrows, ensuring memory safety without runtime overhead.

@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  mod inner {
+      pub trait Hidden {
+          fn public_method(&self) -> i32;
+          fn private_method(&self) -> i32 { 42 }
+      }
+      
+      pub struct Impl(pub i32);
+      
+      impl Hidden for Impl {
+          fn public_method(&self) -> i32 { self.0 }
+      }
+  }
+
+  fn test_object(obj: &dyn inner::Hidden) {
+      println!("{}", obj.public_method());
+      println!("{}", obj.private_method());
+  }
+
+  fn main() {
+      let impl_obj = inner::Impl(10);
+      test_object(&impl_obj);
+  }
+  ```
+
+  What happens with this trait object and method visibility?
+answers:
+- 'Compilation error: trait methods are not accessible outside module'
+- 'Compilation error: trait object cannot access private methods'
+- 'Prints: `10` `42`'
+- 'Compilation error: trait is not public enough for trait objects'
+correct_answer: 2
+expected_output:
+- '10'
+- '42'
+explanation: |-
+  This question tests understanding of Rust's module system and trait visibility
+  rules. The key concept is how trait visibility affects the accessibility of
+  trait methods.
+
+  When a trait is declared as `pub`, all of its methods become publicly accessible
+  through that trait interface, regardless of whether they have explicit `pub`
+  keywords. This is a fundamental design principle in Rust: if you can access a
+  trait, you should be able to call all its methods. Unlike struct fields, trait
+  methods don't have individual visibility modifiers.
+
+  In this code, the `Hidden` trait is declared as `pub` in the `inner` module,
+  making it accessible from outside the module. Both `public_method` and
+  `private_method` (despite its misleading name) are part of the public trait
+  interface and can be called on trait objects of type `&dyn inner::Hidden`.
+
+  When the code executes:
+  - `obj.public_method()` calls the implemented method on `Impl`, returning
+  `self.0` which is `10`
+  - `obj.private_method()` calls the default implementation provided in the trait
+  definition, returning `42`
+
+  The key takeaway is that in Rust's module system, trait method visibility is
+  tied to the trait's visibility. If a trait is public, all its methods are
+  effectively public when accessed through that trait, enabling polymorphic
+  behavior through trait objects without visibility restrictions on individual
+  methods.

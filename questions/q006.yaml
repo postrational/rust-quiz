@@ -1,0 +1,58 @@
+question: |-
+  ```rust
+  trait Display {
+      fn show(&self);
+  }
+
+  struct A;
+  struct B;
+
+  impl Display for A {
+      fn show(&self) { print!("A"); }
+  }
+
+  impl Display for B {
+      fn show(&self) { print!("B"); }
+  }
+
+  fn main() {
+      let items: Vec<Box<dyn Display>> = vec![Box::new(A), Box::new(B), Box::new(A)];
+      for item in items {
+          item.show();
+      }
+  }
+  ```
+
+  What will this code output?
+answers:
+- ABA
+- AAB
+- Compilation error
+- BBB
+correct_answer: 0
+expected_output:
+- ABA
+explanation: |-
+  This question tests understanding of trait objects and dynamic dispatch in Rust.
+  Trait objects allow storing different types that implement the same trait in a
+  homogeneous collection, with method calls resolved at runtime.
+
+  The code creates a `Vec<Box<dyn Display>>` containing three trait objects:
+  `Box::new(A)`, `Box::new(B)`, and `Box::new(A)`. The `dyn Display` syntax
+  indicates a trait object, which enables dynamic dispatch—the mechanism by which
+  Rust determines at runtime which concrete implementation of a trait method to
+  call.
+
+  When iterating through the vector and calling `item.show()` on each element,
+  Rust uses the vtable (virtual method table) associated with each trait object to
+  dispatch to the correct implementation:
+  - The first item is an `A`, so `A`'s `show()` method is called, printing "A"
+  - The second item is a `B`, so `B`'s `show()` method is called, printing "B"
+  - The third item is an `A`, so `A`'s `show()` method is called again, printing
+  "A"
+
+  The result is the output "ABA".
+
+  The key takeaway is that trait objects (`dyn Trait`) enable polymorphism in
+  Rust, allowing different types to be treated uniformly through a shared
+  interface while preserving their individual behavior through dynamic dispatch.

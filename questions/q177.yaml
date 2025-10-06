@@ -1,0 +1,77 @@
+question: |-
+  ```rust
+  use std::sync::{Arc, Mutex};
+  use std::thread;
+
+  struct Counter {
+      value: Mutex<i32>,
+  }
+
+  impl Counter {
+      fn increment(&self) -> i32 {
+          let mut guard = self.value.lock().unwrap();
+          *guard += 1;
+          *guard
+      }
+  }
+
+  fn main() {
+      let counter = Arc::new(Counter {
+          value: Mutex::new(0),
+      });
+      
+      let handles: Vec<_> = (0..3).map(|i| {
+          let counter = Arc::clone(&counter);
+          thread::spawn(move || {
+              let result = counter.increment();
+              println!("Thread {}: {}", i, result);
+              result
+          })
+      }).collect();
+      
+      for handle in handles {
+          handle.join().unwrap();
+      }
+  }
+  ```
+
+  What will this code do?
+answers:
+- Prints thread results in order 0,1,2 with values 1,2,3
+- Prints thread results in random order with values 1,2,3 (each value exactly once)
+- 'Compilation error: cannot move `i` into closure while borrowing `counter`'
+- 'Runtime panic: mutex poisoning from concurrent access'
+correct_answer: 1
+expected_output:
+- Thread
+- ': 1'
+- Thread
+- ': 2'
+- Thread
+- ': 3'
+explanation: |-
+  This question tests understanding of thread-safe counter implementation using
+  Arc and Mutex for proper synchronization in concurrent Rust programs.
+
+  The code creates a Counter struct with a Mutex<i32> to protect the shared
+  counter value. The Arc (Atomic Reference Counting) allows multiple threads to
+  safely share ownership of the counter. Each thread calls increment(), which
+  acquires the mutex lock, increments the value atomically, and returns the new
+  value.
+
+  The mutex ensures serialized access to the counter, meaning each increment
+  operation completes atomically without race conditions. The first thread to
+  acquire the lock sees 0, increments to 1, and returns 1. The second thread sees
+  1, increments to 2, and returns 2. The third thread sees 2, increments to 3, and
+  returns 3. This guarantees that each thread receives a unique value (1, 2, or 3)
+  with no duplicates or lost updates.
+
+  However, the order in which threads execute is non-deterministic. While the
+  values 1, 2, and 3 will each appear exactly once, the thread IDs (0, 1, 2) can
+  appear in any order depending on OS scheduling. The output might be "Thread 1:
+  2, Thread 0: 1, Thread 2: 3" or any other permutation.
+
+  The key takeaway is that Mutex provides mutual exclusion guaranteeing atomic
+  operations and preventing data races, while thread execution order remains
+  unpredictable without additional synchronization mechanisms. This pattern is
+  fundamental for building thread-safe shared state in Rust.

@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  mod config {
+      pub struct Settings {
+          pub host: String,
+          port: u16,
+          secret_key: String,
+      }
+      
+      impl Settings {
+          pub fn new() -> Self {
+              Settings {
+                  host: "localhost".to_string(),
+                  port: 8080,
+                  secret_key: "abc123".to_string(),
+              }
+          }
+      }
+  }
+
+  fn main() {
+      let mut settings = config::Settings::new();
+      settings.host = "0.0.0.0".to_string();
+      settings.port = 3000;
+  }
+  ```
+
+  What compilation error occurs?
+answers:
+- Cannot access `Settings::new()` because it's in a private module
+- Cannot modify `host` because struct fields are immutable by default
+- Cannot access `port` because it's not marked `pub`
+- Cannot create `Settings` because not all fields are public
+correct_answer: 2
+expected_output:
+- field `port` of struct `Settings` is private
+explanation: |-
+  This question tests understanding of Rust's module privacy system and struct
+  field visibility. In Rust, struct fields are private by default unless
+  explicitly marked with `pub`.
+
+  The `Settings` struct has three fields with different visibility levels:
+  - `pub host: String` - public field, accessible from outside the module
+  - `port: u16` - private field (no `pub` keyword), only accessible within the
+  `config` module
+  - `secret_key: String` - also private, only accessible within the module
+
+  In the `main` function, the code attempts to access and modify both `host` and
+  `port`. While accessing `settings.host` succeeds because it's marked `pub`, the
+  attempt to access `settings.port` fails with a compilation error because `port`
+  is private to the `config` module.
+
+  The other options are incorrect because:
+  - The `config` module is accessible (modules are accessible by default in the
+  same crate), and `Settings::new()` is marked `pub`
+  - Mutability is controlled by the `mut` keyword on the binding, not by field
+  visibility
+  - Structs can be created with mixed public/private fields using constructor
+  functions like `new()`
+
+  The key takeaway is that Rust's privacy system operates at the field level for
+  structs, allowing fine-grained control over which parts of a data structure can
+  be accessed from outside its defining module. This encapsulation helps maintain
+  invariants and provides a clear API boundary.

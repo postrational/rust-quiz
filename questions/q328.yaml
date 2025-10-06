@@ -1,0 +1,55 @@
+question: |-
+  ```rust
+  struct Counter(usize);
+
+  impl Iterator for Counter {
+      type Item = usize;
+      
+      fn next(&mut self) -> Option<Self::Item> {
+          self.0 += 1;
+          Some(self.0)
+      }
+  }
+
+  fn main() {
+      let mut counter = Counter(0);
+      let first_three: Vec<_> = counter.by_ref().take(3).collect();
+      let next_two: Vec<_> = counter.take(2).collect();
+      
+      println!("{} {}", first_three.len(), next_two.len());
+  }
+  ```
+
+  What does this program print?
+answers:
+- 3 2
+- 3 0
+- 0 0
+- 'Compilation error: infinite iterator'
+correct_answer: 0
+expected_output:
+- 3 2
+explanation: |-
+  This question tests understanding of the `by_ref()` method and how it affects
+  iterator consumption in Rust.
+
+  The `Counter` struct implements an infinite iterator that increments and returns
+  its internal counter on each call to `next()`. The key to this question is
+  understanding how `by_ref()` changes iterator behavior.
+
+  When `counter.by_ref().take(3).collect()` is called, `by_ref()` creates an
+  iterator adapter that borrows the counter mutably rather than consuming it. This
+  means the `take(3)` operates on a reference to the counter, advancing it 3 times
+  (producing values 1, 2, and 3), but the original `counter` variable remains
+  available after the operation completes.
+
+  After the first collection, `counter` has its internal state at 3. When
+  `counter.take(2).collect()` is called next, it continues from this state,
+  advancing 2 more times (producing values 4 and 5). Both collections succeed:
+  `first_three` contains 3 elements and `next_two` contains 2 elements, resulting
+  in the output "3 2".
+
+  Without `by_ref()`, the first `take(3)` would move and consume the `counter`,
+  making it unavailable for the second operation. The `by_ref()` method is
+  essential when you need to use an iterator in multiple stages while preserving
+  state between operations.

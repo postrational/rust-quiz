@@ -1,0 +1,38 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![String::from("a"), String::from("b")];
+      let iter = data.into_iter();
+      let first = data[0].clone();
+      for item in iter {
+          println!("{}", item);
+      }
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "a" then "b"
+- 'Compilation error: borrow of moved value `data`'
+- 'Runtime panic: use after move'
+- 'Compilation error: cannot move out of borrowed content'
+correct_answer: 1
+expected_output:
+- 'error[E0382]: borrow of moved value: `data`'
+explanation: |-
+  This question tests understanding of Rust's ownership system and the behavior of
+  `into_iter()`. When `into_iter()` is called on a vector, it consumes the vector
+  and takes ownership of it, moving all the data into the iterator. After this
+  move, the original `data` variable is no longer valid and cannot be used.
+
+  In this code, `data.into_iter()` moves ownership of the vector to create the
+  iterator. The subsequent line attempts to access `data[0].clone()`, which tries
+  to borrow `data` after it has already been moved. The Rust compiler detects this
+  violation of ownership rules and produces a compilation error: "borrow of moved
+  value: `data`".
+
+  The key takeaway is that `into_iter()` consumes the collection it's called on,
+  transferring ownership to the iterator. After calling `into_iter()`, the
+  original collection cannot be accessed. If you need to iterate while keeping the
+  original collection, use `iter()` (for immutable references) or `iter_mut()`
+  (for mutable references) instead.

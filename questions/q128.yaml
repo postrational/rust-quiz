@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn main() {
+      let data = vec![(1, "a"), (2, "b"), (1, "c"), (2, "d")];
+      
+      let map: HashMap<_, Vec<_>> = data.iter()
+          .fold(HashMap::new(), |mut acc, &(k, v)| {
+              acc.entry(k).or_insert(vec![]).push(v);
+              acc
+          });
+      
+      let result: Vec<_> = map.iter()
+          .flat_map(|(k, vs)| vs.iter().map(move |v| (k, v)))
+          .collect();
+      
+      println!("{:?}", result.len());
+      for item in &result {
+          println!("{:?}", item);
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- 4 followed by four tuples like (1, "a"), (1, "c"), (2, "b"), (2, "d") in some order
+- 4 followed by four tuples like (&1, &"a"), (&1, &"c"), (&2, &"b"), (&2, &"d") in some order
+- Compilation error - `move` captures `vs` which is borrowed
+- 2 followed by (&1, ["a", "c"]) and (&2, ["b", "d"])
+correct_answer: 0
+expected_output:
+- '4'
+explanation: |-
+  This question tests understanding of iterator combinators, closure captures with
+  the `move` keyword, HashMap iteration order, and reference types in Rust.
+
+  The code builds a `HashMap<i32, Vec<&str>>` using `fold`, grouping values by
+  their keys: `{1: ["a", "c"], 2: ["b", "d"]}`. The `flat_map` operation then
+  flattens this structure back into tuples.
+
+  The key complexity is in the `flat_map` closure. When iterating over the HashMap
+  with `map.iter()`, we get `(&i32, &Vec<&str>)` pairs. The inner `map(move |v|
+  (k, v))` uses the `move` keyword to capture `k`. Since `k` is `&i32` (a
+  reference type that implements `Copy`), the `move` keyword captures it by value,
+  which works correctly. The variable `vs` is borrowed in the outer closure scope
+  and doesn't need to be moved.
+
+  The resulting type from the iterator is `(&i32, &&str)`, but Rust's `Debug`
+  formatting dereferences these automatically when printing tuples, displaying
+  them as `(1, "a")` rather than `(&1, &"a")`.
+
+  The final result contains 4 elements (one for each original data pair). However,
+  HashMap iteration order is non-deterministic and not guaranteed to be consistent
+  across runs or Rust versions. The four tuples will be some permutation of `(1,
+  "a")`, `(1, "c")`, `(2, "b")`, and `(2, "d")`.
+
+  The key takeaway is understanding how `move` interacts with `Copy` types in
+  closures, how nested iterators with `flat_map` work with borrowed data from
+  collections, and that HashMap does not maintain insertion order.

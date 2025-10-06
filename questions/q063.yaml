@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  use std::cell::Cell;
+
+  fn main() {
+      let x = Cell::new(vec![1, 2, 3]);
+      let v = x.get();
+      println!("{:?}", v);
+  }
+  ```
+
+  What happens?
+answers:
+- Prints `[1, 2, 3]`
+- "Compile error: `Vec<i32>` doesn't implement `Copy`"
+- 'Runtime panic: cannot move out of `Cell`'
+- Prints `[]` because `get()` moves the value out
+correct_answer: 1
+expected_output:
+- 'error[E0599]: the method `get` exists for struct `Cell<Vec<'
+- Vec<
+- Copy
+explanation: |-
+  This question tests understanding of `Cell<T>` and its trait requirements. The
+  `Cell::get()` method has a trait bound that requires `T: Copy`, meaning it can
+  only be used with types that implement the `Copy` trait.
+
+  The signature of `Cell::get()` is:
+  ```rust
+  impl<T: Copy> Cell<T> {
+      pub fn get(&self) -> T { ... }
+  }
+  ```
+
+  The method returns the inner value by value, which requires making a copy. Since
+  `Cell` provides interior mutability through a shared reference (`&self`), it
+  cannot move the value out (as that would leave the `Cell` in an invalid state).
+  Therefore, it must copy the value, which is only possible for types implementing
+  `Copy`.
+
+  `Vec<i32>` does not implement `Copy` because it owns heap-allocated data.
+  Attempting to call `.get()` on a `Cell<Vec<i32>>` results in a compile-time
+  error. The compiler reports that the method `get` exists but its trait bounds
+  were not satisfied, specifically that `Vec` doesn't satisfy the `Copy` trait
+  bound.
+
+  For non-`Copy` types, Rust provides alternatives:
+  - `RefCell<T>` can be used with any type and provides `.borrow()` which returns
+  a reference
+  - `Cell::take()` can be used for types implementing `Default`, which moves the
+  value out and replaces it with the default value
+  - `Cell::replace()` can swap the value with a new one
+
+  The key takeaway is that `Cell<T>` is designed for small `Copy` types where
+  interior mutability is needed without the runtime overhead of `RefCell`'s borrow
+  checking.

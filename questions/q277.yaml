@@ -1,0 +1,37 @@
+question: |-
+  ```rust
+  fn main() {
+      let x = &42;
+      let y = &x;
+      let z = **y;
+      println!("{}", z);
+  }
+  ```
+
+  What does this code output?
+answers:
+- '42'
+- 'Compilation error: cannot dereference `&i32` twice'
+- 'Runtime panic: invalid double dereference'
+- 'Compilation error: type mismatch in assignment'
+correct_answer: 0
+expected_output:
+- '42'
+explanation: |-
+  This question tests understanding of multiple levels of references and the
+  dereference operator in Rust. The code demonstrates that Rust allows
+  dereferencing through multiple layers of references.
+
+  In this code, `x` has type `&i32` (a reference to an `i32` value 42). Then `y`
+  is assigned `&x`, making it type `&&i32` (a reference to a reference to an
+  `i32`).
+
+  When we write `**y`, we perform two dereference operations: the first `*y`
+  dereferences `y` to get `x` (which is `&42`), and the second dereference
+  `*(&42)` gives us the actual value 42. Since `i32` implements the `Copy` trait,
+  this value is copied into `z`.
+
+  The key takeaway is that Rust supports arbitrary levels of reference nesting,
+  and you can dereference through multiple layers using multiple `*` operators.
+  Each `*` removes one level of indirection. This is a fundamental aspect of
+  Rust's type system and pointer semantics.

@@ -1,0 +1,47 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      
+      let iter = data.iter()
+          .map(|x| x * 2)
+          .chain(data.iter().map(|x| x * 3));
+      
+      let result: Vec<_> = iter.skip(3).take(4).collect();
+      
+      println!("{:?}", result);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[8, 10, 3, 6]'
+- '[6, 8, 10, 3]'
+- Compilation error - `data` moved in first `map`
+- '[8, 10, 12, 15]'
+correct_answer: 0
+expected_output:
+- '[8, 10, 3, 6]'
+explanation: |-
+  This question tests understanding of iterator chaining, lazy evaluation, and
+  borrowing semantics in Rust.
+
+  The code creates a chained iterator that combines two separate iterator
+  pipelines. The first pipeline multiplies each element by 2, yielding: 2, 4, 6,
+  8, 10. The second pipeline multiplies each element by 3, yielding: 3, 6, 9, 12,
+  15. The `chain` method concatenates these sequences into: 2, 4, 6, 8, 10, 3, 6,
+  9, 12, 15.
+
+  When `skip(3)` is applied, it skips the first three elements (2, 4, 6), leaving:
+  8, 10, 3, 6, 9, 12, 15. Then `take(4)` takes the next four elements: 8, 10, 3,
+  6.
+
+  There is no compilation error because `iter()` creates an immutable borrow of
+  `data`, not a move. Both `map` closures borrow from `data` simultaneously, which
+  is valid since they are immutable borrows. Rust allows multiple immutable
+  borrows of the same data.
+
+  The key takeaway is that iterator adapters like `map` and `chain` are lazy—they
+  don't execute until consumed by a method like `collect`. Additionally,
+  understanding how `chain` concatenates iterators and how `skip` and `take` work
+  together is essential for predicting the output of complex iterator pipelines.

@@ -1,0 +1,56 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![1, 2, 3, 4, 5];
+      
+      let result: Result<Vec<_>, _> = data
+          .iter()
+          .map(|&x| {
+              if x % 2 == 0 {
+                  Ok(x * 2)
+              } else {
+                  Err(format!("Odd number: {}", x))
+              }
+          })
+          .collect();
+      
+      match result {
+          Ok(v) => println!("Success: {:?}", v),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  What does this print?
+answers:
+- 'Success: [4, 8]'
+- 'Error: Odd number: 1'
+- 'Success: [2, 4, 6, 8, 10]'
+- 'Compiler error: cannot infer type for `_`'
+correct_answer: 1
+expected_output:
+- 'Error: Odd number: 1'
+explanation: |-
+  This question tests understanding of how Rust's `collect()` method works with
+  `Result` types. When collecting an iterator of `Result<T, E>` values into a
+  `Result<Vec<T>, E>`, the collection exhibits short-circuit behavior.
+
+  The key behavior is that `collect()` will stop at the first `Err` it encounters
+  and return that error immediately. It only returns `Ok(Vec<T>)` if every single
+  element in the iterator is `Ok`.
+
+  In this code, the iterator processes the vector `[1, 2, 3, 4, 5]` and maps each
+  element to either `Ok(x * 2)` for even numbers or `Err(format!("Odd number: {}",
+  x))` for odd numbers. The first element is 1, which is odd, so it produces
+  `Err("Odd number: 1")`. Because this is the first result and it's an error,
+  `collect()` immediately returns this error without processing any subsequent
+  elements (2, 3, 4, or 5).
+
+  This pattern is particularly useful for validation scenarios where all
+  operations must succeed or the entire operation should fail with the first error
+  encountered. It's commonly used in parsing, validation chains, and fallible
+  transformations where you want "all or nothing" semantics.
+
+  If you needed to process all elements and collect both successes and failures,
+  you would collect into `Vec<Result<T, E>>` instead, or use methods like
+  `partition()` to separate successful and failed results.

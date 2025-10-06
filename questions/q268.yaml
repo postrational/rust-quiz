@@ -1,0 +1,43 @@
+question: |-
+  ```rust
+  fn main() {
+      let data = vec![String::from("a"), String::from("b")];
+      let first = data[0];
+      let second = &data[1];
+      println!("{} {}", first, second);
+  }
+  ```
+
+  What happens when you compile this code?
+answers:
+- Prints "a b"
+- 'Compilation error: cannot move out of index of `Vec<String>`'
+- 'Runtime panic: partial move detected'
+- 'Compilation error: cannot borrow after partial move'
+correct_answer: 1
+expected_output:
+- 'error[E0507]: cannot move out of index of `Vec<String>`'
+explanation: |-
+  This question tests understanding of move semantics and vector indexing in Rust.
+  The key concept is that Rust does not allow moving values out of a vector
+  through indexing operations.
+
+  When the code attempts `let first = data[0];`, it tries to move the `String` at
+  index 0 out of the vector. Since `String` does not implement the `Copy` trait,
+  this would be a move operation. However, Rust prohibits moving individual
+  elements out of collections like `Vec` through indexing because it would leave
+  the vector in a partially initialized state, which violates Rust's memory safety
+  guarantees.
+
+  The compiler produces an error: "cannot move out of index of `Vec<String>`".
+  This prevents the vector from being left with an invalid or uninitialized
+  element.
+
+  To access vector elements without moving them, you should use references (e.g.,
+  `&data[0]`), or if you need ownership, use methods like `.remove()`,
+  `.swap_remove()`, or `.pop()` that properly handle the vector's state.
+  Alternatively, you could clone the element if the type implements `Clone`.
+
+  The key takeaway is that indexing operations on vectors return references by
+  default for non-`Copy` types, and attempting to move through indexing is a
+  compile-time error that protects against partial moves and invalid states.

@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("test");
+      let r1;
+      {
+          let s2 = &s;
+          r1 = s2;
+      }
+      println!("{}", r1);
+  }
+  ```
+
+  What does this code output?
+answers:
+- Prints "test"
+- 'Compilation error: `s2` does not live long enough'
+- 'Runtime panic: dangling reference'
+- 'Compilation error: borrowed value does not live long enough'
+correct_answer: 0
+expected_output:
+- test
+explanation: |-
+  This question tests understanding of Rust's borrow checker, reference lifetimes,
+  and the Copy trait for references.
+
+  The key concept is that references in Rust implement the Copy trait, meaning
+  they can be copied rather than moved. When `r1 = s2` executes, the reference is
+  copied, not moved. Both `s2` and `r1` are references pointing to the same data
+  owned by `s`.
+
+  Although `s2` goes out of scope at the end of the inner block, this doesn't
+  create a problem because `r1` is not borrowing from `s2` itself—both `s2` and
+  `r1` are independent references to `s`. The lifetime of the reference stored in
+  `r1` is tied to the lifetime of `s`, not to `s2`.
+
+  Since `s` remains valid throughout the entire `main` function, the reference
+  `r1` remains valid when used in the `println!` statement. The borrow checker
+  verifies that `r1` is a valid reference to `s`, which is still in scope, so the
+  code compiles successfully and prints "test".
+
+  The key takeaway is that references are Copy types, and their validity depends
+  on the lifetime of the data they point to, not on the lifetime of intermediate
+  reference variables through which they were obtained.

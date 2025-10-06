@@ -1,0 +1,61 @@
+question: |-
+  ```rust
+  use std::path::PathBuf;
+
+  fn process_paths() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+      let paths = vec![
+          PathBuf::from("/home/user/file.txt"),
+          PathBuf::from("/tmp/../var/log"),
+          PathBuf::from("relative/path"),
+      ];
+      
+      paths.into_iter()
+          .map(|p| p.into_os_string().into_string())
+          .collect()
+  }
+
+  fn main() {
+      match process_paths() {
+          Ok(strings) => println!("Success: {:?}", strings),
+          Err(e) => println!("Error: {}", e),
+      }
+  }
+  ```
+
+  What is the result of this code?
+answers:
+- 'Success: ["/home/user/file.txt", "/tmp/../var/log", "relative/path"]'
+- 'Error: path contains invalid UTF-8'
+- 'Compilation error: `collect()` cannot handle nested `Result` types'
+- 'Success: ["/home/user/file.txt", "/var/log", "relative/path"] (paths normalized)'
+correct_answer: 2
+expected_output:
+- error[E0277]
+- cannot be built from an iterator over elements of type `Result<String, OsString>`
+explanation: |-
+  This question tests understanding of type compatibility with `collect()` and
+  error type conversions in Rust.
+
+  The code attempts to collect an iterator of `Result<String, OsString>` into a
+  `Result<Vec<String>, Box<dyn std::error::Error>>`. While `collect()` can handle
+  iterators of `Result` types, the error types must match or be convertible.
+
+  The `into_string()` method returns `Result<String, OsString>`, where the error
+  type is `OsString`. However, the function signature expects `Result<Vec<String>,
+  Box<dyn std::error::Error>>`. For `collect()` to work with `FromIterator`, it
+  needs `Result<String, Box<dyn std::error::Error>>`, not `Result<String,
+  OsString>`.
+
+  The compiler error states: "the trait `FromIterator<Result<_, OsString>>` is not
+  implemented for `Result<Vec<String>, Box<dyn std::error::Error>>`". This is
+  because `OsString` does not automatically convert to `Box<dyn
+  std::error::Error>`.
+
+  To fix this code, you would need to map the error type explicitly, such as using
+  `.map_err()` to convert the `OsString` error into a boxed error type, or use `?`
+  operator with proper error conversion.
+
+  The key takeaway is that when using `collect()` with `Result` types, the error
+  types must be compatible. Type inference alone cannot bridge the gap between
+  `OsString` and `Box<dyn std::error::Error>`, even though `OsString` could
+  theoretically be boxed.

@@ -1,0 +1,39 @@
+question: |-
+  ```rust
+  fn main() {
+      let nums = vec![1, 2, 3];
+      let doubled: Vec<_> = nums.iter().map(|x| x * 2).collect();
+      
+      println!("{}", doubled[0]);
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: 2'
+- 'Compilation error: cannot multiply `&i32` by `{integer}`'
+- 'Compilation error: mismatched types'
+- Runtime panic
+correct_answer: 0
+expected_output:
+- '2'
+explanation: |-
+  This question tests understanding of iterator types and automatic dereferencing
+  in Rust. When calling `.iter()` on a vector, it returns an iterator over
+  references to the elements (`&i32`), not the elements themselves.
+
+  In this code, `nums.iter()` produces an iterator where each element `x` in the
+  closure has type `&i32`. However, Rust's multiplication operator implements the
+  `Mul` trait for references to numeric types, allowing `&i32 * i32` to work
+  through automatic dereferencing. This means `x * 2` is valid even though `x` is
+  a reference.
+
+  The code compiles successfully and produces a vector of doubled values. When
+  `doubled[0]` is accessed, it returns `2` (which is `1 * 2`), and this value is
+  printed.
+
+  The key takeaway is that Rust provides convenient operator implementations for
+  references to primitive numeric types, allowing arithmetic operations to work
+  seamlessly without explicit dereferencing. While `.iter()` does produce
+  references, many common operations like arithmetic automatically handle the
+  dereferencing for you.

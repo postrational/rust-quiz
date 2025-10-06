@@ -1,0 +1,60 @@
+question: |-
+  ```rust
+  fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+      if x.len() > y.len() {
+          x
+      } else {
+          y
+      }
+  }
+
+  fn main() {
+      let string1 = String::from("long string");
+      let result;
+      
+      {
+          let string2 = String::from("short");
+          result = longest(&string1, &string2);
+      }
+      
+      println!("Longest: {}", result);
+  }
+  ```
+
+  What happens with this code?
+answers:
+- 'Compiles and prints `Longest: long string`'
+- Won't compile - `result` outlives `string2`
+- Compiles but causes undefined behavior
+- Won't compile - need different lifetime parameters for each input
+correct_answer: 1
+expected_output:
+- 'error[E0597]: `string2` does not live long enough'
+explanation: |-
+  This question tests understanding of lifetime parameters and how they constrain
+  references in Rust. The key concept is that when multiple references share the
+  same lifetime parameter, that lifetime represents the intersection (the shorter)
+  of the actual lifetimes involved.
+
+  In the `longest` function, both input parameters `x` and `y` have the same
+  lifetime `'a`, and the return value also has lifetime `'a`. This signature tells
+  the borrow checker that the returned reference will be valid for at least as
+  long as the shorter of the two input lifetimes.
+
+  In the code, `string1` lives for the entire `main` function, while `string2`
+  only lives within the inner block. When `longest(&string1, &string2)` is called,
+  the lifetime `'a` becomes the intersection of these two lifetimes, which is the
+  lifetime of `string2` (the shorter one). Therefore, `result` has type `&'a str`
+  where `'a` is tied to `string2`'s lifetime.
+
+  The problem occurs when `string2` is dropped at the end of the inner block, but
+  `result` continues to exist and is used in the `println!` statement afterward.
+  The borrow checker detects that `result` might contain a reference to `string2`
+  (even though at runtime it would actually point to `string1`), and since
+  `string2` doesn't live long enough, the code is rejected at compile time.
+
+  The key takeaway is that Rust's lifetime system is conservative and prevents
+  potential dangling references at compile time. The borrow checker doesn't track
+  which branch was taken at runtime; it only knows that the return value could be
+  either input, so it must ensure both inputs live long enough for the result to
+  be used safely.

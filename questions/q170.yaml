@@ -1,0 +1,59 @@
+question: |-
+  ```rust
+  use std::path::Path;
+
+  fn main() {
+      let paths = [
+          "C:\\Users\\file.txt",
+          "/home/user/file.txt", 
+          "..\\parent\\file.txt",
+          "../parent/file.txt"
+      ];
+      
+      for path_str in paths {
+          let path = Path::new(path_str);
+          let components: Vec<_> = path.components().collect();
+          println!("{}: {} components", path_str, components.len());
+      }
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- All paths show 3 components regardless of platform
+- Windows-style paths show more components on Unix, Unix-style paths show fewer on Windows
+- 'Platform-dependent: component parsing changes based on the current OS'
+- 'Compilation error: path separators must be consistent within the same array'
+correct_answer: 2
+expected_output:
+- 'C:\Users\file.txt: 1 components'
+- '/home/user/file.txt: 4 components'
+- '..\parent\file.txt: 1 components'
+- '../parent/file.txt: 3 components'
+explanation: |-
+  This question tests understanding of platform-specific path parsing in Rust's
+  `std::path` module. The `Path::components()` method uses platform-specific
+  parsing rules based on the operating system where the code is compiled and run.
+
+  The output shown is from a Unix-like system (Linux/macOS). On these systems,
+  forward slashes (`/`) are recognized as path separators, while backslashes (`\`)
+  are treated as literal characters within filenames, not as separators.
+
+  Breaking down the output on Unix:
+  - `"C:\\Users\\file.txt"` → 1 component: the entire string is treated as a
+  single filename since backslashes are not path separators on Unix
+  - `"/home/user/file.txt"` → 4 components: `/` (root), `home`, `user`, `file.txt`
+  - `"..\\parent\\file.txt"` → 1 component: treated as a single filename with
+  literal backslashes
+  - `"../parent/file.txt"` → 3 components: `..` (parent directory), `parent`,
+  `file.txt`
+
+  On Windows, the results would be different: backslash-separated paths would be
+  parsed into multiple components, while forward-slash paths might be treated
+  differently depending on the context.
+
+  The key takeaway is that Rust's path handling is platform-aware by design. To
+  write portable code, avoid hardcoding path separators in string literals.
+  Instead, use `PathBuf` with `.join()` to build paths programmatically, or
+  collect path segments into a `PathBuf`, which will automatically use the
+  appropriate separator for the current platform.

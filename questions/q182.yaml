@@ -1,0 +1,58 @@
+question: |-
+  ```rust
+  use std::sync::Arc;
+  use std::thread;
+
+  struct NotSendable {
+      data: *const i32,
+  }
+
+  fn main() {
+      let value = 42;
+      let not_send = NotSendable {
+          data: &value as *const i32,
+      };
+      
+      let shared = Arc::new(not_send);
+      
+      let handle = thread::spawn(move || {
+          unsafe {
+              println!("Value: {}", *shared.data);
+          }
+      });
+      
+      handle.join().unwrap();
+  }
+  ```
+
+  What happens with this code?
+answers:
+- 'Prints "Value: 42" successfully'
+- 'Compilation error: `NotSendable` cannot be sent between threads safely'
+- 'Runtime panic: dereferencing invalid pointer across thread boundary'
+- 'Compilation error: `Arc<NotSendable>` requires `NotSendable: Send + Sync`'
+correct_answer: 3
+expected_output:
+- cannot be sent between threads safely
+explanation: |-
+  This question tests understanding of Rust's Send and Sync traits and how they
+  interact with Arc for thread safety. The code fails to compile because Arc<T>
+  requires that T implements both Send and Sync to be safely shared across
+  threads.
+
+  The NotSendable struct contains a raw pointer (*const i32), and raw pointers do
+  not automatically implement Send or Sync. This is a safety feature because raw
+  pointers can point to data with arbitrary lifetimes and aliasing rules that the
+  compiler cannot verify.
+
+  When attempting to use Arc<NotSendable> with thread::spawn, the compiler checks
+  whether NotSendable can be safely sent between threads. Since NotSendable
+  contains a raw pointer and doesn't implement Send, and Arc requires both Send
+  and Sync for its contained type, the compilation fails.
+
+  The key takeaway is that Rust's type system prevents data races at compile time
+  through the Send and Sync marker traits. Types containing raw pointers must
+  explicitly implement these traits (using unsafe impl) only when the programmer
+  can guarantee thread safety. This design ensures that concurrent code cannot
+  accidentally create undefined behavior through unsynchronized access to
+  non-thread-safe data.

@@ -1,0 +1,49 @@
+question: |-
+  ```rust
+  fn main() {
+      let s = String::from("hello");
+      let s_ref = &s;
+      let s_clone = s.clone();
+      
+      drop(s);
+      
+      println!("Reference: {}", s_ref);
+      println!("Clone: {}", s_clone);
+  }
+  ```
+
+  What does this code output?
+answers:
+- 'Prints: Reference: hello, Clone: hello'
+- 'Runtime panic: use after drop'
+- 'Compilation error: borrow of moved value'
+- 'Compilation error: cannot drop `s` while borrowed'
+correct_answer: 3
+expected_output:
+- 'error[E0505]: cannot move out of `s` because it is borrowed'
+explanation: |-
+  This question tests understanding of Rust's borrow checker and the interaction
+  between borrows and ownership transfer. The code attempts to drop a value while
+  it is still borrowed, which Rust prevents at compile time.
+
+  In the code, `s_ref` creates an immutable borrow of `s`. Later, `drop(s)`
+  attempts to consume and move `s`, taking ownership to destroy it. However, the
+  borrow `s_ref` is still active because it's used in the subsequent `println!`
+  statement. Rust's borrow checker enforces that you cannot move or drop an owned
+  value while any borrows of it are still in scope and being used.
+
+  The compiler produces an error indicating that `s` cannot be moved out because
+  it is borrowed. The borrow occurs when `s_ref = &s` is created, the move occurs
+  at `drop(s)`, and the borrow is later used in the `println!` statement with
+  `s_ref`.
+
+  This is a fundamental safety guarantee in Rust: preventing use-after-free bugs
+  by ensuring that references cannot outlive the data they point to. If this code
+  were allowed to compile, `s_ref` would become a dangling pointer after
+  `drop(s)`, leading to undefined behavior.
+
+  The key takeaway is that Rust's ownership system prevents moving or dropping
+  values while they are borrowed, ensuring memory safety at compile time. To fix
+  this code, you would need to ensure all borrows are finished before calling
+  `drop(s)`, or restructure the code to avoid the conflict between the borrow
+  lifetime and the drop operation.

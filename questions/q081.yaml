@@ -1,0 +1,63 @@
+question: |-
+  ```rust
+  use std::fmt::Display;
+
+  fn longest_display<'a, T: Display>(x: &'a T, y: &'a T) -> &'a T {
+      if x.to_string().len() > y.to_string().len() {
+          x
+      } else {
+          y
+      }
+  }
+
+  fn main() {
+      let string1 = String::from("short");
+      let result;
+      {
+          let string2 = String::from("longer");
+          result = longest_display(&string1, &string2);
+      }
+      println!("{}", result);
+  }
+  ```
+
+  What happens?
+answers:
+- Prints "longer" successfully
+- 'Compiler error: `string2` does not live long enough'
+- 'Compiler error: trait bound not satisfied'
+- Prints "short" due to early drop
+correct_answer: 1
+expected_output:
+- error
+- does not live long enough
+explanation: |-
+  This question tests understanding of lifetime parameters and how they interact
+  with generic trait bounds in Rust.
+
+  The function signature `fn longest_display<'a, T: Display>(x: &'a T, y: &'a T)
+  -> &'a T` declares that both input references must have the same lifetime `'a`,
+  and the returned reference will also have that lifetime. The lifetime `'a`
+  represents the intersection (shortest) of the actual lifetimes of the input
+  references.
+
+  In the code, `string1` lives for the entire duration of `main()`, while
+  `string2` only lives within the inner block. When `longest_display(&string1,
+  &string2)` is called, the lifetime `'a` is constrained to the shorter of the two
+  lifetimes—in this case, the lifetime of `string2`.
+
+  The function returns a reference with lifetime `'a`, which means it could
+  potentially be a reference to either `string1` or `string2`. Since the compiler
+  cannot determine at compile time which reference will be returned (it depends on
+  runtime string length comparison), it must conservatively assume the returned
+  reference could point to `string2`.
+
+  When `string2` goes out of scope at the end of the inner block, but `result` is
+  used later in `println!`, the borrow checker detects that `result` might be a
+  dangling reference. This violates Rust's safety guarantees, resulting in a
+  compilation error: "`string2` does not live long enough."
+
+  The trait bound `T: Display` is satisfied by `String`, so that is not the issue.
+  The problem is purely about lifetime constraints. To fix this, both strings
+  would need to live in the same scope, or the function could return an owned
+  `String` instead of a reference.

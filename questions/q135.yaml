@@ -1,0 +1,66 @@
+question: |-
+  ```rust
+  use std::sync::mpsc;
+  use std::thread;
+  use std::time::Duration;
+
+  fn main() {
+      let (tx, rx) = mpsc::channel();
+      
+      thread::spawn(move || {
+          tx.send(1).unwrap();
+          thread::sleep(Duration::from_millis(100));
+          tx.send(2).unwrap();
+          thread::sleep(Duration::from_millis(100));
+          tx.send(3).unwrap();
+      });
+      
+      thread::sleep(Duration::from_millis(150));
+      
+      let received: Vec<_> = rx.try_iter().collect();
+      println!("{:?}", received);
+      
+      thread::sleep(Duration::from_millis(100));
+      
+      let more: Vec<_> = rx.try_iter().collect();
+      println!("{:?}", more);
+  }
+  ```
+
+  What does this print?
+answers:
+- '[1, 2], [3]'
+- '[1], [2, 3]'
+- '[1, 2, 3], []'
+- '[], [1, 2, 3]'
+correct_answer: 0
+expected_output:
+- '[1, 2]'
+- '[3]'
+explanation: |-
+  This question tests understanding of non-blocking channel operations with
+  `try_iter()` and timing in concurrent Rust code.
+
+  The key concept is that `try_iter()` is a non-blocking operation that
+  immediately collects all messages currently available in the channel without
+  waiting for future messages.
+
+  **Timeline analysis:**
+  - t=0ms: The spawned thread sends message `1`, then sleeps for 100ms
+  - t=100ms: The thread sends message `2`, then sleeps for 100ms
+  - t=150ms: The main thread wakes up and calls `try_iter()`. At this point,
+  messages `1` and `2` are already in the channel, so they are collected: `[1, 2]`
+  - t=200ms: The spawned thread sends message `3`
+  - t=250ms: The main thread calls the second `try_iter()`. Message `3` was sent
+  at t=200ms and is now available, so it is collected: `[3]`
+
+  **Key differences between `try_iter()` and `iter()`:**
+  - `iter()` is blocking and waits for messages until the channel is closed
+  - `try_iter()` is non-blocking and returns immediately with only the messages
+  currently queued
+  - `try_iter()` stops when no more messages are immediately available, not when
+  the channel closes
+
+  This pattern is useful for periodic polling of channels without blocking,
+  allowing the receiver to check for messages and continue with other work if none
+  are available.

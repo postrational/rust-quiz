@@ -1,0 +1,54 @@
+question: |-
+  ```rust
+  use std::ffi::OsString;
+
+  fn main() {
+      let mut os_string = OsString::from("hello");
+      os_string.push("_world");
+      
+      let string_result = os_string.into_string();
+      
+      match string_result {
+          Ok(s) => println!("Converted: {}", s),
+          Err(os_str) => {
+              println!("Failed to convert");
+              println!("Original: {:?}", os_str);
+          }
+      }
+  }
+  ```
+
+  What happens when this code runs?
+answers:
+- 'Prints: `Converted: hello_world`'
+- "Compilation error: `push` method doesn't exist for `OsString`"
+- 'Prints: `Failed to convert` and shows the original `OsString`'
+- 'Runtime panic: invalid UTF-8 sequence in `OsString`'
+correct_answer: 0
+expected_output:
+- 'Converted: hello_world'
+explanation: |-
+  This question tests understanding of `OsString` and its relationship with UTF-8
+  validation in Rust.
+
+  `OsString` is a platform-native string type that can hold any byte sequence
+  valid for the operating system, which may or may not be valid UTF-8. In this
+  code, an `OsString` is created from the string literal "hello" (valid UTF-8),
+  and then "_world" (also valid UTF-8) is appended using the `push` method.
+
+  The `into_string()` method attempts to convert the `OsString` into a regular
+  `String`. This method returns a `Result<String, OsString>` because the
+  conversion can fail if the `OsString` contains invalid UTF-8 sequences. Since
+  `String` in Rust must always contain valid UTF-8, the conversion will only
+  succeed if all bytes in the `OsString` form valid UTF-8.
+
+  In this case, both "hello" and "_world" are valid UTF-8 strings, so the entire
+  content of the `OsString` is valid UTF-8. Therefore, `into_string()` succeeds
+  and returns `Ok("hello_world")`, which matches the first branch of the match
+  statement and prints "Converted: hello_world".
+
+  The key takeaway is that `OsString` provides a safe abstraction for
+  platform-specific strings while `into_string()` provides a safe way to convert
+  to UTF-8-validated `String` when needed. The `Result` return type ensures that
+  invalid UTF-8 sequences are handled explicitly rather than causing undefined
+  behavior or panics.

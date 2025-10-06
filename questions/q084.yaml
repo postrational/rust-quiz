@@ -1,0 +1,64 @@
+question: |-
+  ```rust
+  use std::collections::HashMap;
+
+  fn process_data<'a>(
+      map: &'a mut HashMap<String, Vec<&'a str>>,
+      key: String,
+      value: &'a str,
+  ) {
+      map.entry(key)
+          .or_insert_with(Vec::new)
+          .push(value);
+  }
+
+  fn main() {
+      let mut data = HashMap::new();
+      let text = String::from("hello");
+      
+      process_data(&mut data, "key1".to_string(), &text);
+      
+      let text2 = String::from("world");
+      process_data(&mut data, "key1".to_string(), &text2);
+      
+      println!("{:?}", data);
+  }
+  ```
+
+  What happens?
+answers:
+- 'Prints `{"key1": ["hello", "world"]}`'
+- 'Compiler error: `map` cannot be borrowed as mutable more than once'
+- 'Compiler error: lifetime conflict - cannot infer appropriate lifetime'
+- 'Compiler error: `text2` does not live long enough'
+correct_answer: 1
+expected_output:
+- 'error[E0499]: cannot borrow `data` as mutable more than once at a time'
+explanation: |-
+  This question tests understanding of how lifetime parameters interact with
+  mutable borrows and their limitations.
+
+  The function signature uses a single lifetime parameter `'a` that connects three
+  things: the mutable borrow of the HashMap (`&'a mut`), the string slice being
+  inserted (`value: &'a str`), and the references stored inside the Vec (`Vec<&'a
+  str>`).
+
+  The problem arises because the lifetime `'a` ties the mutable borrow of the
+  HashMap to the lifetime of the data being stored in it. When `process_data(&mut
+  data, "key1".to_string(), &text)` is called, the compiler infers that `'a` must
+  be at least as long as the lifetime of `text`. Since the HashMap stores a
+  reference with lifetime `'a`, and the mutable borrow of the HashMap also has
+  lifetime `'a`, the mutable borrow must last as long as the stored reference.
+
+  This means the first mutable borrow of `data` extends until `text` is no longer
+  needed (which is until the end of `main` since the HashMap holds a reference to
+  it). When the second call to `process_data` attempts to borrow `data` mutably
+  again, the first mutable borrow is still active, causing a compiler error.
+
+  The key takeaway is that when a lifetime parameter appears in both a mutable
+  reference parameter and in data stored through that reference, it creates a
+  dependency that extends the mutable borrow for the entire lifetime. This is a
+  limitation of Rust's lifetime system that prevents certain patterns even though
+  they might seem safe. To fix this, you would need to restructure the code to
+  avoid tying the mutable borrow lifetime to the stored data lifetime, such as by
+  using owned data instead of references.
