@@ -60,15 +60,25 @@ export function App() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        padding: 2,
+        padding: { xs: 1, sm: 2 },
       }}
     >
-      <Box sx={{ width: { xs: '70%', sm: '70%' }, minWidth: '1000px' }}>
+      <Box
+        sx={{
+          width: {
+            xs: '100%',
+            sm: '100%',
+            md: '90%',
+            lg: '1000px',
+          },
+          maxWidth: '1000px',
+        }}
+      >
         <Paper
           elevation={3}
           sx={{
             minHeight: '400px',
-            padding: 3,
+            padding: { xs: 2, sm: 3 },
           }}
         >
           <Typography variant="h4">Quiz Game</Typography>
