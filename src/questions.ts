@@ -26,3 +26,29 @@ for (const [path, module] of Object.entries(questionModules)) {
 }
 
 export const questionIds = Object.keys(allQuestions);
+
+function getUnansweredQuestions(answeredQuestions: string[]): string[] {
+  return questionIds.filter((id) => !answeredQuestions.includes(id));
+}
+
+function getIncorrectlyAnsweredQuestions(answeredQuestions: string[], correctQuestions: string[]): string[] {
+  return answeredQuestions.filter((id) => !correctQuestions.includes(id));
+}
+
+export function selectNextQuestion(answeredQuestions: string[], correctQuestions: string[]): string | null {
+  const unanswered = getUnansweredQuestions(answeredQuestions);
+  const incorrect = getIncorrectlyAnsweredQuestions(answeredQuestions, correctQuestions);
+
+  // Prioritize unanswered questions
+  if (unanswered.length > 0) {
+    return unanswered[Math.floor(Math.random() * unanswered.length)];
+  }
+
+  // Then show incorrectly answered questions
+  if (incorrect.length > 0) {
+    return incorrect[Math.floor(Math.random() * incorrect.length)];
+  }
+
+  // All questions answered correctly - return null
+  return null;
+}
