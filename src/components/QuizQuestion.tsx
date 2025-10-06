@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import { MarkdownBlock } from './MarkdownBlock';
 import { QuestionData } from '../questions';
+import { useQuizStore } from '../store/quizStore';
 
 const shuffleAnswers = (answers: string[], correctIndex: number): [string[], number] => {
   const indexed = answers.map((answer, index) => ({ answer, index }));
@@ -23,6 +24,7 @@ interface QuizQuestionProps {
 export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQuestionProps) {
   const labels = ['A', 'B', 'C', 'D'];
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const recordAnswer = useQuizStore((state) => state.recordAnswer);
 
   const [shuffledAnswers, correctAnswerIndex] = useMemo(
     () => shuffleAnswers(questionData.answers, questionData.correct_answer),
@@ -31,6 +33,8 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
 
   const handleAnswerClick = (index: number) => {
     setSelectedAnswer(index);
+    const isCorrect = index === correctAnswerIndex;
+    recordAnswer(questionId, isCorrect);
   };
 
   const handleNextQuestion = () => {
