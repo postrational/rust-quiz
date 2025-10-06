@@ -44,7 +44,7 @@ export function App() {
           width: {
             xs: '100%',
             sm: '100%',
-            md: '90%',
+            md: '100%',
             lg: '1000px',
           },
           maxWidth: '1000px',
@@ -57,7 +57,7 @@ export function App() {
             padding: { xs: 2, sm: 3 },
           }}
         >
-          <Typography variant="h4">Quiz Game</Typography>
+          <Typography variant="h4" gutterBottom>Rust Quiz</Typography>
 
           <QuizStats />
 
