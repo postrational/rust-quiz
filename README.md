@@ -2,6 +2,8 @@
 
 Interactive quiz game for learning Rust programming concepts.
 
+[Play the game here](https://postrational.github.io/rust-quiz/)
+
 ## Development
 
 ```bash

@@ -1,4 +1,5 @@
 import { Box, Button, Typography } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import { MarkdownBlock } from './MarkdownBlock';
@@ -91,9 +92,28 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
 
           <MarkdownBlock>{questionData.explanation}</MarkdownBlock>
 
-          <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'right' }}>
-            (Question ID: {questionId})
-          </Typography>
+          <Box sx={{ marginTop: 2, textAlign: 'right' }}>
+            <Typography
+              component="a"
+              href={`https://github.com/postrational/rust-quiz/blob/main/questions/${questionId}.yaml`}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="body2"
+              sx={{
+                color: 'primary.main',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              <EditIcon fontSize="small" />
+              Edit on GitHub
+            </Typography>
+          </Box>
 
           <Box sx={{ marginTop: 3, display: 'flex', justifyContent: 'center' }}>
             <Button variant="contained" onClick={handleNextQuestion}>
