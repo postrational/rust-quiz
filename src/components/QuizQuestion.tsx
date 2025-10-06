@@ -54,9 +54,16 @@ export function QuizQuestion({ questionData, onNextQuestion }: { questionData: Q
               alignItems: 'center',
               gap: 2,
               marginBottom: 2,
+              padding: '0 10px',
+              border: selectedAnswer === index
+                ? index === correctAnswerIndex
+                  ? '2px solid green'
+                  : '2px solid red'
+                : '2px solid transparent',
             }}
           >
-            <Button variant="outlined" sx={{ minWidth: 50 }} onClick={() => handleAnswerClick(index)}>
+            <Button variant="outlined" sx={{ minWidth: 50 }} onClick={() => handleAnswerClick(index)}
+              disabled={selectedAnswer !== null}>
               {labels[index]}
             </Button>
             <MarkdownBlock>{answer}</MarkdownBlock>
