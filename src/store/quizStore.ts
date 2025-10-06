@@ -20,13 +20,20 @@ export const useQuizStore = create<QuizState>()(
       // Actions
       recordAnswer: (questionId: string, isCorrect: boolean) => {
         set((state) => {
-          // Avoid duplicates
-          if (state.answeredQuestions.includes(questionId)) {
+          const alreadyAnswered = state.answeredQuestions.includes(questionId);
+          const alreadyCorrect = state.correctQuestions.includes(questionId);
+
+          if (alreadyCorrect) {
             return state;
           }
 
-          const newAnswered = [...state.answeredQuestions, questionId];
-          const newCorrect = isCorrect ? [...state.correctQuestions, questionId] : state.correctQuestions;
+          const newAnswered = alreadyAnswered
+            ? state.answeredQuestions
+            : [...state.answeredQuestions, questionId];
+
+          const newCorrect = isCorrect
+            ? [...state.correctQuestions, questionId]
+            : state.correctQuestions;
 
           return {
             answeredQuestions: newAnswered,

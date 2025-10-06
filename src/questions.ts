@@ -21,6 +21,8 @@ export const allQuestions: Record<string, QuestionData> = {};
 for (const [path, module] of Object.entries(questionModules)) {
   const questionId = getQuestionId(path);
   allQuestions[questionId] = module;
+  // Limit to 3 questions for testing
+  // if (Object.keys(allQuestions).length >= 3) break;
 }
 
 export const questionIds = Object.keys(allQuestions);
