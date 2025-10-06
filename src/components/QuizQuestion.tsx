@@ -2,14 +2,7 @@ import { Box, Button, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import { MarkdownBlock } from './MarkdownBlock';
-
-export interface QuestionData {
-  question: string;
-  answers: [string, string, string, string];
-  correct_answer: 0 | 1 | 2 | 3;
-  expected_output: string[];
-  explanation: string;
-}
+import { QuestionData } from '../questions';
 
 const shuffleAnswers = (answers: string[], correctIndex: number): [string[], number] => {
   const indexed = answers.map((answer, index) => ({ answer, index }));
