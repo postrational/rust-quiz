@@ -27,13 +27,9 @@ export const useQuizStore = create<QuizState>()(
             return state;
           }
 
-          const newAnswered = alreadyAnswered
-            ? state.answeredQuestions
-            : [...state.answeredQuestions, questionId];
+          const newAnswered = alreadyAnswered ? state.answeredQuestions : [...state.answeredQuestions, questionId];
 
-          const newCorrect = isCorrect
-            ? [...state.correctQuestions, questionId]
-            : state.correctQuestions;
+          const newCorrect = isCorrect ? [...state.correctQuestions, questionId] : state.correctQuestions;
 
           return {
             answeredQuestions: newAnswered,

@@ -1,17 +1,19 @@
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark as dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const inlineCodeStyle = {
-  fontWeight: 'bold',
-  color: '#1976d2',
-  backgroundColor: '#f5f5f5',
-  padding: '2px 6px',
-  borderRadius: '4px',
-};
-
 export function MarkdownBlock({ children }: { children: string }) {
+  const theme = useTheme();
+
+  const inlineCodeStyle = {
+    fontWeight: 'bold',
+    color: theme.palette.primary.main,
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
+    padding: '2px 6px',
+    borderRadius: '4px',
+  };
+
   return (
     <Box sx={{ textAlign: 'left' }}>
       <ReactMarkdown

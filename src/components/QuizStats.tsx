@@ -43,7 +43,6 @@ export function QuizStats() {
           {totalCorrect > 0 ? `${accuracy.toFixed(1)}%` : 'N/A'}
         </Typography>
       </Box>
-
     </Box>
   );
 }
