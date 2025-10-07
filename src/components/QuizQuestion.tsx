@@ -51,6 +51,7 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
         {shuffledAnswers.map((answer, index) => (
           <Box
             key={index}
+            onClick={() => selectedAnswer === null && handleAnswerClick(index)}
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -63,6 +64,12 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
                     ? '2px solid green'
                     : '2px solid red'
                   : '2px solid transparent',
+              cursor: selectedAnswer === null ? 'pointer' : 'default',
+              '&:hover': selectedAnswer === null
+                ? {
+                    backgroundColor: 'action.hover',
+                  }
+                : {},
             }}
           >
             <Button
