@@ -67,7 +67,8 @@ export function App() {
           elevation={3}
           sx={{
             minHeight: '400px',
-            padding: { xs: 1, sm: 3 },
+            padding: { xs: 2, sm: 3 },
+            paddingBottom: { xs: 10, sm: 3 },
           }}
         >
           <Typography variant="h4" gutterBottom>
