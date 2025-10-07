@@ -21,7 +21,7 @@ answers:
 - 1 5
 - 11 10
 - 2 5
-- 12 5
+- Code fails to compile because `map` is mutably borrowed twice
 correct_answer: 1
 expected_output:
 - 11 10

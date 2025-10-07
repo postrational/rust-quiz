@@ -21,6 +21,7 @@ question: |-
       requires_send(arc_data);
       requires_send(mutex_data);
       requires_sync(refcell_data);
+      requires_send(rc_data);
   }
   ```
 
@@ -30,7 +31,7 @@ answers:
 - Only the `requires_send(rc_data)` line
 - Both `requires_send(rc_data)` and `requires_sync(refcell_data)` lines
 - All function calls work without errors
-correct_answer: 0
+correct_answer: 2
 expected_output:
 - error[E0277]
 - cannot be shared between threads safely
@@ -59,11 +60,10 @@ explanation: |-
   - `Mutex<T>` is both `Send` and `Sync` (when `T: Send`) because it provides
   thread-safe interior mutability through locking.
 
-  In the code, `rc_data` is created but never used in a function call, so it
-  doesn't cause an error. The calls `requires_send(arc_data)` and
-  `requires_send(mutex_data)` both succeed because `Arc` and `Mutex` implement
-  `Send`. However, `requires_sync(refcell_data)` fails to compile because
-  `RefCell` does not implement `Sync`.
+  The calls `requires_send(arc_data)` and `requires_send(mutex_data)` both succeed 
+  because `Arc` and `Mutex` implement `Send`. However, `requires_sync(refcell_data)` 
+  and `requires_send(rc_data)` both fail to compile. The former fails because `RefCell`
+  does not implement `Sync`, and the latter because `Rc` does not implement `Send`.
 
   The key takeaway is that `RefCell` provides interior mutability for
   single-threaded scenarios, while `Mutex` provides thread-safe interior
