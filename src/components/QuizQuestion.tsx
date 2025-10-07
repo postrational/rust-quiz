@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, useTheme, Theme } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import shuffle from 'lodash/shuffle';
 import { useMemo, useState } from 'react';
@@ -10,11 +10,42 @@ const shuffleAnswers = (answers: string[], correctIndex: number): [string[], num
   const indexed = answers.map((answer, index) => ({ answer, index }));
   const shuffled = shuffle(indexed);
 
-  const shuffledAnswers = shuffled.map((item: { answer: string; index: number }) => item.answer);
-  const newCorrectIndex = shuffled.findIndex((item: { answer: string; index: number }) => item.index === correctIndex);
+  const shuffledAnswers = shuffled.map((item) => item.answer);
+  const newCorrectIndex = shuffled.findIndex((item) => item.index === correctIndex);
 
   return [shuffledAnswers, newCorrectIndex];
 };
+
+const getStyles = (theme: Theme) => ({
+  answerBox: (isAnswered: boolean, isSelected: boolean, isCorrect: boolean) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    marginBottom: 2,
+    padding: '0 10px',
+    border: isSelected
+      ? isCorrect
+        ? `2px solid ${theme.palette.success.main}`
+        : `2px solid ${theme.palette.error.main}`
+      : '2px solid transparent',
+    cursor: isAnswered ? 'default' : 'pointer',
+    ...(!isAnswered && {
+      '&:hover': {
+        backgroundColor: 'action.hover',
+      },
+    }),
+  }),
+  editLink: {
+    color: 'primary.main',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 0.5,
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+});
 
 interface QuizQuestionProps {
   questionData: QuestionData;
@@ -23,18 +54,19 @@ interface QuizQuestionProps {
 }
 
 export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQuestionProps) {
+  const styles = getStyles(useTheme());
   const labels = ['A', 'B', 'C', 'D'];
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const recordAnswer = useQuizStore((state) => state.recordAnswer);
 
-  const [shuffledAnswers, correctAnswerIndex] = useMemo(
+  const [shuffledAnswers, correctAnswer] = useMemo(
     () => shuffleAnswers(questionData.answers, questionData.correct_answer),
     [questionData],
   );
 
   const handleAnswerClick = (index: number) => {
+    const isCorrect = index === correctAnswer;
     setSelectedAnswer(index);
-    const isCorrect = index === correctAnswerIndex;
     recordAnswer(questionId, isCorrect);
   };
 
@@ -43,57 +75,46 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
     onNextQuestion();
   };
 
+  const isAnswered = selectedAnswer !== null;
+
   return (
     <>
       <MarkdownBlock>{questionData.question}</MarkdownBlock>
 
       <Box sx={{ marginTop: 3 }}>
-        {shuffledAnswers.map((answer, index) => (
-          <Box
-            key={index}
-            onClick={() => selectedAnswer === null && handleAnswerClick(index)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              marginBottom: 2,
-              padding: '0 10px',
-              border:
-                selectedAnswer === index
-                  ? index === correctAnswerIndex
-                    ? '2px solid green'
-                    : '2px solid red'
-                  : '2px solid transparent',
-              cursor: selectedAnswer === null ? 'pointer' : 'default',
-              '&:hover': selectedAnswer === null
-                ? {
-                    backgroundColor: 'action.hover',
-                  }
-                : {},
-            }}
-          >
-            <Button
-              variant="outlined"
-              sx={{ minWidth: 50 }}
-              onClick={() => handleAnswerClick(index)}
-              disabled={selectedAnswer !== null}
+        {shuffledAnswers.map((answer, index) => {
+          const isSelected = selectedAnswer === index;
+          const isCorrect = correctAnswer === index;
+
+          return (
+            <Box
+              key={index}
+              onClick={() => !isAnswered && handleAnswerClick(index)}
+              sx={styles.answerBox(isAnswered, isSelected, isCorrect)}
             >
-              {labels[index]}
-            </Button>
-            <MarkdownBlock>{answer}</MarkdownBlock>
-          </Box>
-        ))}
+              <Button
+                variant="outlined"
+                sx={{ minWidth: 50 }}
+                onClick={() => handleAnswerClick(index)}
+                disabled={isAnswered}
+              >
+                {labels[index]}
+              </Button>
+              <MarkdownBlock>{answer}</MarkdownBlock>
+            </Box>
+          );
+        })}
       </Box>
 
-      {selectedAnswer !== null && (
+      {isAnswered && (
         <Box sx={{ marginTop: 3 }}>
-          {selectedAnswer === correctAnswerIndex ? (
+          {selectedAnswer === correctAnswer ? (
             <Typography variant="h6" color="success.main">
               🎉 Correct! Well done!
             </Typography>
           ) : (
             <Typography variant="h6" color="error.main">
-              ❌ Incorrect. The correct answer is {labels[correctAnswerIndex]}.
+              ❌ Incorrect. The correct answer is {labels[correctAnswer]}.
             </Typography>
           )}
 
@@ -106,16 +127,7 @@ export function QuizQuestion({ questionData, questionId, onNextQuestion }: QuizQ
               target="_blank"
               rel="noopener noreferrer"
               variant="body2"
-              sx={{
-                color: 'primary.main',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                '&:hover': {
-                  textDecoration: 'underline',
-                },
-              }}
+              sx={styles.editLink}
             >
               <EditIcon fontSize="small" />
               Edit on GitHub
