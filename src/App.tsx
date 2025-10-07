@@ -57,7 +57,9 @@ export function App() {
             padding: { xs: 1, sm: 3 },
           }}
         >
-          <Typography variant="h4" gutterBottom>Rust Quiz</Typography>
+          <Typography variant="h4" gutterBottom>
+            Rust Quiz
+          </Typography>
 
           <QuizStats />
 
