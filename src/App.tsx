@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Box, Button, Paper, Typography } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import './App.css';
 import { QuizQuestion } from './components/QuizQuestion';
 import { QuizStats } from './components/QuizStats';
@@ -11,20 +12,32 @@ export function App() {
   const correctQuestions = useQuizStore((state) => state.correctQuestions);
   const resetProgress = useQuizStore((state) => state.resetProgress);
 
-  const [currentQuestionId, setCurrentQuestionId] = useState(
-    () => selectNextQuestion(answeredQuestions, correctQuestions) ?? questionIds[0],
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlQuestionId = searchParams.get('q');
+  const validUrlQuestionId = urlQuestionId && questionIds.includes(urlQuestionId) ? urlQuestionId : null;
+
+  const currentQuestionId =
+    validUrlQuestionId ?? selectNextQuestion(answeredQuestions, correctQuestions) ?? questionIds[0];
+
+  // Sync URL with current question
+  useEffect(() => {
+    if (searchParams.get('q') !== currentQuestionId) {
+      setSearchParams({ q: currentQuestionId }, { replace: true });
+    }
+  }, [currentQuestionId, searchParams, setSearchParams]);
 
   const handleNextQuestion = () => {
     const nextId = selectNextQuestion(answeredQuestions, correctQuestions);
     if (nextId) {
-      setCurrentQuestionId(nextId);
+      setSearchParams({ q: nextId }, { replace: true });
     }
   };
 
   const handlePlayAgain = () => {
     resetProgress();
-    setCurrentQuestionId(questionIds[Math.floor(Math.random() * questionIds.length)]);
+    const randomId = questionIds[Math.floor(Math.random() * questionIds.length)];
+    setSearchParams({ q: randomId }, { replace: true });
   };
 
   const allQuestionsCorrect = correctQuestions.length === questionIds.length;
