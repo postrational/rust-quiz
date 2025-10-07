@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import _ from 'lodash';
+import shuffle from 'lodash/shuffle';
 import { useMemo, useState } from 'react';
 import { MarkdownBlock } from './MarkdownBlock';
 import { QuestionData } from '../questions';
@@ -8,7 +8,7 @@ import { useQuizStore } from '../store/quizStore';
 
 const shuffleAnswers = (answers: string[], correctIndex: number): [string[], number] => {
   const indexed = answers.map((answer, index) => ({ answer, index }));
-  const shuffled = _.shuffle(indexed);
+  const shuffled = shuffle(indexed);
 
   const shuffledAnswers = shuffled.map((item: { answer: string; index: number }) => item.answer);
   const newCorrectIndex = shuffled.findIndex((item: { answer: string; index: number }) => item.index === correctIndex);
