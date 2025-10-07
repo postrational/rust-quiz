@@ -1,32 +1,4 @@
 question: |-
-  ```rust
-  // This represents what a procedural macro might generate
-  // Note: proc_macro is only available in proc-macro crates,
-  // so we're showing a conceptual example here
-
-  // Simulating a derive macro expansion
-  // #[some_derive_macro]
-  struct User {
-      name: String,
-      age: u32,
-  }
-
-  // What the macro might expand to:
-  impl User {
-      fn validate(&self) -> bool {
-          !self.name.is_empty() && self.age > 0
-      }
-  }
-
-  fn main() {
-      let user = User {
-          name: "Alice".to_string(),
-          age: 30,
-      };
-      println!("{}", user.validate());
-  }
-  ```
-
   What is the key difference between declarative macros (`macro_rules!`) and
   procedural macros?
 answers:
@@ -35,8 +7,7 @@ answers:
 - Procedural macros operate on token streams and can run arbitrary Rust code at compile time
 - Declarative macros are more powerful and can generate more complex code
 correct_answer: 2
-expected_output:
-- 'true'
+expected_output: []
 explanation: |-
   This question tests understanding of the fundamental differences between Rust's
   two macro systems: declarative macros (`macro_rules!`) and procedural macros.

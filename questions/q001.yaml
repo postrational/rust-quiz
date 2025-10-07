@@ -10,8 +10,8 @@ question: |-
 
   What will this Rust code print?
 answers:
-- '[2, 3, 4]'
-- '[2, 3, 4, 5]'
+- '`[2, 3, 4]`'
+- '`[2, 3, 4, 5]`'
 - Compilation error
 - Runtime panic
 correct_answer: 2
