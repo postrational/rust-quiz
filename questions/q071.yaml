@@ -43,7 +43,7 @@ question: |-
   What happens when you try to compile this?
 answers:
 - Compiles successfully and prints `42` and `"hello"`
-- 'Error: `Container` is not object-safe because it has an associated type'
+- 'Error: cannot dereference `Box<i32>` and `Box<String>` through a trait object'
 - 'Error: `Container` is not object-safe because `Item` has a trait bound'
 - 'Error: cannot create trait object for `Container` - associated type `Item` must be specified'
 correct_answer: 3

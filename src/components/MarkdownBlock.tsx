@@ -42,7 +42,7 @@ export function MarkdownBlock({ children }: { children: string }) {
 
   const handleRunRust = (code: string) => {
     const encodedCode = encodeURIComponent(code);
-    window.open(`https://play.integer32.com/?code=${encodedCode}`, '_blank');
+    window.open(`https://play.integer32.com/?edition=2024&code=${encodedCode}`, '_blank');
   };
 
   const inlineCodeStyle = {

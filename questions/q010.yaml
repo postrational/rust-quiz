@@ -12,10 +12,10 @@ question: |-
 
   What does this code print?
 answers:
-- 2 2` then `he el
-- 2 2` then `he ll
+- '`2 2` then `he el`'
+- '`2 2` then `he ll`'
 - Compilation error due to overlapping borrows
-- 1 1` then `h e
+- '`1 1` then `h e`'
 correct_answer: 0
 expected_output:
 - 2 2
