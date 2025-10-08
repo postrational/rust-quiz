@@ -64,12 +64,15 @@ explanation: |-
 
   ```rust
   trait Plugin: Any {
-      fn name(&self) -> &str;
-      fn execute(&self);
-      
-      fn as_any(&self) -> &dyn Any {
-          self
-      }
+      fn as_any(&self) -> &dyn Any;
+  }
+
+  impl Plugin for AudioPlugin {
+      fn as_any(&self) -> &dyn Any { self }
+  }
+
+  impl Plugin for VideoPlugin {
+      fn as_any(&self) -> &dyn Any { self }
   }
   ```
 

@@ -1,0 +1,44 @@
+question: |-
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
+      let r1 = &s;
+      let r2 = &s;
+      drop(r1);
+      drop(r2);
+      println!("{} {}", r1, r2);
+  }
+  ```
+
+  What happens when you run this code?
+answers:
+- Prints "hello hello"
+- 'Compilation error: borrow of moved value'
+- 'Runtime panic: use after drop'
+- 'Compilation error: cannot drop a reference'
+correct_answer: 0
+expected_output:
+- 'hello hello'
+explanation: |-
+  This question tests understanding of reference semantics and the `drop()` function
+  in Rust. The key misconception is thinking that calling `drop()` on a reference
+  will invalidate it or move it, making it unusable afterward.
+  
+  In reality, references are `Copy` types, meaning they are copied (not moved) when
+  passed to functions. When `drop(r1)` is called, a copy of the reference is passed
+  to the `drop()` function, and that copy is dropped. The original binding `r1`
+  remains valid and unchanged. The same applies to `r2`.
+  
+  After both `drop()` calls, `r1` and `r2` are still valid references pointing to
+  the string `s`, so `println!("{} {}", r1, r2)` successfully prints `hello hello`.
+  
+  Calling `drop()` on a reference is effectively a no-op—it drops a copy of the
+  reference, not the referenced data itself. This is fundamentally different from
+  calling `drop()` on an owned value, which would move the value and make it
+  inaccessible.
+  
+  The key takeaway is that references implement `Copy`, so passing them to functions
+  (including `drop()`) creates copies rather than moves. Dropping a reference has no
+  effect on either the reference binding or the underlying data. To actually
+  invalidate references, you would need to drop or mutate the owned value they refer
+  to, not the references themselves.

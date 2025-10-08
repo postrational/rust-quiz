@@ -21,7 +21,7 @@ question: |-
   What happens when you try to compile this code?
 answers:
 - The code compiles and runs successfully
-- 'Compilation error: the trait `MyTrait` is not dyn compatible because method `method` references the `Self` type in its return type'
+- 'Compilation error: the trait `MyTrait` is not dyn compatible
 - 'Compilation error: `MyStruct` does not implement `MyTrait`'
 - Runtime panic occurs when creating the trait object
 correct_answer: 1

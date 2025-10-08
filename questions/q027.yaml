@@ -1,34 +1,33 @@
 question: |-
   ```rust
-  use std::rc::Rc;
-  use std::sync::Arc;
-  use std::thread;
+    use std::rc::Rc;
+    use std::sync::Arc;
+    use std::thread;
 
-  // Version A
-  fn version_a() {
-      let data = Rc::new(vec![1, 2, 3]);
-      let data_clone = Rc::clone(&data);
-      
-      thread::spawn(move || {
-          println!("{:?}", data_clone);
-      });
-  }
+    // Version A
+    fn version_a() {
+        let data = Rc::new(vec![1, 2, 3]);
+        let data_clone = Rc::clone(&data);
+        
+        thread::spawn(move || {
+            println!("{:?}", data_clone);
+        }).join();
+    }
 
-  // Version B  
-  fn version_b() {
-      let data = Arc::new(vec![1, 2, 3]);
-      let data_clone = Arc::clone(&data);
-      
-      thread::spawn(move || {
-          println!("{:?}", data_clone);
-      });
-  }
+    // Version B  
+    fn version_b() {
+        let data = Arc::new(vec![1, 2, 3]);
+        let data_clone = Arc::clone(&data);
+        
+        thread::spawn(move || {
+            println!("{:?}", data_clone);
+        }).join();
+    }
 
-  fn main() {
-      // Uncommenting version_a() would cause a compilation error
-      version_a();
-      // version_b();
-  }
+    fn main() {
+        version_a();
+        version_b();
+    }
   ```
 
   Which code compiles?
