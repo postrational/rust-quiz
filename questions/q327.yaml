@@ -17,7 +17,7 @@ question: |-
 answers:
 - '14'
 - '29'
-- '38'
+- '70'
 - '50'
 correct_answer: 2
 expected_output:

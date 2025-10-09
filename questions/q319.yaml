@@ -15,8 +15,8 @@ question: |-
 answers:
 - 'Prints: 1'
 - 'Prints: 0'
-- 'Compilation error: borrow after move'
-- 'Compilation error: borrowed value does not live long enough'
+- 'Compilation error: cannot move out of `key` because it is borrowed'
+- 'Compilation error: borrowed value `key` does not live long enough'
 correct_answer: 2
 expected_output:
 - cannot move out of `key` because it is borrowed

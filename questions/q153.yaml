@@ -1,7 +1,7 @@
 question: |-
   ```rust
   use std::sync::{Arc, Mutex};
-  use tokio::task;
+  use tokio;
 
   #[tokio::main]
   async fn main() {
@@ -10,7 +10,7 @@ question: |-
       
       for i in 0..3 {
           let counter_clone = Arc::clone(&counter);
-          let handle = task::spawn(async move {
+          let handle = tokio::spawn(async move {
               let mut num = counter_clone.lock().unwrap();
               *num += 1;
               println!("Task {}: counter = {}", i, *num);
@@ -30,9 +30,9 @@ question: |-
   What's the behavior of this shared mutable state with Arc and Mutex?
 answers:
 - The code will not compile due to async/await issues
-- 'All tasks print counter = 1, final counter: 1'
+- 'Tasks print Task 0, 1, 2 in this deterministic order, final counter: 3'
 - 'All tasks print counter = 1, final counter: 3'
-- 'Tasks print counter = 1, 2, 3 in some order, final counter: 3'
+- 'Tasks print Task 0, 1, 2 in some order, final counter: 3'
 correct_answer: 3
 expected_output:
 - 'Task 0: counter = 1'
@@ -55,7 +55,11 @@ explanation: |-
   Because the mutex ensures sequential access to the counter, each task sees the
   cumulative effect of all previous increments. The first task to acquire the lock
   increments from 0 to 1, the second from 1 to 2, and the third from 2 to 3.
-  However, due to concurrent task scheduling, the order in which tasks acquire the
+
+  When a future is passed to `tokio::spawn`, it starts running immediately in the
+  background, allowing all tasks to contend for the same mutex without waiting for
+  an explicit `.await` at creation.
+  Due to this concurrent task scheduling, the order in which tasks acquire the
   lock is non-deterministic, so the task IDs (0, 1, 2) may print in any order.
 
   The final counter value is always 3 because all three increments complete before

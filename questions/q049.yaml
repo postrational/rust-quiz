@@ -46,41 +46,36 @@ answers:
 - A and C compile
 - This is too complex - const generics can't do this
 - All would compile with correct implementations
-correct_answer: 0
+correct_answer: 2
 expected_output:
-- error
-- new_odd
+- generic parameters may not be used in const operations
 explanation: |-
-  This question tests understanding of const generics combined with trait bounds
-  to enforce compile-time constraints on type parameters.
+  This question tests understanding of const generics limitations in Rust's type system.
+  The `Array` struct uses `N` for array size and `P` as a parity marker (Even/Odd).
+  The intent is to enforce that only even-sized arrays can use `new_even()`.
+  
+  The critical limitation: `where [(); N % 2]:` in `new_even()` triggers the error
+  "generic parameters may not be used in const operations." While the syntax is valid,
+  the type system cannot evaluate const expressions containing generic parameters
+  in where clause constraints.
+  
+  Compare the struct definition: `where [(); N]:` works because it uses `N` directly
+  as a const parameter without arithmetic operations. However, `where [(); N % 2]:` 
+  requires evaluating arithmetic on a generic parameter in a constraint context,
+  which Rust's current type system cannot handle.
+  
+  All three cases would fail to compile:
+  - **A and B**: Fail at method definition with "generic parameters may not be used 
+    in const operations" due to `N % 2` in the where clause
+  - **C**: Fails because `new_odd()` method is not defined
+  
+  This demonstrates a fundamental limitation: while const generics allow using 
+  constant values as type parameters, they cannot perform arithmetic on generic
+  parameters in where clause constraints. Interestingly, `[T; N % 2]` would work
+  as a field type (creating an array of computed size), but the same expression
+  fails when used to constrain types in where clauses.
+  
+  Practical alternatives include runtime checks, macro-generated implementations,
+  or using the unstable `generic_const_exprs` feature for more complex const reasoning.
 
-  The `Array` struct uses three type parameters: `T` for the element type, `N` for
-  the array size (const generic), and `P` for a parity marker type that implements
-  `IsEven`. This design allows encoding compile-time properties about the array
-  size in the type system.
-
-  The `new_even()` method is implemented only for `Array<T, N, Even>`, meaning
-  it's specifically for arrays that are marked as having even size. The key
-  insight is that the type parameter `P` (Even or Odd) should logically match the
-  actual parity of `N`.
-
-  Analyzing each case:
-  - **A) `Array<i32, 4, Even>`**: Size 4 is even, and the type parameter is
-  `Even`. This is logically consistent and would compile with a correct
-  implementation.
-  - **B) `Array<i32, 5, Even>`**: Size 5 is odd, but the type parameter claims
-  it's `Even`. This is a logical inconsistency. With proper implementation, this
-  should not compile.
-  - **C) `Array<i32, 4, Odd>`**: Size 4 is even, but the type parameter claims
-  it's `Odd`. This is also logically inconsistent and should not compile.
-  Additionally, there's no `new_odd()` method defined.
-
-  The constraint `where [(); N % 2]:` in the code is intentionally incomplete and
-  doesn't actually enforce evenness correctly. In practice, enforcing such
-  constraints at compile time with const generics requires more sophisticated
-  techniques or different approaches.
-
-  The key takeaway is that const generics can be combined with trait bounds to
-  create type-level constraints that catch logical errors at compile time, making
-  APIs safer and more expressive. This pattern is useful in scenarios like
-  cryptographic key validation, SIMD operations, and matrix dimension checking.
+  Please submit a better explanation for this in a GitHub PR if you can...

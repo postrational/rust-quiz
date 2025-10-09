@@ -32,13 +32,13 @@ question: |-
   }
   ```
 
-  Which implementations violate Rust's orphan rule?
+  Which implementations are allowed?
 answers:
-- Only Implementation 2
-- Only Implementation 3
-- Implementations 2 and 3
-- All implementations are allowed
-correct_answer: 2
+- "Only Implementation 1"
+- "Only Implementation 2"
+- "Implementations 1 and 3"
+- "All implementations are allowed"
+correct_answer: 0
 expected_output:
 - error
 - conflicting implementations
@@ -61,8 +61,8 @@ explanation: |-
 
   **Implementation 3** (`impl ToString for MyStruct`) also violates coherence
   rules, though for a more subtle reason. While `MyStruct` is a local type, the
-  standard library provides a blanket implementation: `impl<T: Display> ToString
-  for T`. This means any type implementing `Display` automatically gets
+  standard library provides a blanket implementation: `impl<T: Display> ToString for T`. 
+  This means any type implementing `Display` automatically gets
   `ToString`. Since Implementation 1 provides `Display` for `MyStruct`,
   implementing `ToString` directly would conflict with the blanket implementation.
   The compiler rejects this to maintain coherence.

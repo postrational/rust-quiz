@@ -59,9 +59,9 @@ explanation: |-
   and prove the const expression during type checking. Without this constraint,
   the compiler might not be able to verify more complex const expressions.
 
-  In the execution, a `Buffer<i32, 8>` is created and split into two `Buffer<i32,
-  4>` instances. Each resulting buffer has a length of 4, which is computed as `8
-  / 2 = 4` at compile time. The first buffer contains elements from indices 0-3,
+  In the execution, a `Buffer<i32, 8>` is created and split into two `Buffer<i32, 4>` 
+  instances. Each resulting buffer has a length of 4, which is computed as `8 / 2 = 4` 
+  at compile time. The first buffer contains elements from indices 0-3,
   and the second contains elements from indices 4-7 of the original buffer.
 
   The key takeaway is that Rust's const generics support compile-time arithmetic,
