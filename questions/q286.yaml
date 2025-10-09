@@ -20,23 +20,18 @@ correct_answer: 3
 expected_output:
 - cannot borrow `s` as mutable, as it is not declared as mutable
 explanation: |-
-  This question tests understanding of Rust's borrowing rules and mutability
-  requirements. Rust enforces strict borrowing rules at compile time to prevent
-  data races: you can have either multiple immutable references OR one mutable
-  reference to a value, but not both simultaneously.
-
-  In this code, two immutable references (`r1` and `r2`) are created to `s`. Even
-  though `r1` is used in a `println!` before attempting to create the mutable
-  reference `r3`, the borrow checker determines that creating a mutable reference
-  while immutable references exist in scope violates Rust's borrowing rules. The
-  primary compilation error is "cannot borrow `s` as mutable because it is also
-  borrowed as immutable."
-
-  Additionally, there's a secondary issue: `s` is not declared with the `mut`
-  keyword, which would also prevent creating a mutable reference to it. To create
-  a mutable reference, the binding itself must be declared as mutable (e.g., `let
-  mut s = String::from("test")`).
-
-  The key takeaway is that Rust's borrow checker enforces exclusive access for
-  mutable references at compile time, preventing potential data races and ensuring
-  memory safety. This is a fundamental principle of Rust's ownership system.
+  This question tests understanding of Rust's mutability requirements for creating
+  mutable references.
+  
+  The code attempts to create a mutable reference `r3` to `s` using `&mut s`.
+  However, `s` is declared as `let s = ...` without the `mut` keyword, making it
+  an immutable binding.
+  
+  In Rust, you can only create a mutable reference to a value if the binding itself
+  is declared as mutable. To fix this code, `s` would need to be declared as
+  `let mut s = String::from("test")`.
+  
+  The key takeaway is that mutability in Rust must be explicitly declared at the
+  binding level. You cannot create mutable references to immutable bindings,
+  regardless of other borrowing rules. This is part of Rust's philosophy of making
+  mutability explicit and opt-in rather than default.
