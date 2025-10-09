@@ -16,10 +16,9 @@ answers:
 - 'Compilation error: cannot borrow `s` as mutable because it is also borrowed as immutable'
 - 'Runtime panic: borrow conflict'
 - 'Compilation error: `s` is not declared as mutable'
-correct_answer: 1
+correct_answer: 3
 expected_output:
-- error
-- cannot borrow `s` as mutable
+- cannot borrow `s` as mutable, as it is not declared as mutable
 explanation: |-
   This question tests understanding of Rust's borrowing rules and mutability
   requirements. Rust enforces strict borrowing rules at compile time to prevent

@@ -1,0 +1,46 @@
+question: |-
+  ```rust
+  fn main() {
+    let data = vec![Some(1), None, Some(2), Some(3), None];
+    let sum: i32 = data.iter().flatten().sum();
+
+    println!("{:?}", sum);
+  }
+  ```
+  
+  What does this print?
+
+answers:
+- '6'
+- 'None'
+- 'Some(6)'
+- 'Compilation error: cannot flatten `Option<i32>`'
+
+correct_answer: 0
+
+expected_output:
+- '6'
+
+explanation: |-
+  This question tests understanding of iterator adapters, particularly how `flatten()`
+  works with `Option` types to filter out `None` values.
+  
+  The iterator chain processes the data through transformations:
+  1. `.iter()` produces `Iterator<Item = &Option<i32>>`
+  2. `.flatten()` treats each `&Option<T>` as an iterator - `&Some(value)` yields a
+     reference to one element, while `&None` yields zero elements
+  3. `.sum()` adds up the dereferenced values: 1 + 2 + 3 = 6
+  
+  The key insight is that `&Option<T>` implements `IntoIterator`, making it behave
+  like a collection with either 0 elements for `None` or 1 element for `Some(value)`.
+  The `flatten()` method unwraps all `Some` values and skips all `None` values,
+  effectively filtering them out. When flattening `&Option<i32>`, the result is
+  `&i32`, which `sum()` can dereference and add.
+  
+  Note that if we called `.sum()` directly on the iterator of `&Option<i32>` without
+  flattening, the result type would be `Option<i32>` and would short-circuit to
+  `None` at the first `None` value encountered.
+  
+  The key takeaway is that `flatten()` on `Option` types provides an elegant way
+  to filter out `None` values while unwrapping `Some` values in a single operation,
+  which is equivalent to but more concise than using `filter_map(|&x| x)`.
